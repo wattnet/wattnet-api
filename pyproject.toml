@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "wattnet-api"
+version = "1.0.0"
+description = "REST API for wattnet"
+authors = ["Jaime Iglesias Blanco <iglesias@ifca.unican.es>"]
+readme = "README.md"
+homepage = "https://wattnet.eu"
+repository = "https://github.com/wattnet/wattnet-core"
+packages = [{ include = "wattnet" }]
+documentation = "https://api.wattnet.eu/docs"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+fastapi = "0.121.1"
+uvicorn = "0.38.0"
+requests = "2.32.5"
+fastapi-versioning = "0.10.0"
+geopandas = "1.1.1"
+prometheus-api-client = "0.6.0"
+pydantic = "2.12.4"
+shapely = "2.1.2"
+trio = "0.32.0"
+pydantic-settings = "^2.12.0"
+
+[tool.poetry.scripts]
+wattnet-api = "wattnet.api.app:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
