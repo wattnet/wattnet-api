@@ -1,90 +1,164 @@
-from datetime import datetime, timezone
+from datetime import datetime
+from typing import List, Optional, Union
 
-from wattnet.api.models.factor import Factor
-from wattnet.api.service.storage_client import StorageClient
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
+
+from wattnet.api.models.factor import Factor, FactorAggregate, FactorSeries
+from wattnet.api.service.operations import (
+    build_time_series,
+    compute_time_weighted_average,
+    group_metrics_by_metadata,
+)
 from wattnet.api.utils import log
 
-# Get logger
 LOG = log.get(__name__)
 
 
 class FactorService:
-
-    def __init__(self):
-        """Service to configure queries to the storage."""
-
+    def __init__(self, metrics_repo: MetricsRepository = None):
         LOG.info("Initializing FactorService...")
-
-        # Get the storage client
-        self.storage = StorageClient()
+        self.repo = metrics_repo or MetricsRepository()
 
     def get_factors(
-        self, factor_type=None, scope=None, production_type=None, start=None, end=None
-    ):
-        """Get all factors or a specific factor by ID."""
+        self,
+        factor_type: Optional[str] = None,
+        scope: Optional[str] = None,
+        production_type: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
+        aggregate: bool = False,
+    ) -> List[Union[Factor, FactorAggregate]]:
 
-        factors = []
+        metric_name = "factor"
 
-        # Build the query based on the parameters if provided (can be both)
-        query = "factor{app='wattnet'"
-        if factor_type:
-            query += f", factor_type='{factor_type}'"
-        if scope:
-            query += f", scope='{scope}'"
+        labels = {"app": "wattnet"}
         if production_type:
-            query += f", production_type='{production_type}'"
-        query += "}"
-        LOG.debug(f"Query: {query}")
+            labels["production_type"] = production_type
+        if factor_type:
+            labels["factor_type"] = factor_type
+        if scope:
+            labels["scope"] = scope
 
-        # Get all factors from the storage
-        response = self.storage.get_metrics(query=query, start=start, end=end)
-
-        for factor in enumerate(response):
-            # Convert the metric to a factor
-            factor = self._metric2factor(factor[1])
-            factors.append(factor)
-
-        LOG.debug(f"Found {len(factors)} factors.")
-
-        # Return the factors
-        return factors
-
-    def _metric2factor(self, metric: str) -> Factor:
-        """Convert a metric to a factor."""
-
-        # Get the labels
-        labels = metric.get("metric", {}) if isinstance(metric, dict) else {}
-
-        # Get the value list
-        value_list = metric.get("values", []) if isinstance(metric, dict) else []
-
-        # Convert the value list to a list of tuples (datetime with UTC (convert from timestamp), float)
-        value_list = [
-            (datetime.fromtimestamp(float(value[0]), tz=timezone.utc), float(value[1]))
-            for value in value_list
-        ]
-
-        # Convert year to int if not none
-        if labels["year"] != "None":
-            labels["year"] = int(labels["year"])
-        else:
-            labels["year"] = None
-        # Convert source_link to str if not none
-        if labels["source_link"] != "None":
-            labels["source_link"] = str(labels["source_link"])
-        else:
-            labels["source_link"] = None
-
-        # Create the factor
-        factor = Factor(
-            factor_type=labels["factor_type"],
-            scope=labels["scope"],
-            production_type=labels["production_type"],
-            values=value_list,
-            unit=labels["unit"],
-            source=labels["source"],
-            year=labels["year"],
-            source_link=labels["source_link"],
+        metrics = self.repo.query_metrics(
+            metric_name=metric_name,
+            start=start,
+            end=end,
+            labels=labels,
         )
 
-        return factor
+        metrics = [m for m in metrics if m.value is not None]
+
+        if not metrics:
+            return []
+
+        if aggregate:
+            return self._aggregate_metrics(metrics, start, end)
+        else:
+            return self._group_metrics_series(metrics)
+
+    def _aggregate_metrics(
+        self,
+        metrics: List[Metric],
+        start: datetime,
+        end: datetime,
+    ) -> List[FactorAggregate]:
+
+        if not metrics:
+            return []
+
+        grouped = group_metrics_by_metadata(
+            metrics,
+            [
+                "factor_type",
+                "production_type",
+                "scope",
+                "unit",
+                "source",
+                "year",
+                "source_link",
+            ],
+        )
+
+        results = []
+
+        for key, mlist in grouped.items():
+            (
+                factor_type,
+                production_type,
+                scope,
+                unit,
+                source,
+                year,
+                source_link,
+            ) = key
+
+            value_agg = compute_time_weighted_average(mlist, start, end)
+
+            results.append(
+                FactorAggregate(
+                    factor_type=factor_type,
+                    production_type=production_type,
+                    scope=scope,
+                    unit=unit,
+                    source=source,
+                    year=year,
+                    source_link=source_link,
+                    start=start,
+                    end=end,
+                    value=value_agg,
+                    aggregation_method="time-weighted-average",
+                )
+            )
+
+        return results
+
+    def _group_metrics_series(
+        self,
+        metrics: List[Metric],
+    ) -> List[Factor]:
+
+        if not metrics:
+            return []
+
+        grouped = group_metrics_by_metadata(
+            metrics,
+            [
+                "factor_type",
+                "production_type",
+                "scope",
+                "unit",
+                "source",
+                "year",
+                "source_link",
+            ],
+        )
+
+        results = []
+
+        for (
+            factor_type,
+            production_type,
+            scope,
+            unit,
+            source,
+            year,
+            source_link,
+        ), mlist in grouped.items():
+
+            values = build_time_series(mlist)
+
+            results.append(
+                Factor(
+                    factor_type=factor_type,
+                    production_type=production_type,
+                    scope=scope,
+                    unit=unit,
+                    source=source,
+                    year=year,
+                    source_link=source_link,
+                    series=[FactorSeries(values=values)],
+                )
+            )
+
+        return results

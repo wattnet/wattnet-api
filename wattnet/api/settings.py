@@ -19,10 +19,6 @@ class Settings(BaseSettings):
     api_port: int = 8000
     api_debug: bool = True
 
-    # Storage Database Settings
-    storage_db_url: str = "http://localhost:8428"
-    timeseries_step_minutes: int = 15  # minutes between data points
-
     # GeoJSON File Paths
     geojson_path: Path  # Path to GeoJSON file (required)
 
@@ -30,10 +26,6 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_handlers: list[str] = ["console"]  # Possible values: "console", "file"
     log_file: Path = BASE_DIR / "logs" / "wattnet-api.log"
-
-    # ENTSOE API Settings
-    entsoe_api_key: str  # ENTSOE API key (required)
-    entsoe_base_url: str = "https://web-api.tp.entsoe.eu/api"
 
     model_config = SettingsConfigDict(
         env_file=env_file,

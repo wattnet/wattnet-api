@@ -1,37 +1,76 @@
 from datetime import datetime
-from typing import List
+from decimal import Decimal
+from typing import Dict, Iterable, List, Tuple
+
+from wattnet.storage.models import Metric
 
 
-def time_weighted_average(data: List[List], start: str, end: str) -> float:
-    start_dt = datetime.fromisoformat(start.replace("Z", "+00:00"))
-    end_dt = datetime.fromisoformat(end.replace("Z", "+00:00"))
+def group_metrics_by_metadata(
+    metrics: Iterable[Metric],
+    key_fields: List[str],
+) -> Dict[Tuple, List[Metric]]:
+    """
+    Group metrics based on a list of metadata fields.
+    Returns a dict: key -> list of metrics.
+    """
+    grouped = {}
+    for m in metrics:
+        key = tuple(m.metadata.get(field) for field in key_fields)
+        grouped.setdefault(key, []).append(m)
+    return grouped
 
-    total_duration = 0
-    weighted_sum = 0
 
-    for i, (ts_str, value) in enumerate(data):
-        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+def compute_time_weighted_average(
+    metrics: List[Metric],
+    start: datetime,
+    end: datetime,
+) -> float:
+    """
+    Compute the time-weighted average for a sequence of metrics.
+    """
+    if not metrics:
+        return 0.0
 
-        # Skip if before start or beyond end
-        if ts >= end_dt:
-            break
-        if i + 1 >= len(data):
-            break  # no next point to define duration
+    metrics = sorted(metrics, key=lambda x: x.timestamp)
 
-        next_ts = datetime.fromisoformat(data[i + 1][0].replace("Z", "+00:00"))
+    total_weighted = Decimal("0")
+    total_duration = Decimal("0")
 
-        # Clamp to the interval [start, end]
-        interval_start = max(ts, start_dt)
-        interval_end = min(next_ts, end_dt)
+    # Integrate all but last segment
+    for m0, m1 in zip(metrics, metrics[1:]):
+        t0 = max(m0.timestamp, start)
+        t1 = min(m1.timestamp, end)
+        duration = Decimal((t1 - t0).total_seconds())
 
-        duration = (interval_end - interval_start).total_seconds()
-        if duration <= 0:
-            continue
+        if duration > 0:
+            total_weighted += Decimal(str(m0.value)) * duration
+            total_duration += duration
 
-        weighted_sum += value * duration
-        total_duration += duration
+    # Extend last metric until the end
+    last = metrics[-1]
+    if last.timestamp < end:
+        t0 = max(last.timestamp, start)
+        duration = Decimal((end - t0).total_seconds())
+        if duration > 0:
+            total_weighted += Decimal(str(last.value)) * duration
+            total_duration += duration
 
-    if total_duration == 0:
-        return None  # or raise ValueError("No overlapping data in the time interval")
+    if total_duration > 0:
+        return float(total_weighted / total_duration)
 
-    return weighted_sum / total_duration
+    return float(metrics[0].value)
+
+
+def build_time_series(
+    metrics: List[Metric],
+) -> List[Tuple[datetime, float]]:
+    """
+    Convert metrics to a sorted time series of (timestamp, float(value)).
+    """
+    values = [
+        (m.timestamp, float(Decimal(str(m.value))))
+        for m in metrics
+        if m.value is not None
+    ]
+    values.sort(key=lambda x: x[0])
+    return values

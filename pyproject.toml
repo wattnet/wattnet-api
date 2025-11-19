@@ -22,6 +22,7 @@ pydantic = "2.12.4"
 shapely = "2.1.2"
 trio = "0.32.0"
 pydantic-settings = "^2.12.0"
+wattnet-storage = { git = "ssh://git@github.com/wattnet/wattnet-storage-py.git" }
 
 [tool.poetry.scripts]
 wattnet-api = "wattnet.api.app:main"

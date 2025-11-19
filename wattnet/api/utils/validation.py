@@ -3,6 +3,7 @@ from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
+
 from wattnet.api.service import geo
 
 VALID_FOOTPRINT_TYPES = {"carbon", "water"}
@@ -110,4 +111,16 @@ def validate_time_range(start: Optional[datetime], end: Optional[datetime]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="start datetime must be before end datetime",
+        )
+
+
+def validate_aggregation_params(
+    aggregate: bool,
+    start: Optional[datetime],
+    end: Optional[datetime],
+):
+    if aggregate and (start is None or end is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="start and end datetimes are required when aggregate=True",
         )

@@ -4,13 +4,11 @@ from typing import List, Optional, Union
 from fastapi import APIRouter, Query
 from fastapi_versioning import version
 
+from wattnet.api.dependencies import footprint_service
 from wattnet.api.models.footprint import Footprint, FootprintAggregate
-from wattnet.api.service.footprints import FootprintService
 from wattnet.api.utils import validation as validation
 
 router = APIRouter()
-
-footprint_service = FootprintService()
 
 
 @router.get(
@@ -37,13 +35,16 @@ Retrieve a list of environmental footprints filtered by:
 
 - `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).
 - `lat` and `lon`: Coordinates to lookup zone code.
-- `footprint_type`: Type of footprint. Valid values: [carbon, water]
+- `footprint_type`: Type of footprint. Valid values: [carbon, water] If not provided, all types are returned.
 - `scope`: Scope of the footprint. Valid values: [operational, life-cycle]. Default is 'life-cycle'.
-- `start` and `end`: Filter by datetime range (both required if one is provided).
+- `start` and `end`: Filter by datetime range (both required if one is provided). If not provided, only last available data is returned.
 - `aggregate`: If true, return aggregated footprints over the time range. If false (default), return time series grouped by status.
 - `use_global`: If true (default), compute the global footprint including electricity exchanges via flow tracing. If false, use only the local footprint based on local generation.
 
 If `lat` and `lon` are provided, the corresponding zone will be determined automatically.
+
+Note: If `aggregate` is true, `start` and `end` are required to define the aggregation period.
+
 """,
 )
 @version(1)
@@ -67,10 +68,12 @@ def get_footprints(
         description="Filter footprints by scope [operational, life-cycle]. Default is 'life-cycle'.",
     ),
     start: Optional[datetime] = Query(
-        None, description="Start datetime for filtering (ISO 8601 format)"
+        None,
+        description="Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
     ),
     end: Optional[datetime] = Query(
-        None, description="End datetime for filtering (ISO 8601 format)"
+        None,
+        description="End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
     ),
     aggregate: bool = Query(
         False,
@@ -90,6 +93,7 @@ def get_footprints(
     validation.validate_footprint_type(footprint_type)
     validation.validate_scope(scope)
     validation.validate_time_range(start, end)
+    validation.validate_aggregation_params(aggregate, start, end)
 
     footprints = footprint_service.get_footprints(
         zone=zone.upper() if zone else None,
