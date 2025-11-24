@@ -9,6 +9,7 @@ from wattnet.api.routers.v1.footprints import router as footprints_router
 from wattnet.api.routers.v1.generation import router as generation_router
 from wattnet.api.routers.v1.imports import router as imports_router
 from wattnet.api.routers.v1.mix_share import router as mix_share_router
+from wattnet.api.routers.v1.status import router as status_router
 
 api_router_v1 = APIRouter(route_class=versioned_api_route(1))
 
@@ -37,3 +38,6 @@ api_router_v1.include_router(
 
 # Factor-related endpoints
 api_router_v1.include_router(factors_router, prefix="/factors", tags=["Factors"])
+
+# Status endpoints
+api_router_v1.include_router(status_router, prefix="/status", tags=["Status"])
