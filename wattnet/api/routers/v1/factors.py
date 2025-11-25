@@ -51,8 +51,7 @@ def get_factors(
     production_type: Optional[str] = Query(
         None,
         description=(
-            "Filter factors by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, "
-            "hydro_river, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore"
+            "Filter factors by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore If not provided, all types are returned."
         ),
     ),
     start: Optional[datetime] = Query(

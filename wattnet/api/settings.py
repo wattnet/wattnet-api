@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     log_handlers: list[str] = ["console"]  # Possible values: "console", "file"
     log_file: Path = BASE_DIR / "logs" / "wattnet-api.log"
 
+    # Status Check Endpoint Settings
+    storage_db_url: str  # URL for the storage database (required)
+    entsoe_url: str  # ENTSOE API URL (required)
+    elexon_url: str  # ELEXON API URL (required)
+
     model_config = SettingsConfigDict(
         env_file=env_file,
         env_file_encoding="utf-8",

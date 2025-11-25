@@ -26,6 +26,12 @@ description = """
     <img width="200" src="/static/images/wattnet-logo-full-light-transparent-cropped.png" alt="Wattnet Logo" style="margin: 1rem 0;">
 </a>
 
+Explore environmental footprint of electricity powered by open data.
+
+Access real-time, historical, and forecasted data on the carbon and water impact of electricity consumption across Europe.
+
+Designed for data-driven research, supporting informed decision-making for a more sustainable future.
+
 For more information, please visit our [official website](https://wattnet.eu) or our [GitHub Organization](https://github.com/wattnet)
 
 <a href="https://github.com/wattnet">
@@ -38,7 +44,7 @@ This work is funded from the European Union’s Horizon Europe research and inno
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; margin-bottom: 1rem;">
   <img width="250" src="/static/images/EN_FundedbytheEU_RGB_POS.png" alt="EU Funded Logo">
-  <img width="200" src="/static/images/GreenDIGIT logo color horizontal2.png" alt="GreenDIGIT Logo" style="padding-bottom: 0.2rem;">
+  <img width="220" src="/static/images/GreenDIGIT logo color horizontal2.png" alt="GreenDIGIT Logo" style="padding-bottom: 0.2rem;">
 </div>
 
 ---
