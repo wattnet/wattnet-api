@@ -14,6 +14,12 @@ from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
+priority_map = {
+    "missing": 0,
+    "preview": 1,
+    "complete": 2,
+}
+
 
 class FootprintService:
     def __init__(self, metrics_repo: MetricsRepository = None):
@@ -77,7 +83,15 @@ class FootprintService:
             value_agg = compute_time_weighted_average(mlist, start, end)
 
             valid_agg = all(m.metadata.get("valid", True) for m in mlist)
-            min_priority = min(m.metadata.get("zone_status", "missing") for m in mlist)
+            zone_status_values = [
+                m.metadata.get("zone_status", "missing") for m in mlist
+            ]
+            min_priority_value = min(
+                priority_map.get(zs, 0) for zs in zone_status_values
+            )
+            min_priority = [
+                k for k, v in priority_map.items() if v == min_priority_value
+            ][0]
 
             aggregates.append(
                 FootprintAggregate(
