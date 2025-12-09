@@ -20,11 +20,16 @@ from wattnet.api.utils import log
 # Get logger
 LOG = log.get(__name__)
 
+summary = """
+A comprehensive RESTful API for integrating wattnet into your applications. Query real-time, historical, and forecasted electricity footprints, create dashboards, automate analyses, and extend wattnet’s capabilities. Fully documented with OpenAPI 3.1 and secured by OAuth 2.0.
+"""
+
 description = """
 
 <a href="https://wattnet.eu" target="_blank" rel="noopener noreferrer">
     <img width="200" src="/static/images/wattnet-logo-full-light-transparent-cropped.png" alt="Wattnet Logo" style="margin: 1rem 0;">
 </a>
+#### An open-source service for tracking the environmental footprint of electricity across Europe.
 
 Explore environmental footprint of electricity powered by open data.
 
@@ -47,10 +52,10 @@ This work is funded from the European Union’s Horizon Europe research and inno
   <img width="220" src="/static/images/GreenDIGIT logo color horizontal2.png" alt="GreenDIGIT Logo" style="padding-bottom: 0.2rem;">
 </div>
 
----
+### About the service
 
 A service provided by <a href="https://www.csic.es" target="_blank" rel="noopener noreferrer" style="color: #0366d6; text-decoration: none;">Spanish National Research Council (CSIC)</a>,&nbsp;
-deployed at <a href="https://ifca.unican.es/" target="_blank" rel="noopener noreferrer" style="color: #0366d6; text-decoration: none;">Institute of Physics of Cantabria (IFCA)</a>,&nbsp;
+deployed on the Scientific Cloud at <a href="https://ifca.unican.es/" target="_blank" rel="noopener noreferrer" style="color: #0366d6; text-decoration: none;">Institute of Physics of Cantabria (IFCA)</a>,&nbsp;
 developed by the <a href="https://advancedcomputing.ifca.es" target="_blank" rel="noopener noreferrer" style="color: #0366d6; text-decoration: none;">IFCA Advanced Computing and e-Science Group</a>.
 
 ##### © 2025 Spanish National Research Council (CSIC). All rights reserved.
@@ -78,7 +83,7 @@ versioned_app = VersionedFastAPI(
     prefix_format="/v{major}",
     include_in_schema=True,
     enable_latest=True,
-    summary="An open-source service for tracking the environmental footprint of electricity across Europe.",
+    summary=summary,
     description=description + main_documentation,
     version="1.0.0",
     terms_of_service="https://github.com/wattnet",
