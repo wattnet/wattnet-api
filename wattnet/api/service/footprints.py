@@ -82,7 +82,9 @@ class FootprintService:
         for (footprint_type, scope, zone), mlist in grouped.items():
             value_agg = compute_time_weighted_average(mlist, start, end)
 
-            valid_agg = all(m.metadata.get("valid", True) for m in mlist)
+            valid_agg = all(
+                m.metadata.get("valid", "").lower() == "true" for m in mlist
+            )
             zone_status_values = [
                 m.metadata.get("zone_status", "missing") for m in mlist
             ]
