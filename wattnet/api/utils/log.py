@@ -1,3 +1,5 @@
+"""Logging utilities for wattnet API."""
+
 import logging
 
 from wattnet.api.settings import settings
@@ -16,10 +18,24 @@ class CustomFormatter(logging.Formatter):
     RESET = "\x1b[0m"
 
     def __init__(self, fmt: str):
+        """Initialize the formatter with a format string.
+
+        :param fmt: Log message format string
+        :type fmt: str
+        (e.g., "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s")
+        """
         super().__init__()
         self.fmt = fmt
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
+        """Format the log record with color based on the log level.
+
+        :param record: Log record to format
+        :type record: logging.LogRecord
+
+        :return: Formatted log message with color
+        :rtype: str
+        """
         color = self.COLORS.get(record.levelno, self.RESET)
         formatter = logging.Formatter(
             color + self.fmt + self.RESET, datefmt="%d-%m-%Y %H:%M:%S"
@@ -28,13 +44,27 @@ class CustomFormatter(logging.Formatter):
 
 
 def _get_level(level: str) -> int:
-    """Return a logging level constant from string."""
+    """Return a logging level constant from string.
+
+    :param level: Log level as a string
+    (e.g., "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+    :type level: str
+
+    :return: Corresponding logging level constant (e.g., logging.DEBUG)
+    :rtype: int
+    """
     return getattr(logging, level.upper(), logging.INFO)
 
 
 def get(name: str) -> logging.Logger:
-    """Return a configured logger."""
+    """Return a configured logger.
 
+    :param name: Name of the logger (e.g., module or component name)
+    :type name: str
+
+    :return: Configured logger instance
+    :rtype: logging.Logger
+    """
     logger = logging.getLogger(name)
     logger.handlers.clear()  # prevent duplicate handlers
 

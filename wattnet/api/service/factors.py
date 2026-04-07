@@ -1,3 +1,5 @@
+"""Service layer for handling factor metrics."""
+
 from datetime import datetime
 from typing import List, Optional, Union
 
@@ -16,7 +18,15 @@ LOG = log.get(__name__)
 
 
 class FactorService:
-    def __init__(self, metrics_repo: MetricsRepository = None):
+    """Service to handle factor metrics."""
+
+    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+        """Initialize the FactorService with a MetricsRepository.
+
+        :param metrics_repo: Optional MetricsRepository instance.
+        If not provided, a new instance will be created.
+        :type metrics_repo: MetricsRepository, optional
+        """
         LOG.info("Initializing FactorService...")
         self.repo = metrics_repo or MetricsRepository()
 
@@ -28,8 +38,34 @@ class FactorService:
         start: Optional[datetime] = None,
         end: Optional[datetime] = None,
         aggregate: bool = False,
-    ) -> List[Union[Factor, FactorAggregate]]:
+    ) -> Union[List[FactorAggregate], List[Factor]]:
+        """Retrieve factor metrics filtered.
 
+        :param factor_type: Optional factor type to filter metrics.
+        :type factor_type: str, optional
+
+        :param scope: Optional scope to filter metrics
+        (e.g., "production", "consumption").
+        :type scope: str, optional
+
+        :param production_type: Optional production type to filter metrics.
+        :type production_type: str, optional
+
+        :param start: Optional start datetime to filter metrics.
+        If provided, end must also be provided.
+        :type start: datetime, optional
+
+        :param end: Optional end datetime to filter metrics.
+        If provided, start must also be provided.
+        :type end: datetime, optional
+
+        :param aggregate: Whether to return aggregated metrics (time-weighted average)
+        or time series. Defaults to False (return time series).
+        :type aggregate: bool, optional
+
+        :return: List of FactorAggregate or Factor objects matching the filters.
+        :rtype: Union[List[FactorAggregate], List[Factor]]
+        """
         metric_name = "factor"
 
         labels = {"app": "wattnet"}
@@ -47,12 +83,12 @@ class FactorService:
             labels=labels,
         )
 
-        metrics = [m for m in metrics if m.value is not None]
+        metrics = [m for m in metrics if m.value is not None and m.value >= 0]
 
         if not metrics:
             return []
 
-        if aggregate:
+        if aggregate and start and end:
             return self._aggregate_metrics(metrics, start, end)
         else:
             return self._group_metrics_series(metrics)
@@ -63,7 +99,20 @@ class FactorService:
         start: datetime,
         end: datetime,
     ) -> List[FactorAggregate]:
+        """Aggregate raw factor metrics into structured FactorAggregate objects.
 
+        :param metrics: List of raw Metric objects to aggregate.
+        :type metrics: List[Metric]
+
+        :param start: Start datetime for the aggregation period.
+        :type start: datetime
+
+        :param end: End datetime for the aggregation period.
+        :type end: datetime
+
+        :return: List of aggregated FactorAggregate objects.
+        :rtype: List[FactorAggregate]
+        """
         if not metrics:
             return []
 
@@ -117,7 +166,14 @@ class FactorService:
         self,
         metrics: List[Metric],
     ) -> List[Factor]:
+        """Group raw factor metrics into structured Factor objects with time series.
 
+        :param metrics: List of raw Metric objects to group.
+        :type metrics: List[Metric]
+
+        :return: List of grouped Factor objects with time series.
+        :rtype: List[Factor]
+        """
         if not metrics:
             return []
 

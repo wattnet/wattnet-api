@@ -1,5 +1,7 @@
+"""Service layer for handling import metrics in the wattnet API application."""
+
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -12,20 +14,43 @@ LOG = log.get(__name__)
 
 
 class ImportService:
-    def __init__(self, metrics_repo: MetricsRepository = None):
+    """Service to handle import metrics for wattnet."""
+
+    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+        """Initialize the ImportService with a MetricsRepository.
+
+        :param metrics_repo: Optional MetricsRepository instance.
+        If not provided, a new instance will be created.
+        :type metrics_repo: MetricsRepository, optional
+        """
         LOG.info("Initializing ImportService")
         self.repo = metrics_repo or MetricsRepository()
 
     def get_imports(
         self,
-        zone: str = None,
-        source: str = None,
-        start: datetime = None,
-        end: datetime = None,
+        zone: Optional[str] = None,
+        source: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
     ) -> List[Import]:
-        """
-        Fetch import metrics and return hierarchical structure:
-        Import -> ImportSeries -> ImportBlock
+        """Retrieve import metrics filtered by zone, source, and time range.
+
+        :param zone: Optional zone code to filter metrics by destination zone.
+        :type zone: str, optional
+
+        :param source: Optional origin zone code to filter metrics by source zone.
+        :type source: str, optional
+
+        :param start: Optional start datetime to filter metrics.
+        If provided, end must also be provided.
+        :type start: datetime, optional
+
+        :param end: Optional end datetime to filter metrics.
+        If provided, start must also be provided.
+        :type end: datetime, optional
+
+        :return: List of Import objects matching the filters.
+        :rtype: List[Import]
         """
         labels = {"app": "wattnet"}
         if zone:
@@ -40,6 +65,8 @@ class ImportService:
             labels=labels,
         )
 
+        metrics = [m for m in metrics if m.value is not None and m.value >= 0]
+
         if not metrics:
             return []
 
@@ -48,8 +75,13 @@ class ImportService:
     # ------------------------------------------------------------------------------
 
     def _group_metrics(self, metrics: List[Metric]) -> List[Import]:
-        """
-        Organize flat metrics into Import -> ImportSeries -> ImportBlock.
+        """Group raw import metrics into structured Import objects.
+
+        :param metrics: List of raw Metric objects to group.
+        :type metrics: List[Metric]
+
+        :return: List of grouped Import objects.
+        :rtype: List[Import]
         """
         # 1) Group by zone, unit, datasource
         zone_groups = group_metrics_by_metadata(

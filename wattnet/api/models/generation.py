@@ -1,11 +1,21 @@
+"""Data models for generation endpoints in the wattnet API application."""
+
 from datetime import datetime
-from typing import List, Literal, Tuple
+from typing import List, Tuple
 
 from pydantic import BaseModel, Field
+from typing_extensions import Annotated, Literal, Union
 
-DataState = Literal["official"]
+HybridEstimationSource = Annotated[
+    str, Field(pattern=r"^wattnet-hybrid-estimation:.*$")
+]
+
+DataState = Literal["official", "estimated", "missing"]
 ZoneStatus = Literal["complete", "preview", "missing"]
-DataSource = Literal["ENTSO-E", "ELEXON"]
+DataSource = Union[
+    Literal["ENTSO-E", "Elexon", "EPIAS"],
+    HybridEstimationSource,
+]
 ProductionType = Literal[
     "biomass",
     "coal",
@@ -28,6 +38,12 @@ Unit = Literal["MW"]
 
 
 class ProductionBlock(BaseModel):
+    """Represents generation data for a specific production type.
+
+    Represents generation data for a specific production type,
+    including time series of values.
+    """
+
     production_type: ProductionType = Field(..., description="Energy source type")
     data_state: DataState = Field(..., description="official/estimated/missing")
 
@@ -37,6 +53,12 @@ class ProductionBlock(BaseModel):
 
 
 class GenerationSeries(BaseModel):
+    """Represents a series of generation data for a specific zone.
+
+    Represents a series of generation data for a specific zone, including validity,
+    zone status, and list of production blocks grouped by production type.
+    """
+
     valid: bool = Field(..., description="Validity of this version of zone data")
     zone_status: ZoneStatus = Field(..., description="Status of the zone data")
 
@@ -46,6 +68,12 @@ class GenerationSeries(BaseModel):
 
 
 class Generation(BaseModel):
+    """Represents generation data for a specific zone.
+
+    Represents generation data for a specific zone, including multiple series
+    grouped by validity and zone status.
+    """
+
     zone: str = Field(..., description="wattnet zone code")
     unit: Unit = Field(..., description="Energy unit (fixed per zone)")
     datasource: DataSource = Field(..., description="Data provider (fixed per zone)")

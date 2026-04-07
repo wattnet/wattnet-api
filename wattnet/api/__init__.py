@@ -1,1 +1,1 @@
-from wattnet.api.app import versioned_app as app
+"""API application for wattnet."""
