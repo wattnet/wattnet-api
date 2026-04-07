@@ -18,8 +18,8 @@ A comprehensive RESTful API for integrating wattnet into your applications. Quer
 
 Explore the API endpoints, parameters, and responses interactively using the automatically generated Swagger UI documentation:
 
--   **Swagger UI**: [https://api.wattnet.eu/docs](https://api.wattnet.eu/docs)
--   **OpenAPI Specification (OAS 3.1)**: [https://api.wattnet.eu/openapi.json](https://api.wattnet.eu/openapi.json)
+- **Swagger UI**: [https://api.wattnet.eu/docs](https://api.wattnet.eu/docs)
+- **OpenAPI Specification (OAS 3.1)**: [https://api.wattnet.eu/openapi.json](https://api.wattnet.eu/openapi.json)
 
 > Note: The API is versioned. Ensure you are using the correct version for your application. The current version is v1.
 > Base URL: `https://api.wattnet.eu/v1/`
@@ -33,4 +33,4 @@ This work is funded by the European Union’s Horizon Europe research and innova
   <img src="https://github.com/wattnet/.github/raw/main/images/GreenDIGIT%20logo%20color%20horizontal2.png" alt="GreenDIGIT Logo" width="230"/>
 </div>
 
-##### © 2025 Spanish National Research Council (CSIC). All rights reserved.
+##### © 2026 Spanish National Research Council (CSIC). All rights reserved.

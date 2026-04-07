@@ -1,5 +1,7 @@
+"""Service layer for handling footprint share metrics."""
+
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -18,20 +20,51 @@ LOG = log.get(__name__)
 class FootprintShareService:
     """Service to handle footprint share metrics."""
 
-    def __init__(self, metrics_repo: MetricsRepository = None):
+    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+        """Initialize the FootprintShareService with a MetricsRepository.
+
+        :param metrics_repo: Optional MetricsRepository instance.
+        If not provided, a new instance will be created.
+        :type metrics_repo: MetricsRepository, optional
+        """
         LOG.info("Initializing FootprintShareService")
         self.repo = metrics_repo or MetricsRepository()
 
     def get_footprint_share(
         self,
-        zone: str = None,
-        source: str = None,
-        footprint_type: str = None,
-        scope: str = None,
-        start: datetime = None,
-        end: datetime = None,
+        zone: Optional[str] = None,
+        source: Optional[str] = None,
+        footprint_type: Optional[str] = None,
+        scope: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
     ) -> List[FootprintShare]:
+        """Retrieve footprint share metrics filtered.
 
+        :param zone: Optional zone code to filter metrics by destination zone.
+        :type zone: str, optional
+
+        :param source: Optional origin zone code to filter metrics by source zone.
+        :type source: str, optional
+
+        :param footprint_type: Optional footprint type to filter metrics.
+        :type footprint_type: str, optional
+
+        :param scope: Optional scope to filter metrics
+        (e.g., "production", "consumption").
+        :type scope: str, optional
+
+        :param start: Optional start datetime to filter metrics.
+        If provided, end must also be provided.
+        :type start: datetime, optional
+
+        :param end: Optional end datetime to filter metrics.
+        If provided, start must also be provided.
+        :type end: datetime, optional
+
+        :return: List of FootprintShare objects matching the filters.
+        :rtype: List[FootprintShare]
+        """
         labels = {"app": "wattnet"}
         if zone:
             labels["zone"] = zone
@@ -55,6 +88,14 @@ class FootprintShareService:
         return self._group_metrics(metrics)
 
     def _group_metrics(self, metrics: List[Metric]) -> List[FootprintShare]:
+        """Group raw footprint share metrics into structured FootprintShare objects.
+
+        :param metrics: List of raw Metric objects to group.
+        :type metrics: List[Metric]
+
+        :return: List of grouped FootprintShare objects.
+        :rtype: List[FootprintShare]
+        """
         results = []
 
         # Group by destination zone, footprint_type, scope, unit

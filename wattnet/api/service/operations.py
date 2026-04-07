@@ -1,3 +1,5 @@
+"""Service operations for processing and analyzing metrics data."""
+
 from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Iterable, List, Tuple
@@ -9,11 +11,19 @@ def group_metrics_by_metadata(
     metrics: Iterable[Metric],
     key_fields: List[str],
 ) -> Dict[Tuple, List[Metric]]:
+    """Group metrics by specified metadata fields.
+
+    :param metrics: Iterable of Metric objects to group
+    :type metrics: Iterable[Metric]
+
+    :param key_fields: List of metadata field names to group by
+    (e.g., ["zone_id", "production_type"])
+    :type key_fields: List[str]
+
+    :return: Dictionary mapping tuples of metadata values to lists of Metric objects
+    :rtype: Dict[Tuple, List[Metric]]
     """
-    Group metrics based on a list of metadata fields.
-    Returns a dict: key -> list of metrics.
-    """
-    grouped = {}
+    grouped: Dict[Tuple, List[Metric]] = {}
     for m in metrics:
         key = tuple(m.metadata.get(field) for field in key_fields)
         grouped.setdefault(key, []).append(m)
@@ -25,8 +35,19 @@ def compute_time_weighted_average(
     start: datetime,
     end: datetime,
 ) -> float:
-    """
-    Compute the time-weighted average for a sequence of metrics.
+    """Compute the time-weighted average of metric values over a given time range.
+
+    :param metrics: List of Metric objects sorted by timestamp
+    :type metrics: List[Metric]
+
+    :param start: Start datetime of the time range
+    :type start: datetime
+
+    :param end: End datetime of the time range
+    :type end: datetime
+
+    :return: Time-weighted average value over the time range
+    :rtype: float
     """
     if not metrics:
         return 0.0
@@ -64,8 +85,13 @@ def compute_time_weighted_average(
 def build_time_series(
     metrics: List[Metric],
 ) -> List[Tuple[datetime, float]]:
-    """
-    Convert metrics to a sorted time series of (timestamp, float(value)).
+    """Convert metrics to a sorted time series of (timestamp, float(value)).
+
+    :param metrics: List of Metric objects to convert
+    :type metrics: List[Metric]
+
+    :return: List of tuples (timestamp, value) sorted by timestamp
+    :rtype: List[Tuple[datetime, float]]
     """
     values = [
         (m.timestamp, float(Decimal(str(m.value))))

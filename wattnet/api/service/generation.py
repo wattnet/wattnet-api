@@ -1,5 +1,7 @@
+"""Service layer for handling generation metrics in the wattnet API application."""
+
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -12,18 +14,44 @@ LOG = log.get(__name__)
 
 
 class GenerationService:
-    def __init__(self, metrics_repo: MetricsRepository = None):
+    """Service to handle generation metrics for wattnet."""
+
+    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+        """Initialize the GenerationService with a MetricsRepository.
+
+        :param metrics_repo: Optional MetricsRepository instance.
+        If not provided, a new instance will be created.
+        :type metrics_repo: MetricsRepository, optional
+        """
         LOG.info("Initializing GenerationService")
         self.repo = metrics_repo or MetricsRepository()
 
     def get_generation(
         self,
-        zone: str = None,
-        production_type: str = None,
-        start: datetime = None,
-        end: datetime = None,
+        zone: Optional[str] = None,
+        production_type: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
     ) -> List[Generation]:
+        """Retrieve generation metrics filtered by zone, production type, and time.
 
+        :param zone: Optional zone code to filter metrics by zone.
+        :type zone: str, optional
+
+        :param production_type: Optional production type to filter metrics.
+        :type production_type: str, optional
+
+        :param start: Optional start datetime to filter metrics.
+        If provided, end must also be provided.
+        :type start: datetime, optional
+
+        :param end: Optional end datetime to filter metrics.
+        If provided, start must also be provided.
+        :type end: datetime, optional
+
+        :return: List of Generation objects matching the filters.
+        :rtype: List[Generation]
+        """
         labels = {"app": "wattnet"}
         if zone:
             labels["zone"] = zone
@@ -34,17 +62,22 @@ class GenerationService:
             metric_name="zone_generation", start=start, end=end, labels=labels
         )
 
+        metrics = [m for m in metrics if m.value is not None and m.value >= 0]
+
         if not metrics:
             return []
 
         return self._group_metrics(metrics)
 
     def _group_metrics(self, metrics: List[Metric]) -> List[Generation]:
-        """
-        Organizes a flat list of Metric objects into the hierarchical structure:
-        Generation -> GenerationSeries -> GenerationBlock.
-        """
+        """Organize flat metrics into Generation -> GenerationSeries -> ProductionBlock.
 
+        :param metrics: List of raw Metric objects to group.
+        :type metrics: List[Metric]
+
+        :return: List of grouped Generation objects.
+        :rtype: List[Generation]
+        """
         # 1) Group by zone, unit, datasource (these are constant for each zone)
         zone_groups = group_metrics_by_metadata(
             metrics,
@@ -86,7 +119,6 @@ class GenerationService:
                     block = ProductionBlock(
                         production_type=production_type,
                         data_state=data_state,
-                        unit=unit,
                         values=values,
                     )
 

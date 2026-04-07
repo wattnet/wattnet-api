@@ -1,5 +1,7 @@
+"""Service layer for handling flow share metrics."""
+
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -12,20 +14,45 @@ LOG = log.get(__name__)
 
 
 class FlowShareService:
-    def __init__(self, metrics_repo: MetricsRepository = None):
+    """Service to handle flow share metrics."""
+
+    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+        """Initialize the FlowShareService with a MetricsRepository.
+
+        :param metrics_repo: Optional MetricsRepository instance.
+        If not provided, a new instance will be created.
+        :type metrics_repo: MetricsRepository, optional
+        """
         LOG.info("Initializing FlowShareService")
         self.repo = metrics_repo or MetricsRepository()
 
     def get_flow_share(
         self,
-        zone: str = None,
-        destination: str = None,
-        start: datetime = None,
-        end: datetime = None,
+        zone: Optional[str] = None,
+        destination: Optional[str] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
     ) -> List[FlowShare]:
         """
-        Fetch flow share metrics and return hierarchical structure:
-        FlowShare -> FlowShareSeries -> FlowShareBlock
+        Retrieve flow share metrics filtered by zone, destination, and time range.
+
+        :param zone: Optional zone code to filter metrics by destination zone.
+        :type zone: str, optional
+
+        :param destination: Optional destination zone code to filter metrics
+        by target zone.
+        :type destination: str, optional
+
+        :param start: Optional start datetime to filter metrics.
+        If provided, end must also be provided.
+        :type start: datetime, optional
+
+        :param end: Optional end datetime to filter metrics.
+        If provided, start must also be provided.
+        :type end: datetime, optional
+
+        :return: List of FlowShare objects matching the filters.
+        :rtype: List[FlowShare]
         """
         labels = {"app": "wattnet"}
         if zone:
@@ -46,6 +73,14 @@ class FlowShareService:
         return self._group_metrics(metrics)
 
     def _group_metrics(self, metrics: List[Metric]) -> List[FlowShare]:
+        """Group raw flow share metrics into structured FlowShare objects.
+
+        :param metrics: List of raw Metric objects to group.
+        :type metrics: List[Metric]
+
+        :return: List of grouped FlowShare objects.
+        :rtype: List[FlowShare]
+        """
         # 1) Group by zone (origin)
         zone_groups = group_metrics_by_metadata(metrics, ["zone"])
 
