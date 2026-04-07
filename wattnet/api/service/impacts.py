@@ -20,7 +20,6 @@ LOG = log.get(__name__)
 ZoneStatus = Literal["complete", "preview", "missing"]
 
 # Carbon impact is stored as carbon footprint — unit is remapped at the API layer.
-_CARBON_FOOTPRINT_UNIT = "gCO2/kWh"
 _CARBON_IMPACT_UNIT = "stress-gCO2eq/kWh"
 
 priority_map = {

@@ -17,7 +17,6 @@ from wattnet.api.utils import log
 LOG = log.get(__name__)
 
 # Carbon impact share is identical to carbon footprint share — unit remapped here.
-_CARBON_FOOTPRINT_UNIT = "gCO2/kWh"
 _CARBON_IMPACT_UNIT = "stress-gCO2eq/kWh"
 
 
