@@ -1,3 +1,5 @@
+"""Settings management for the wattnet API application."""
+
 import os
 from pathlib import Path
 
@@ -20,17 +22,21 @@ class Settings(BaseSettings):
     api_debug: bool = True
 
     # GeoJSON File Paths
-    geojson_path: Path  # Path to GeoJSON file (required)
-
+    geojson_path: Path = BASE_DIR / "data" / "zones.geojson"
     # Logging Settings
     log_level: str = "INFO"
     log_handlers: list[str] = ["console"]  # Possible values: "console", "file"
     log_file: Path = BASE_DIR / "logs" / "wattnet-api.log"
 
     # Status Check Endpoint Settings
-    storage_db_url: str  # URL for the storage database (required)
-    entsoe_url: str  # ENTSOE API URL (required)
-    elexon_url: str  # ELEXON API URL (required)
+    storage_db_url: str = (
+        "http://localhost:8123"  # URL for the wattnet-storage service (required)
+    )
+    entsoe_url: str = "https://web-api.tp.entsoe.eu/api"  # ENTSO-E API (required)
+    elexon_url: str = "https://data.elexon.co.uk/bmrs/api/v1"  # ELEXON API (required)
+    epias_url: str = (
+        "https://seffaflik.epias.com.tr/electricity-service/v1"  # EPIAS API (required)
+    )
 
     model_config = SettingsConfigDict(
         env_file=env_file,
