@@ -52,7 +52,7 @@ class ImportService:
         :return: List of Import objects matching the filters.
         :rtype: List[Import]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if source:
@@ -83,15 +83,15 @@ class ImportService:
         :return: List of grouped Import objects.
         :rtype: List[Import]
         """
-        # 1) Group by zone, unit, datasource
+        # 1) Group by zone, unit (datasource can vary over time)
         zone_groups = group_metrics_by_metadata(
             metrics,
-            ["zone", "unit", "datasource"],
+            ["zone", "unit"],
         )
 
         results = []
 
-        for (zone, unit, datasource), zone_metrics in zone_groups.items():
+        for (zone, unit), zone_metrics in zone_groups.items():
 
             # 2) Group by (valid, zone_status) => ImportSeries
             series_groups = group_metrics_by_metadata(
@@ -103,15 +103,19 @@ class ImportService:
 
             for (valid, zone_status), series_metrics in series_groups.items():
 
-                # 3) Group by source + data_state => ImportBlock
+                # 3) Group by source + data_state + datasource => ImportBlock
                 block_groups = group_metrics_by_metadata(
                     series_metrics,
-                    ["from", "data_state"],
+                    ["from", "data_state", "datasource"],
                 )
 
                 block_list: List[ImportBlock] = []
 
-                for (source_from, data_state), block_metrics in block_groups.items():
+                for (
+                    source_from,
+                    data_state,
+                    datasource,
+                ), block_metrics in block_groups.items():
 
                     values = sorted(
                         [(m.timestamp, m.value) for m in block_metrics],
@@ -121,7 +125,7 @@ class ImportService:
                     block = ImportBlock(
                         source=source_from,
                         data_state=data_state,
-                        unit=unit,
+                        datasource=datasource,
                         values=values,
                     )
 
@@ -138,7 +142,6 @@ class ImportService:
             import_obj = Import(
                 zone=zone,
                 unit=unit,
-                datasource=datasource,
                 series=series_list,
             )
 

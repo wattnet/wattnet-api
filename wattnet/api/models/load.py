@@ -28,7 +28,14 @@ class LoadSeries(BaseModel):
 
     valid: bool = Field(..., description="Validity of this version of zone data")
     zone_status: ZoneStatus = Field(..., description="Status of the zone data")
+    blocks: List["LoadBlock"] = Field(..., description="Load blocks grouped by source")
+
+
+class LoadBlock(BaseModel):
+    """Represents load data for a specific state/source combination."""
+
     data_state: DataState = Field(..., description="official/estimated/missing")
+    datasource: DataSource = Field(..., description="Data provider for this block")
     values: List[Tuple[datetime, float]] = Field(
         ..., description="Time series: (timestamp, load_value)"
     )
@@ -39,7 +46,6 @@ class Load(BaseModel):
 
     zone: str = Field(..., description="wattnet zone code")
     unit: Unit = Field(..., description="Energy unit (fixed per zone)")
-    datasource: DataSource = Field(..., description="Data provider (fixed per zone)")
     series: List[LoadSeries] = Field(
         ..., description="Multiple versions of the zone data grouped by status"
     )

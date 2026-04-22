@@ -72,7 +72,7 @@ class ScoreService:
         """
         metric_name = "global_score" if use_global else "local_score"
 
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if scope:

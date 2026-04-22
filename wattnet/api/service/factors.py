@@ -68,7 +68,7 @@ class FactorService:
         """
         metric_name = "factor"
 
-        labels = {"app": "wattnet"}
+        labels = {}
         if production_type:
             labels["production_type"] = production_type
         if factor_type:

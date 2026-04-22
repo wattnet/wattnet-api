@@ -54,7 +54,7 @@ class FlowShareService:
         :return: List of FlowShare objects matching the filters.
         :rtype: List[FlowShare]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if destination:

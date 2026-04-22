@@ -53,7 +53,7 @@ class ExportService:
         :return: List of Export objects matching the filters.
         :rtype: List[Export]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if destination:
@@ -84,15 +84,15 @@ class ExportService:
         :return: List of grouped Export objects.
         :rtype: List[Export]
         """
-        # 1) Group by zone, unit, datasource
+        # 1) Group by zone, unit (datasource can vary over time)
         zone_groups = group_metrics_by_metadata(
             metrics,
-            ["zone", "unit", "datasource"],
+            ["zone", "unit"],
         )
 
         results = []
 
-        for (zone, unit, datasource), zone_metrics in zone_groups.items():
+        for (zone, unit), zone_metrics in zone_groups.items():
 
             # 2) Group by (valid, zone_status) => ExportSeries
             series_groups = group_metrics_by_metadata(
@@ -104,15 +104,19 @@ class ExportService:
 
             for (valid, zone_status), series_metrics in series_groups.items():
 
-                # 3) Group by "to" + data_state => ExportBlock
+                # 3) Group by "to" + data_state + datasource => ExportBlock
                 block_groups = group_metrics_by_metadata(
                     series_metrics,
-                    ["to", "data_state"],  # DB uses 'to'
+                    ["to", "data_state", "datasource"],  # DB uses 'to'
                 )
 
                 block_list: List[ExportBlock] = []
 
-                for (destination_to, data_state), block_metrics in block_groups.items():
+                for (
+                    destination_to,
+                    data_state,
+                    datasource,
+                ), block_metrics in block_groups.items():
 
                     values = sorted(
                         [(m.timestamp, m.value) for m in block_metrics],
@@ -122,7 +126,7 @@ class ExportService:
                     block = ExportBlock(
                         destination=destination_to,  # Pydantic field
                         data_state=data_state,
-                        unit=unit,
+                        datasource=datasource,
                         values=values,
                     )
 
@@ -139,7 +143,6 @@ class ExportService:
             export_obj = Export(
                 zone=zone,
                 unit=unit,
-                datasource=datasource,
                 series=series_list,
             )
 

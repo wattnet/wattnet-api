@@ -46,6 +46,7 @@ class ProductionBlock(BaseModel):
 
     production_type: ProductionType = Field(..., description="Energy source type")
     data_state: DataState = Field(..., description="official/estimated/missing")
+    datasource: DataSource = Field(..., description="Data provider for this block")
 
     values: List[Tuple[datetime, float]] = Field(
         ..., description="Time series: (timestamp, generation_value)"
@@ -76,7 +77,6 @@ class Generation(BaseModel):
 
     zone: str = Field(..., description="wattnet zone code")
     unit: Unit = Field(..., description="Energy unit (fixed per zone)")
-    datasource: DataSource = Field(..., description="Data provider (fixed per zone)")
 
     series: List[GenerationSeries] = Field(
         ..., description="Multiple versions of the zone data grouped by status"

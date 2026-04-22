@@ -65,7 +65,7 @@ class FootprintShareService:
         :return: List of FootprintShare objects matching the filters.
         :rtype: List[FootprintShare]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if source:

@@ -81,7 +81,7 @@ class FootprintService:
         """
         metric_name = "global_footprint" if use_global else "local_footprint"
 
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if footprint_type:

@@ -24,7 +24,7 @@ class ExportBlock(BaseModel):
 
     destination: str = Field(..., description="Destination zone code")
     data_state: DataState = Field(..., description="official/estimated/missing")
-    unit: Unit = Field(..., description="Unit of exported energy")
+    datasource: DataSource = Field(..., description="Data provider for this block")
     values: List[tuple[datetime, float]] = Field(
         ..., description="Time series of exported energy values"
     )
@@ -49,7 +49,6 @@ class Export(BaseModel):
 
     zone: str = Field(..., description="Origin zone code")
     unit: Unit = Field(..., description="Unit of energy (constant per zone)")
-    datasource: DataSource = Field(..., description="Data provider (constant per zone)")
     series: List[ExportSeries] = Field(
         ..., description="Multiple series grouped by valid/zone_status"
     )

@@ -14,8 +14,10 @@ from .impact import Impact, ImpactAggregate, ImpactSeries
 from .impact_share import ImpactShare, ImpactShareBlock, ImpactShareSeries
 from .imports import Import, ImportBlock, ImportSeries
 from .load import Load, LoadSeries
+from .mix import Mix, MixBlock, MixSeries
 from .mix_share import MixShare, MixShareBlock, MixShareSeries
 from .score import GreenScore, GreenScoreAggregate, GreenScoreSeries
+from .zone import Zone
 
 __all__ = [
     "Export",
@@ -39,6 +41,9 @@ __all__ = [
     "MixShare",
     "MixShareBlock",
     "MixShareSeries",
+    "Mix",
+    "MixBlock",
+    "MixSeries",
     "Impact",
     "ImpactAggregate",
     "ImpactSeries",
@@ -53,4 +58,5 @@ __all__ = [
     "ImpactShareSeries",
     "Load",
     "LoadSeries",
+    "Zone",
 ]

@@ -51,7 +51,7 @@ class MixShareService:
         :return: List of MixShare objects matching the filters.
         :rtype: List[MixShare]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if origin:

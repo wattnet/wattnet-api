@@ -23,6 +23,11 @@ class Settings(BaseSettings):
 
     # GeoJSON File Paths
     geojson_path: Path = BASE_DIR / "data" / "zones.geojson"
+
+    # Zone YAML File Paths (required)
+    zones_file_path: Path
+    crossborders_file_path: Path
+
     # Logging Settings
     log_level: str = "INFO"
     log_handlers: list[str] = ["console"]  # Possible values: "console", "file"
