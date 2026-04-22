@@ -79,5 +79,3 @@ class ZoneService:
         if provider not in _PROVIDER_MAP:
             raise ValueError(f"Unsupported provider '{provider}'")
         return _PROVIDER_MAP[provider]
-        return _PROVIDER_MAP[provider]
-        return _PROVIDER_MAP[provider]
