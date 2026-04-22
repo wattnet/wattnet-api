@@ -96,7 +96,7 @@ class ImpactShareService:
         end: Optional[datetime],
     ) -> List[ImpactShare]:
         """Fetch carbon footprint share and remap to carbon impact share."""
-        labels = {"app": "wattnet", "footprint_type": "carbon"}
+        labels = {"footprint_type": "carbon"}
         if zone:
             labels["zone"] = zone
         if source:
@@ -129,7 +129,7 @@ class ImpactShareService:
         end: Optional[datetime],
     ) -> List[ImpactShare]:
         """Fetch water impact share from the dedicated impact_share table."""
-        labels = {"app": "wattnet", "impact_type": "water"}
+        labels = {"impact_type": "water"}
         if zone:
             labels["zone"] = zone
         if source:

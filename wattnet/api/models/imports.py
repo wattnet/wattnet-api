@@ -28,7 +28,7 @@ class ImportBlock(BaseModel):
 
     source: str = Field(..., description="Origin zone of the import")
     data_state: DataState = Field(..., description="official/estimated/missing")
-    unit: Unit = Field(..., description="Energy unit for the values")
+    datasource: DataSource = Field(..., description="Data provider for this block")
     values: List[tuple[datetime, float]] = Field(
         ..., description="Time series of imported energy values"
     )
@@ -58,7 +58,6 @@ class Import(BaseModel):
 
     zone: str = Field(..., description="Wattnet zone code")
     unit: Unit = Field(..., description="Unit of energy (constant per zone)")
-    datasource: DataSource = Field(..., description="Data provider (constant per zone)")
     series: List[ImportSeries] = Field(
         ..., description="Multiple series grouped by valid/zone_status"
     )

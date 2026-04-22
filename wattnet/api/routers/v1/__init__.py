@@ -16,15 +16,18 @@ from wattnet.api.routers.v1.impact_share import router as impact_share_router
 from wattnet.api.routers.v1.impacts import router as impacts_router
 from wattnet.api.routers.v1.imports import router as imports_router
 from wattnet.api.routers.v1.load import router as load_router
+from wattnet.api.routers.v1.mix import router as mix_router
 from wattnet.api.routers.v1.mix_share import router as mix_share_router
 from wattnet.api.routers.v1.scores import router as scores_router
 from wattnet.api.routers.v1.status import router as status_router
+from wattnet.api.routers.v1.zones import router as zones_router
 
 api_router_v1 = APIRouter(route_class=versioned_api_route(1))
 
 # TAGS:
 TagType = Union[str, Enum]
 
+zones_tags: List[TagType] = ["Zones"]
 energy_metrics_tags: List[TagType] = ["Energy Metrics"]
 environmental_metrics_tags: List[TagType] = ["Environmental Metrics"]
 shares_metrics_tags: List[TagType] = ["Shares Metrics"]
@@ -32,6 +35,9 @@ factors_tags: List[TagType] = ["Factors"]
 status_tags: List[TagType] = ["Status"]
 
 # Incluir todos los routers de v1
+
+# Zones endpoints
+api_router_v1.include_router(zones_router, prefix="/zones", tags=zones_tags)
 
 # Energy-related endpoints
 api_router_v1.include_router(
@@ -44,6 +50,7 @@ api_router_v1.include_router(
 api_router_v1.include_router(
     exports_router, prefix="/exports", tags=energy_metrics_tags
 )
+api_router_v1.include_router(mix_router, prefix="/mix", tags=energy_metrics_tags)
 
 # Environmental-related endpoints
 api_router_v1.include_router(
@@ -74,5 +81,4 @@ api_router_v1.include_router(
 api_router_v1.include_router(factors_router, prefix="/factors", tags=factors_tags)
 
 # Status endpoints
-api_router_v1.include_router(status_router, prefix="/status", tags=status_tags)
 api_router_v1.include_router(status_router, prefix="/status", tags=status_tags)

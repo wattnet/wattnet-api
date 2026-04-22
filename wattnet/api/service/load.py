@@ -6,7 +6,7 @@ from typing import List, Optional
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
 
-from wattnet.api.models.load import Load, LoadSeries
+from wattnet.api.models.load import Load, LoadBlock, LoadSeries
 from wattnet.api.service.operations import group_metrics_by_metadata
 from wattnet.api.utils import log
 
@@ -48,7 +48,7 @@ class LoadService:
         :return: List of Load objects matching the filters.
         :rtype: List[Load]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
 
@@ -72,35 +72,47 @@ class LoadService:
         :return: List of grouped Load objects.
         :rtype: List[Load]
         """
-        # Group by zone, unit, datasource
-        zone_groups = group_metrics_by_metadata(metrics, ["zone", "unit", "datasource"])
+        # Group by zone, unit (datasource can vary over time)
+        zone_groups = group_metrics_by_metadata(metrics, ["zone", "unit"])
 
         results = []
 
-        for (zone, unit, datasource), zone_metrics in zone_groups.items():
+        for (zone, unit), zone_metrics in zone_groups.items():
 
-            # Subgroup by (valid, zone_status, data_state)
+            # Subgroup by (valid, zone_status)
             series_groups = group_metrics_by_metadata(
-                zone_metrics, ["valid", "zone_status", "data_state"]
+                zone_metrics, ["valid", "zone_status"]
             )
 
             series_list: List[LoadSeries] = []
 
-            for (
-                valid,
-                zone_status,
-                data_state,
-            ), series_metrics in series_groups.items():
-                values = sorted(
-                    [(m.timestamp, m.value) for m in series_metrics],
-                    key=lambda x: x[0],
+            for (valid, zone_status), series_metrics in series_groups.items():
+                block_groups = group_metrics_by_metadata(
+                    series_metrics,
+                    ["data_state", "datasource"],
                 )
+
+                blocks: List[LoadBlock] = []
+
+                for (data_state, datasource), block_metrics in block_groups.items():
+                    values = sorted(
+                        [(m.timestamp, m.value) for m in block_metrics],
+                        key=lambda x: x[0],
+                    )
+
+                    blocks.append(
+                        LoadBlock(
+                            data_state=data_state,
+                            datasource=datasource,
+                            values=values,
+                        )
+                    )
+
                 series_list.append(
                     LoadSeries(
                         valid=valid,
                         zone_status=zone_status,
-                        data_state=data_state,
-                        values=values,
+                        blocks=blocks,
                     )
                 )
 
@@ -108,7 +120,6 @@ class LoadService:
                 Load(
                     zone=zone,
                     unit=unit,
-                    datasource=datasource,
                     series=series_list,
                 )
             )

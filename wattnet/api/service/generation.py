@@ -52,7 +52,7 @@ class GenerationService:
         :return: List of Generation objects matching the filters.
         :rtype: List[Generation]
         """
-        labels = {"app": "wattnet"}
+        labels = {}
         if zone:
             labels["zone"] = zone
         if production_type:
@@ -78,15 +78,15 @@ class GenerationService:
         :return: List of grouped Generation objects.
         :rtype: List[Generation]
         """
-        # 1) Group by zone, unit, datasource (these are constant for each zone)
+        # 1) Group by zone, unit (datasource can vary over time)
         zone_groups = group_metrics_by_metadata(
             metrics,
-            ["zone", "unit", "datasource"],
+            ["zone", "unit"],
         )
 
         results = []
 
-        for (zone, unit, datasource), zone_metrics in zone_groups.items():
+        for (zone, unit), zone_metrics in zone_groups.items():
 
             # 2) Group by (valid, zone_status) to produce GenerationSeries
             series_groups = group_metrics_by_metadata(
@@ -98,17 +98,18 @@ class GenerationService:
 
             for (valid, zone_status), series_metrics in series_groups.items():
 
-                # 3) Group metrics by (production_type, data_state)
+                # 3) Group metrics by (production_type, data_state, datasource)
                 block_groups = group_metrics_by_metadata(
                     series_metrics,
-                    ["production_type", "data_state"],
+                    ["production_type", "data_state", "datasource"],
                 )
 
-                blocks = {}
+                blocks = []
 
                 for (
                     production_type,
                     data_state,
+                    datasource,
                 ), block_metrics in block_groups.items():
 
                     values = sorted(
@@ -119,19 +120,16 @@ class GenerationService:
                     block = ProductionBlock(
                         production_type=production_type,
                         data_state=data_state,
+                        datasource=datasource,
                         values=values,
                     )
 
-                    # store keyed by production_type (temporary)
-                    blocks[production_type] = block
-
-                # convert dict → list for the final model
-                production_list = list(blocks.values())
+                    blocks.append(block)
 
                 generation_series = GenerationSeries(
                     valid=valid,
                     zone_status=zone_status,
-                    production=production_list,
+                    production=blocks,
                 )
 
                 series_list.append(generation_series)
@@ -139,7 +137,6 @@ class GenerationService:
             generation = Generation(
                 zone=zone,
                 unit=unit,
-                datasource=datasource,
                 series=series_list,
             )
 

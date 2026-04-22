@@ -118,7 +118,7 @@ class ImpactService:
         """Fetch carbon footprint metrics and remap unit to stress-gCO2eq/kWh."""
         metric_name = "global_footprint" if use_global else "local_footprint"
 
-        labels = {"app": "wattnet", "footprint_type": "carbon"}
+        labels = {"footprint_type": "carbon"}
         if zone:
             labels["zone"] = zone
         if scope:
@@ -155,7 +155,7 @@ class ImpactService:
         """Fetch water impact metrics from the dedicated impact tables."""
         metric_name = "global_impact" if use_global else "local_impact"
 
-        labels = {"app": "wattnet", "impact_type": "water"}
+        labels = {"impact_type": "water"}
         if zone:
             labels["zone"] = zone
         if scope:
