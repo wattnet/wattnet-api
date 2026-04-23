@@ -24,6 +24,12 @@ Explore the API endpoints, parameters, and responses interactively using the aut
 > Note: The API is versioned. Ensure you are using the correct version for your application. The current version is v1.
 > Base URL: `https://api.wattnet.eu/v1/`
 
+## License
+
+This repository is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+See the [LICENSE](LICENSE) file for more details.
+
 ## Funding and acknowledgments
 
 This work is funded by the European Union’s Horizon Europe research and innovation programme through the **[GreenDIGIT](https://greendigit-project.eu/)** project, under grant agreement **[101131207](https://cordis.europa.eu/project/id/101131207)**.
