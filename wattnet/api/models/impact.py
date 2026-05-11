@@ -7,23 +7,21 @@ from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
 ZoneStatus = Literal["complete", "preview", "missing"]
-ImpactType = Literal["carbon", "water"]
-ImpactScope = Literal["operational", "life-cycle"]
+ImpactType = Literal["water"]
+ImpactScope = Literal["operational"]
 AggregationMethod = Literal["time-weighted-average"]
-ImpactUnit = Literal["stress-gCO2eq/kWh", "stress-l/kWh"]
+ImpactUnit = Literal["stress-l/kWh"]
 CoverageType = Literal["global", "local"]
 
 
 class ImpactBase(BaseModel):
     """Base model for impact data, containing common fields."""
 
-    impact_type: ImpactType = Field(..., description="Type of impact (carbon or water)")
-    scope: ImpactScope = Field(
-        ..., description="Scope of the impact (operational or life-cycle)"
-    )
+    impact_type: ImpactType = Field(..., description="Type of impact (water)")
+    scope: ImpactScope = Field(..., description="Scope of the impact (operational)")
     zone: str = Field(..., description="wattnet zone code")
     unit: ImpactUnit = Field(
-        ..., description="Unit of the impact value (stress-gCO2eq/kWh or stress-l/kWh)"
+        ..., description="Unit of the impact value (stress-l/kWh)"
     )
     coverage: CoverageType = Field(
         ..., description="Coverage type of the impact (global or local)"

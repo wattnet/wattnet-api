@@ -23,13 +23,12 @@ _lon_query = Query(
 _impact_type_query = Query(
     None,
     description=(
-        "Type of impact to filter [carbon, water]. "
-        "If not provided, all types are returned."
+        "Type of impact to filter [water]. " "If not provided, all types are returned."
     ),
 )
 _scope_query = Query(
-    "life-cycle",
-    description="Filter by scope [operational, life-cycle]. Default is 'life-cycle'.",
+    "operational",
+    description="Filter by scope [operational]. Default is 'operational'.",
 )
 _start_query = Query(
     None,
@@ -87,19 +86,17 @@ _use_global_query = Query(
 
 - `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).
 - `lat` and `lon`: Coordinates to lookup zone code.
-- `impact_type`: Type of impact. Valid values: [carbon, water].
-  If not provided, all types are returned.
-  Note: carbon impact is identical to carbon footprint — the value
-  is the same but the unit is expressed as stress-gCO2eq/kWh.
-- `scope`: Scope of the impact. Valid values: [operational, life-cycle].
-  Default is 'life-cycle'.
+- `impact_type`: Type of impact. Valid values: [water].
+    If not provided, all types are returned.
+- `scope`: Scope of the impact. Valid values: [operational].
+    Default is 'operational'.
 - `start` and `end`: Filter by datetime range (both required if one is
-  provided). If not provided, only last available data is returned.
+    provided). If not provided, only last available data is returned.
 - `aggregate`: If true, return aggregated impacts over the time range.
-  If false (default), return time series grouped by status.
+    If false (default), return time series grouped by status.
 - `use_global`: If true (default), return the global impact including
-  electricity exchanges via flow tracing. If false, use only the local
-  impact based on local generation.
+    electricity exchanges via flow tracing. If false, use only the local
+    impact based on local generation.
 
 If `lat` and `lon` are provided, the corresponding zone will be
 determined automatically.
@@ -126,22 +123,22 @@ def get_impacts(
         end = validation.make_utc_aware(end)
 
     zone = validation.validate_location_filters(zone, lat, lon)
-    validation.validate_scope(scope)
+    validation.validate_operational_scope(scope)
     validation.validate_time_range(start, end)
     validation.validate_aggregation_params(aggregate, start, end)
 
-    if impact_type and impact_type.lower() not in ("carbon", "water"):
+    if impact_type and impact_type.lower() != "water":
         from fastapi import HTTPException
 
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid impact_type '{impact_type}'. Valid: [carbon, water]",
+            detail=f"Invalid impact_type '{impact_type}'. Valid: [water]",
         )
 
     return impact_service.get_impacts(
         zone=zone.upper() if zone else None,
-        impact_type=impact_type.lower() if impact_type else None,
-        scope=scope.lower() if scope else "life-cycle",
+        impact_type=impact_type.lower() if impact_type else "water",
+        scope=scope.lower() if scope else "operational",
         start=start,
         end=end,
         aggregate=aggregate,

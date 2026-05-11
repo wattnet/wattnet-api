@@ -19,9 +19,6 @@ LOG = log.get(__name__)
 
 ZoneStatus = Literal["complete", "preview", "missing"]
 
-# Carbon impact is stored as carbon footprint — unit is remapped at the API layer.
-_CARBON_IMPACT_UNIT = "stress-gCO2eq/kWh"
-
 priority_map = {
     "missing": 0,
     "preview": 1,
@@ -32,8 +29,6 @@ priority_map = {
 class ImpactService:
     """Service to handle environmental impact metrics for wattnet.
 
-    Carbon impact is identical to carbon footprint and is resolved by querying
-    the footprint tables directly, then remapping the unit to stress-gCO2eq/kWh.
     Water impact is read from the dedicated impact tables.
     """
 
@@ -58,17 +53,14 @@ class ImpactService:
     ) -> List:
         """Retrieve impact metrics filtered by zone, type, scope, and time range.
 
-        Carbon impact is served from footprint storage with a remapped unit.
-        Water impact is served from the dedicated impact storage.
-
         :param zone: Optional zone code to filter metrics.
         :type zone: str, optional
 
-        :param impact_type: Optional impact type — 'carbon' or 'water'.
-            If not provided, both types are returned.
+        :param impact_type: Optional impact type — 'water'.
+            If not provided, water is returned.
         :type impact_type: str, optional
 
-        :param scope: Optional scope — 'operational' or 'life-cycle'.
+        :param scope: Optional scope — 'operational'.
         :type scope: str, optional
 
         :param start: Optional start datetime.
@@ -88,58 +80,14 @@ class ImpactService:
         """
         results = []
 
-        # Determine which types to fetch
-        fetch_carbon = impact_type is None or impact_type == "carbon"
-        fetch_water = impact_type is None or impact_type == "water"
-
-        if fetch_carbon:
+        if impact_type in (None, "water"):
             results.extend(
-                self._get_carbon_impacts(zone, scope, start, end, aggregate, use_global)
-            )
-
-        if fetch_water:
-            results.extend(
-                self._get_water_impacts(zone, scope, start, end, aggregate, use_global)
+                self._get_water_impacts(
+                    zone, scope, start, end, aggregate, use_global
+                )
             )
 
         return results
-
-    # ── Carbon ────────────────────────────────────────────────────────────────
-
-    def _get_carbon_impacts(
-        self,
-        zone: Optional[str],
-        scope: Optional[str],
-        start: Optional[datetime],
-        end: Optional[datetime],
-        aggregate: bool,
-        use_global: bool,
-    ) -> List:
-        """Fetch carbon footprint metrics and remap unit to stress-gCO2eq/kWh."""
-        metric_name = "global_footprint" if use_global else "local_footprint"
-
-        labels = {"footprint_type": "carbon"}
-        if zone:
-            labels["zone"] = zone
-        if scope:
-            labels["scope"] = scope
-
-        metrics = self.repo.query_metrics(
-            metric_name=metric_name, start=start, end=end, labels=labels
-        )
-        metrics = [m for m in metrics if m.value is not None and m.value >= 0]
-
-        if not metrics:
-            return []
-
-        # Remap unit and footprint_type → impact_type in metadata
-        for m in metrics:
-            m.metadata["unit"] = _CARBON_IMPACT_UNIT
-            m.metadata["impact_type"] = m.metadata.pop("footprint_type", "carbon")
-
-        if aggregate and start and end:
-            return self._aggregate_metrics(metrics, start, end, use_global, "carbon")
-        return self._group_metrics_series(metrics, use_global, "carbon")
 
     # ── Water ─────────────────────────────────────────────────────────────────
 

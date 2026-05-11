@@ -52,7 +52,7 @@ class ScoreService:
         :param zone: Optional zone code to filter metrics.
         :type zone: str, optional
 
-        :param scope: Optional scope — 'operational' or 'life-cycle'.
+        :param scope: Optional scope — 'operational'.
         :type scope: str, optional
 
         :param start: Optional start datetime.

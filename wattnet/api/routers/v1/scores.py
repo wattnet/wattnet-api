@@ -21,8 +21,8 @@ _lon_query = Query(
     None, ge=-180, le=180, description="Longitude in decimal degrees (DD)"
 )
 _scope_query = Query(
-    "life-cycle",
-    description="Filter by scope [operational, life-cycle]. Default is 'life-cycle'.",
+    "operational",
+    description="Filter by scope [operational]. Default is 'operational'.",
 )
 _start_query = Query(
     None,
@@ -80,15 +80,15 @@ _use_global_query = Query(
 
 - `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).
 - `lat` and `lon`: Coordinates to lookup zone code.
-- `scope`: Scope of the score. Valid values: [operational, life-cycle].
-  Default is 'life-cycle'.
+- `scope`: Scope of the score. Valid values: [operational].
+    Default is 'operational'.
 - `start` and `end`: Filter by datetime range (both required if one is
-  provided). If not provided, only last available data is returned.
+    provided). If not provided, only last available data is returned.
 - `aggregate`: If true, return aggregated scores over the time range.
-  If false (default), return time series grouped by status.
+    If false (default), return time series grouped by status.
 - `use_global`: If true (default), return the global score based on
-  global impacts and footprints including electricity exchanges.
-  If false, use only local generation data.
+    global impacts and footprints including electricity exchanges.
+    If false, use only local generation data.
 
 If `lat` and `lon` are provided, the corresponding zone will be
 determined automatically.
@@ -114,13 +114,13 @@ def get_scores(
         end = validation.make_utc_aware(end)
 
     zone = validation.validate_location_filters(zone, lat, lon)
-    validation.validate_scope(scope)
+    validation.validate_operational_scope(scope)
     validation.validate_time_range(start, end)
     validation.validate_aggregation_params(aggregate, start, end)
 
     return score_service.get_scores(
         zone=zone.upper() if zone else None,
-        scope=scope.lower() if scope else "life-cycle",
+        scope=scope.lower() if scope else "operational",
         start=start,
         end=end,
         aggregate=aggregate,

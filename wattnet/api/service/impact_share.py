@@ -16,15 +16,10 @@ from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
-# Carbon impact share is identical to carbon footprint share — unit remapped here.
-_CARBON_IMPACT_UNIT = "stress-gCO2eq/kWh"
-
-
 class ImpactShareService:
     """Service to handle impact share metrics for wattnet.
 
-    Carbon impact share is served from the footprint_share table with a
-    remapped unit. Water impact share is served from the impact_share table.
+    Water impact share is served from the impact_share table.
     """
 
     def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
@@ -53,11 +48,11 @@ class ImpactShareService:
         :param source: Optional origin zone code.
         :type source: str, optional
 
-        :param impact_type: Optional impact type — 'carbon' or 'water'.
-            If not provided, both types are returned.
+        :param impact_type: Optional impact type — 'water'.
+            If not provided, water is returned.
         :type impact_type: str, optional
 
-        :param scope: Optional scope — 'operational' or 'life-cycle'.
+        :param scope: Optional scope — 'operational'.
         :type scope: str, optional
 
         :param start: Optional start datetime.
@@ -71,52 +66,12 @@ class ImpactShareService:
         """
         results = []
 
-        fetch_carbon = impact_type is None or impact_type == "carbon"
-        fetch_water = impact_type is None or impact_type == "water"
+        if impact_type not in (None, "water"):
+            return results
 
-        if fetch_carbon:
-            results.extend(
-                self._get_carbon_impact_share(zone, source, scope, start, end)
-            )
-        if fetch_water:
-            results.extend(
-                self._get_water_impact_share(zone, source, scope, start, end)
-            )
+        results.extend(self._get_water_impact_share(zone, source, scope, start, end))
 
         return results
-
-    # ── Carbon ────────────────────────────────────────────────────────────────
-
-    def _get_carbon_impact_share(
-        self,
-        zone: Optional[str],
-        source: Optional[str],
-        scope: Optional[str],
-        start: Optional[datetime],
-        end: Optional[datetime],
-    ) -> List[ImpactShare]:
-        """Fetch carbon footprint share and remap to carbon impact share."""
-        labels = {"footprint_type": "carbon"}
-        if zone:
-            labels["zone"] = zone
-        if source:
-            labels["source"] = source
-        if scope:
-            labels["scope"] = scope
-
-        metrics = self.repo.query_metrics(
-            metric_name="footprint_share", start=start, end=end, labels=labels
-        )
-
-        if not metrics:
-            return []
-
-        # Remap unit and key field
-        for m in metrics:
-            m.metadata["unit"] = _CARBON_IMPACT_UNIT
-            m.metadata["impact_type"] = m.metadata.pop("footprint_type", "carbon")
-
-        return self._group_metrics(metrics)
 
     # ── Water ─────────────────────────────────────────────────────────────────
 

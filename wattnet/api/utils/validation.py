@@ -28,6 +28,7 @@ VALID_PRODUCTION_TYPES = {
     "wind_onshore",
 }
 VALID_SCOPES = {"operational", "life-cycle"}
+VALID_OPERATIONAL_SCOPE = {"operational"}
 
 
 def validate_location_filters(
@@ -142,6 +143,24 @@ def validate_scope(scope: Optional[str]) -> None:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 f"Invalid scope '{scope}'. Valid values are: {sorted(VALID_SCOPES)}."
+            ),
+        )
+
+
+def validate_operational_scope(scope: Optional[str]) -> None:
+    """Validate that scope is operational when provided.
+
+    :param scope: Scope to filter (operational only)
+    :type scope: Optional[str]
+
+    :raises HTTPException: If scope is invalid (400)
+    """
+    if scope is not None and scope.lower() not in VALID_OPERATIONAL_SCOPE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Invalid scope '{scope}'. Valid values are: "
+                f"{sorted(VALID_OPERATIONAL_SCOPE)}."
             ),
         )
 
