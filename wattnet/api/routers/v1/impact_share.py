@@ -31,13 +31,12 @@ _source_lon_query = Query(
 _impact_type_query = Query(
     None,
     description=(
-        "Type of impact to filter [carbon, water]. "
-        "If not provided, all types are returned."
+        "Type of impact to filter [water]. " "If not provided, all types are returned."
     ),
 )
 _scope_query = Query(
-    None,
-    description="Filter by scope [operational, life-cycle].",
+    "operational",
+    description="Filter by scope [operational]. Default is 'operational'.",
 )
 _start_query = Query(
     None,
@@ -86,10 +85,8 @@ Filters:
 - `source_zone`: Optional origin zone to filter contributions.
 - `source_lat` and `source_lon`: Coordinates to lookup origin zone
   (mutually exclusive with `source_zone`).
-- `impact_type`: carbon or water. If not provided, all types are returned.
-  Note: carbon impact share is identical to carbon footprint share —
-  the value is the same but the unit is expressed as stress-gCO2eq/kWh.
-- `scope`: operational or life-cycle.
+- `impact_type`: water. If not provided, all types are returned.
+- `scope`: operational. Default is 'operational'.
 - `start` / `end`: Datetime range to filter (both required if one is
   provided). Only last available data is returned if omitted.
 """,
@@ -118,19 +115,19 @@ def get_impact_share(
         source_zone, source_lat, source_lon
     )
     validation.validate_time_range(start, end)
-    validation.validate_scope(scope)
+    validation.validate_operational_scope(scope)
 
-    if impact_type and impact_type.lower() not in ("carbon", "water"):
+    if impact_type and impact_type.lower() != "water":
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid impact_type '{impact_type}'. Valid: [carbon, water]",
+            detail=f"Invalid impact_type '{impact_type}'. Valid: [water]",
         )
 
     return impact_share_service.get_impact_share(
         zone=zone.upper() if zone else None,
         source=source_zone.upper() if source_zone else None,
-        impact_type=impact_type.lower() if impact_type else None,
-        scope=scope.lower() if scope else None,
+        impact_type=impact_type.lower() if impact_type else "water",
+        scope=scope.lower() if scope else "operational",
         start=start,
         end=end,
     )

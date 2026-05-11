@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
 ZoneStatus = Literal["complete", "preview", "missing"]
-ScoreScope = Literal["operational", "life-cycle"]
+ScoreScope = Literal["operational"]
 AggregationMethod = Literal["time-weighted-average"]
 CoverageType = Literal["global", "local"]
 
@@ -15,9 +15,7 @@ CoverageType = Literal["global", "local"]
 class ScoreBase(BaseModel):
     """Base model for GreenScore data, containing common fields."""
 
-    scope: ScoreScope = Field(
-        ..., description="Scope of the score (operational or life-cycle)"
-    )
+    scope: ScoreScope = Field(..., description="Scope of the score (operational)")
     zone: str = Field(..., description="wattnet zone code")
     coverage: CoverageType = Field(
         ..., description="Coverage type of the score (global or local)"

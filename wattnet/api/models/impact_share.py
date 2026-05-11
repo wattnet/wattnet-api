@@ -7,9 +7,9 @@ from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
 ZoneStatus = Literal["complete", "preview", "missing"]
-ImpactType = Literal["carbon", "water"]
-ImpactScope = Literal["operational", "life-cycle"]
-ImpactUnit = Literal["stress-gCO2eq/kWh", "stress-l/kWh"]
+ImpactType = Literal["water"]
+ImpactScope = Literal["operational"]
+ImpactUnit = Literal["stress-l/kWh"]
 
 
 class ImpactShareBlock(BaseModel):
@@ -35,10 +35,8 @@ class ImpactShare(BaseModel):
     """Represents impact share data for a specific destination zone."""
 
     zone: str = Field(..., description="Destination zone for the impact")
-    impact_type: ImpactType = Field(..., description="Type of impact (carbon or water)")
-    scope: ImpactScope = Field(
-        ..., description="Scope of impact (operational or life-cycle)"
-    )
+    impact_type: ImpactType = Field(..., description="Type of impact (water)")
+    scope: ImpactScope = Field(..., description="Scope of impact (operational)")
     unit: ImpactUnit = Field(..., description="Unit of the impact value")
     series: List[ImpactShareSeries] = Field(
         ..., description="Series grouped by valid/zone_status"
