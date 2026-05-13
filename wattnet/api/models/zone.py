@@ -11,7 +11,7 @@ Provider = Literal["ENTSO-E", "Elexon", "EPIAS"]
 class Zone(BaseModel):
     """Represents zone metadata enriched with electrical neighbours."""
 
-    zone_id: str = Field(..., description="Zone area display name")
+    zone: str = Field(..., description="wattnet zone code")
     full_name: str = Field(..., description="Full descriptive name of the zone")
     eic_code: str = Field(..., description="Energy Identification Code (EIC)")
     country_code: str = Field(..., description="ISO 3166-1 alpha-3 country code")

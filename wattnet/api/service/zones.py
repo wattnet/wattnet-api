@@ -50,7 +50,7 @@ class ZoneService:
             provider = self._normalize_provider(item["provider"])
             zones.append(
                 Zone(
-                    zone_id=zone_id,
+                    zone=zone_id,
                     full_name=item["full_name"],
                     eic_code=item["eic_code"],
                     country_code=item["country_code"],
@@ -60,7 +60,7 @@ class ZoneService:
                 )
             )
 
-        return sorted(zones, key=lambda x: x.zone_id)
+        return sorted(zones, key=lambda x: x.zone)
 
     @staticmethod
     def _read_yaml_list(path: Path) -> List[dict]:

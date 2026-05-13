@@ -17,7 +17,7 @@ def group_metrics_by_metadata(
     :type metrics: Iterable[Metric]
 
     :param key_fields: List of metadata field names to group by
-    (e.g., ["zone_id", "production_type"])
+    (e.g., ["zone", "production_type"])
     :type key_fields: List[str]
 
     :return: Dictionary mapping tuples of metadata values to lists of Metric objects
