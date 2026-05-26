@@ -5,12 +5,12 @@ from typing import Dict, List
 
 import yaml
 
-from wattnet.api.models.zone import Zone
+from wattnet.api.models.zone import Provider, Zone
 from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
-_PROVIDER_MAP = {
+_PROVIDER_MAP: Dict[str, Provider] = {
     "entsoe": "ENTSO-E",
     "elexon": "Elexon",
     "epias": "EPIAS",
@@ -74,7 +74,7 @@ class ZoneService:
         return data
 
     @staticmethod
-    def _normalize_provider(provider: str) -> str:
+    def _normalize_provider(provider: str) -> Provider:
         """Normalize provider naming to API output conventions."""
         if provider not in _PROVIDER_MAP:
             raise ValueError(f"Unsupported provider '{provider}'")

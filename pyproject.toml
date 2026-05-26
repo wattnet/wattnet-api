@@ -2,7 +2,7 @@
 name = "wattnet-api"
 version = "1.0.0"
 description = "REST API for wattnet"
-authors = ["Jaime Iglesias Blanco <iglesias@ifca.unican.es>"]
+authors = ["Jaime Iglesias Blanco <iglesias@ifca.es>"]
 readme = "README.md"
 homepage = "https://wattnet.eu"
 repository = "https://github.com/wattnet/wattnet-api"
@@ -31,6 +31,7 @@ wattnet-api = "wattnet.api.app:main"
 pytest = "^8.0"
 pytest-trio = "^0.8.0"
 pytest-cov = "^7.0.0"
+httpx = ">=0.23"
 
 [tool.poetry.group.dev.dependencies]
 tox = "4.16.0"
@@ -56,6 +57,9 @@ types-requests = "^2.31.0"
 
 [tool.poetry.group.release.dependencies]
 twine = ">=4.0.2,<7.0.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]

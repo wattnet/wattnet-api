@@ -82,9 +82,7 @@ class ImpactService:
 
         if impact_type in (None, "water"):
             results.extend(
-                self._get_water_impacts(
-                    zone, scope, start, end, aggregate, use_global
-                )
+                self._get_water_impacts(zone, scope, start, end, aggregate, use_global)
             )
 
         return results

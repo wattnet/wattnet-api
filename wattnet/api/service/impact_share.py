@@ -16,6 +16,7 @@ from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
+
 class ImpactShareService:
     """Service to handle impact share metrics for wattnet.
 
@@ -64,7 +65,7 @@ class ImpactShareService:
         :return: List of ImpactShare objects matching the filters.
         :rtype: List[ImpactShare]
         """
-        results = []
+        results: List[ImpactShare] = []
 
         if impact_type not in (None, "water"):
             return results

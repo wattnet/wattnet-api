@@ -51,4 +51,4 @@ class Settings(BaseSettings):
 
 
 # Singleton instance of Settings
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]
