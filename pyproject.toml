@@ -28,7 +28,7 @@ wattnet-storage = { git = "ssh://git@github.com/wattnet/wattnet-storage.git" }
 wattnet-api = "wattnet.api.app:main"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.0"
+pytest = ">=8,<10"
 pytest-trio = "^0.8.0"
 pytest-cov = "^7.0.0"
 
