@@ -1,0 +1,6 @@
+# wattnet-data provides the zone definition files (YAML + GeoJSON) used by the API at runtime.
+# Checked out into data/ so the default ZONES_FILE_PATH values in .env.example resolve correctly.
+[submodule "data"]
+	path = data
+	url = https://github.com/wattnet/wattnet-data.git
+	branch = main
