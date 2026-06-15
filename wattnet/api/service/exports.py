@@ -3,12 +3,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.exports import Export, ExportBlock, ExportSeries
 from wattnet.api.service.operations import group_metrics_by_metadata
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
 
@@ -16,7 +15,7 @@ LOG = log.get(__name__)
 class ExportService:
     """Service to handle export metrics."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the ExportService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
@@ -24,7 +23,7 @@ class ExportService:
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing ExportService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_exports(
         self,

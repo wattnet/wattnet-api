@@ -11,8 +11,10 @@ from shapely.geometry import Point
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 
-# Get logger
 LOG = log.get(__name__)
+
+_GDF_CACHE: dict[Path, gpd.GeoDataFrame] = {}
+_FILENAMES_CACHE: dict[Path, list[str]] = {}
 
 
 async def check_file_contains_point(
@@ -38,8 +40,9 @@ async def check_file_contains_point(
     try:
 
         def read_and_check() -> Optional[str]:
-            gdf = gpd.read_file(path)
-            if gdf.contains(point).any():
+            if path not in _GDF_CACHE:
+                _GDF_CACHE[path] = gpd.read_file(path)
+            if _GDF_CACHE[path].contains(point).any():
                 return filename.rsplit(".", 1)[0]
             return None
 
@@ -67,7 +70,9 @@ async def find_zone_async(
     :rtype: str | None
     """
     point = Point(lon, lat)
-    filenames = os.listdir(geojson_folder)
+    if geojson_folder not in _FILENAMES_CACHE:
+        _FILENAMES_CACHE[geojson_folder] = os.listdir(geojson_folder)
+    filenames = _FILENAMES_CACHE[geojson_folder]
     semaphore = trio.Semaphore(10)  # Cap concurrency
     result_holder: dict[str, Optional[str]] = {"zone": None}
 

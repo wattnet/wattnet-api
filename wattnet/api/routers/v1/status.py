@@ -24,8 +24,8 @@ def check_storage_system() -> bool:
         LOG.error("Storage system URL missing in config")
         return False
     try:
-        requests.get(storage_url, timeout=5)
-        return True
+        r = requests.get(storage_url, timeout=5)
+        return r.status_code == 200
     except requests.RequestException as e:
         LOG.error(f"Storage system check failed: {e}")
         return False

@@ -7,6 +7,8 @@
 # Documentation with ReDoc: http://localhost:8000/redoc
 
 
+from pathlib import Path
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
@@ -19,6 +21,9 @@ from wattnet.api.utils import log
 
 # Get logger
 LOG = log.get(__name__)
+
+# Get the directory where this file is located for relative paths
+_API_DIR = Path(__file__).parent
 
 summary = (
     "A comprehensive RESTful API for integrating wattnet into your applications. "
@@ -131,27 +136,28 @@ versioned_app = VersionedFastAPI(
 
 # Add favicon route
 versioned_app.mount(
-    "/static", StaticFiles(directory="wattnet/api/static"), name="static"
+    "/static", StaticFiles(directory=str(_API_DIR / "static")), name="static"
 )
 
 
 @versioned_app.get("/favicon.ico", include_in_schema=False)
 def favicon() -> FileResponse:
     """Route for favicon.ico."""
-    return FileResponse("wattnet/api/static/favicon.ico")
+    return FileResponse(_API_DIR / "static" / "favicon.ico")
 
 
 def main() -> None:
     """Start the wattnet API server."""
     # Run the server
     LOG.info("Starting wattnet RESTful API server...")
+    LOG.debug(f"Settings: {settings}")
     uvicorn.run(
         versioned_app,
-        host=settings.api_host,
-        port=settings.api_port,
-        log_level="info" if not settings.api_debug else "debug",
+        host=settings.host,
+        port=settings.port,
+        log_level="info" if not settings.debug else "debug",
     )
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

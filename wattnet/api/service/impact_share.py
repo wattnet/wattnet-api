@@ -3,16 +3,15 @@
 from datetime import datetime
 from typing import List, Optional
 
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.impact_share import (
     ImpactShare,
     ImpactShareBlock,
     ImpactShareSeries,
 )
-from wattnet.api.service.operations import group_metrics_by_metadata
+from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
 
@@ -23,14 +22,14 @@ class ImpactShareService:
     Water impact share is served from the impact_share table.
     """
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the ImpactShareService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing ImpactShareService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_impact_share(
         self,
@@ -97,6 +96,8 @@ class ImpactShareService:
             metric_name="impact_share", start=start, end=end, labels=labels
         )
 
+        metrics = [m for m in metrics if m.value is not None]
+
         if not metrics:
             return []
 
@@ -124,17 +125,13 @@ class ImpactShareService:
 
                 for source_key, block_metrics in block_groups.items():
                     source_str = (
-                        source_key[0] if isinstance(source_key, tuple) else source_key
-                    )
-                    if source_str is None:
-                        source_str = "unknown"
-
-                    values = sorted(
-                        [(m.timestamp, m.value) for m in block_metrics],
-                        key=lambda x: x[0],
+                        source_key[0] if source_key[0] is not None else "unknown"
                     )
                     block_list.append(
-                        ImpactShareBlock(source=source_str, values=values)
+                        ImpactShareBlock(
+                            source=source_str,
+                            values=build_time_series(block_metrics),
+                        )
                     )
 
                 series_list.append(

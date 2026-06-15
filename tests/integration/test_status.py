@@ -6,6 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from wattnet.api.routers.v1.status import (
+    check_elexon_api,
+    check_entsoe_api,
+    check_epias_api,
+    check_storage_system,
+)
+
 _URL = "/v1/status"
 
 
@@ -106,3 +113,70 @@ def test_status_epias_up(client, mock_requests_up) -> None:
     r = client.get(f"{_URL}/epias")
     assert r.status_code == 200
     assert r.json()["epias"] == "up"
+
+
+# ── Missing URL branches ──────────────────────────────────────────────────────
+
+
+def test_check_storage_system_non_200_returns_false(monkeypatch) -> None:
+    """check_storage_system() must return False when the server returns non-200.
+
+    :return: None
+    :rtype: None
+    """
+    mock = MagicMock()
+    mock.return_value.status_code = 503
+    monkeypatch.setattr("wattnet.api.routers.v1.status.requests.get", mock)
+    assert check_storage_system() is False
+
+
+def test_check_storage_system_missing_url_returns_false(monkeypatch) -> None:
+    """check_storage_system() must return False when storage_db_url is empty.
+
+    :return: None
+    :rtype: None
+    """
+    monkeypatch.setattr(
+        "wattnet.api.routers.v1.status.settings",
+        MagicMock(storage_db_url=""),
+    )
+    assert check_storage_system() is False
+
+
+def test_check_entsoe_api_missing_url_returns_false(monkeypatch) -> None:
+    """check_entsoe_api() must return False when entsoe_url is empty.
+
+    :return: None
+    :rtype: None
+    """
+    monkeypatch.setattr(
+        "wattnet.api.routers.v1.status.settings",
+        MagicMock(entsoe_url=""),
+    )
+    assert check_entsoe_api() is False
+
+
+def test_check_elexon_api_missing_url_returns_false(monkeypatch) -> None:
+    """check_elexon_api() must return False when elexon_url is empty.
+
+    :return: None
+    :rtype: None
+    """
+    monkeypatch.setattr(
+        "wattnet.api.routers.v1.status.settings",
+        MagicMock(elexon_url=""),
+    )
+    assert check_elexon_api() is False
+
+
+def test_check_epias_api_missing_url_returns_false(monkeypatch) -> None:
+    """check_epias_api() must return False when epias_url is empty.
+
+    :return: None
+    :rtype: None
+    """
+    monkeypatch.setattr(
+        "wattnet.api.routers.v1.status.settings",
+        MagicMock(epias_url=""),
+    )
+    assert check_epias_api() is False

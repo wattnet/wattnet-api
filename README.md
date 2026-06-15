@@ -12,17 +12,142 @@
 
 # RESTful API
 
-A comprehensive RESTful API for integrating wattnet into your applications. Query real-time, historical, and forecasted electricity footprints, create dashboards, automate analyses, and extend wattnet’s capabilities. Fully documented with OpenAPI Specification (OAS 3.1) and secured by OAuth 2.0.
+`wattnet-api` is the public-facing HTTP interface for the Wattnet platform. It exposes real-time, historical, and forecasted data on the carbon and water footprint of electricity consumption across Europe, fully documented with OpenAPI 3.1 and deployable as a Docker container.
 
-## Interactive API documentation
+## Purpose
 
-Explore the API endpoints, parameters, and responses interactively using the automatically generated Swagger UI documentation:
+Wattnet computes environmental metrics — carbon footprint, water impact, green scores, generation mix — from open electricity market data. `wattnet-api` makes all of these metrics available over HTTP so that dashboards, research tools, and third-party applications can query them without coupling to Wattnet's internal data pipeline.
 
-- **Swagger UI**: [https://api.wattnet.eu/docs](https://api.wattnet.eu/docs)
-- **OpenAPI Specification (OAS 3.1)**: [https://api.wattnet.eu/openapi.json](https://api.wattnet.eu/openapi.json)
+The API is organized into five groups of endpoints:
 
-> Note: The API is versioned. Ensure you are using the correct version for your application. The current version is v1.
-> Base URL: `https://api.wattnet.eu/v1/`
+| Group | Prefix | Description |
+|---|---|---|
+| **Zones** | `/v1/zones` | Metadata and boundaries for supported electricity zones |
+| **Energy Metrics** | `/v1/generation`, `/v1/load`, `/v1/imports`, `/v1/exports`, `/v1/mix` | Electricity generation, consumption, and cross-border flows |
+| **Environmental Metrics** | `/v1/footprints`, `/v1/impacts`, `/v1/green-score` | Carbon and water footprint, carbon impact, and green score |
+| **Shares Metrics** | `/v1/flow-share`, `/v1/mix-share`, `/v1/footprint-share`, `/v1/impact-share` | Fractional attribution of flows, mix, footprint, and impact |
+| **Factors** | `/v1/factors` | Emission and consumption factors used in calculations |
+
+## Architecture
+
+![API component diagram](https://github.com/wattnet/wattnet-architecture/blob/main/diagrams/png/structurizr-1-wattnet_api.png?raw=true)
+
+For the full system architecture see the [wattnet-architecture](https://github.com/wattnet/wattnet-architecture) repository.
+
+`wattnet-api` is a [FastAPI](https://fastapi.tiangolo.com/) application served by [Uvicorn](https://www.uvicorn.org/). It reads energy metrics from `wattnet-storage` and zone/GeoJSON data from `wattnet-data`. The API is versioned; all current endpoints live under `/v1`.
+
+## Requirements
+
+- Python ≥ 3.10
+- Docker (for containerised deployment)
+- A running [wattnet-storage](https://github.com/wattnet/wattnet-storage) backend
+
+## Installation
+
+### From PyPI
+
+Installs the `wattnet-api` server and its `wattnet-api` CLI entrypoint:
+
+```bash
+pip install wattnet-api
+```
+
+### From source
+
+```bash
+git clone --recurse-submodules https://github.com/wattnet/wattnet-api.git
+cd wattnet-api
+poetry install
+```
+
+### Docker
+
+Pre-built images are published to [GHCR](https://github.com/wattnet/wattnet-api/pkgs/container/wattnet-api) and [DockerHub](https://hub.docker.com/r/wattnet/wattnet-api) for `linux/amd64` and `linux/arm64`. Images are tagged by full version, minor, major, and `latest`.
+
+```bash
+# Pull from GHCR
+docker pull ghcr.io/wattnet/wattnet-api:latest
+
+# Or from DockerHub
+docker pull wattnet/wattnet-api:latest
+```
+
+Run the container:
+
+```bash
+docker run -p 8000:8000 --env-file config/.env.production ghcr.io/wattnet/wattnet-api:latest
+```
+
+## Configuration
+
+The server reads settings from environment variables or a `.env` file. Copy the example and adjust as needed:
+
+```bash
+cp config/.env.example config/.env.development
+```
+
+| Variable | Default | Description |
+|---|---|---|
+| `WATTNET_ENV` | `development` | Active environment; selects `config/.env.<WATTNET_ENV>` |
+| `API_HOST` | `localhost` | Bind address for the Uvicorn server |
+| `API_PORT` | `8000` | Listening port |
+| `API_DEBUG` | `True` | Enable debug mode and verbose logging |
+| `GEOJSON_PATH` | _(bundled wattnet-data)_ | Directory with GeoJSON zone boundary files |
+| `ZONES_FILE_PATH` | _(bundled wattnet-data)_ | Path to the zones YAML file |
+| `CROSSBORDERS_FILE_PATH` | _(bundled wattnet-data)_ | Path to the crossborders YAML file |
+| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, …) |
+| `LOG_HANDLERS` | `["console"]` | Log outputs: `"console"` and/or `"file"` |
+| `LOG_FILE` | `./logs/wattnet-api.log` | Log file path (only used when `file` handler is active) |
+| `STORAGE_DB_URL` | `http://localhost:8123` | URL for the wattnet-storage ClickHouse backend |
+| `ENTSOE_URL` | `https://web-api.tp.entsoe.eu/api` | ENTSO-E Transparency Platform API endpoint |
+| `ELEXON_URL` | `https://data.elexon.co.uk/bmrs/api/v1` | ELEXON Balancing Mechanism Reporting Service endpoint |
+| `EPIAS_URL` | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
+
+## Running the API
+
+### With Poetry
+
+```bash
+wattnet-api
+```
+
+Or directly with Uvicorn:
+
+```bash
+uvicorn wattnet.api.app:versioned_app --host 0.0.0.0 --port 8000 --reload
+```
+
+### With Docker Compose
+
+```bash
+docker compose up -d
+```
+
+## Interactive API Documentation
+
+Once the server is running, explore endpoints, parameters, and responses interactively:
+
+| Interface | URL |
+|---|---|
+| Swagger UI | [http://localhost:8000/v1/docs](http://localhost:8000/v1/docs) |
+| ReDoc | [http://localhost:8000/v1/redoc](http://localhost:8000/v1/redoc) |
+| OpenAPI JSON | [http://localhost:8000/v1/openapi.json](http://localhost:8000/v1/openapi.json) |
+
+The production instance is available at **[https://api.wattnet.eu/docs](https://api.wattnet.eu/docs)**.
+
+> The API is versioned. The current version is `v1`; the base URL is `https://api.wattnet.eu/v1/`.
+
+### Health check
+
+The `/v1/status` endpoint reports whether the API and its upstream dependencies (wattnet-storage, ENTSO-E, ELEXON, EPIAS) are reachable. Useful for readiness probes in containerised deployments:
+
+```bash
+curl http://localhost:8000/v1/status
+```
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for environment setup, code style, and how to run the tests.
 
 ## License
 
@@ -30,9 +155,9 @@ This repository is licensed under the [Apache License 2.0](https://www.apache.or
 
 See the [LICENSE](LICENSE) file for more details.
 
-## Funding and acknowledgments
+## Funding and Acknowledgments
 
-This work is funded by the European Union’s Horizon Europe research and innovation programme through the **[GreenDIGIT](https://greendigit-project.eu/)** project, under grant agreement **[101131207](https://cordis.europa.eu/project/id/101131207)**.
+This work is funded by the European Union's Horizon Europe research and innovation programme through the **[GreenDIGIT](https://greendigit-project.eu/)** project, under grant agreement **[101131207](https://cordis.europa.eu/project/id/101131207)**.
 
 <div align="left">
   <img src="https://github.com/wattnet/.github/raw/main/images/EN_FundedbytheEU_RGB_POS.png" alt="EU Funded Logo" width="260"/>

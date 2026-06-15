@@ -9,13 +9,11 @@ The only mock boundary is MetricsRepository.query_metrics.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-
-import pytest
+from datetime import datetime, timezone
 
 from tests.unit.service.helpers import FakeMetric
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 _URL = "/v1/generation"
 
 

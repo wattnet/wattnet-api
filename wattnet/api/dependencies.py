@@ -1,7 +1,5 @@
 """Dependency management for the wattnet API application."""
 
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.service.exports import ExportService
 from wattnet.api.service.factors import FactorService
 from wattnet.api.service.flow_share import FlowShareService
@@ -12,14 +10,21 @@ from wattnet.api.service.impact_share import ImpactShareService
 from wattnet.api.service.impacts import ImpactService
 from wattnet.api.service.imports import ImportService
 from wattnet.api.service.load import LoadService
-from wattnet.api.service.mix_share import MixShareService
 from wattnet.api.service.mix import MixService
+from wattnet.api.service.mix_share import MixShareService
 from wattnet.api.service.scores import ScoreService
 from wattnet.api.service.zones import ZoneService
-from wattnet.api.settings import settings
+from wattnet.api.settings import plugin_settings, settings
+from wattnet.storage import MetricsRepository, StorageConfig
 
-# Create a MetricsRepository instance
-metrics_repo = MetricsRepository()
+storage_config = StorageConfig(
+    timeseries_step_minutes=settings.timeseries_step_minutes,
+    storage_clients=settings.storage_clients,
+    plugin_configs={name: s.model_dump() for name, s in plugin_settings.items()},
+)
+
+# Create a MetricsRepository instance with injected config
+metrics_repo = MetricsRepository(storage_config)
 
 # Create Service instances
 generation_service = GenerationService(metrics_repo)

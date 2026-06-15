@@ -11,14 +11,14 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.service.exports import ExportService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 def _m(
@@ -171,6 +171,16 @@ def test_get_exports_separate_series_by_validity() -> None:
     assert len(svc.get_exports()[0].series) == 2
 
 
+def test_get_exports_with_destination_filter() -> None:
+    """Calling get_exports(destination=...) must not raise and returns a list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ExportService(metrics_repo=FakeRepo([]))
+    assert svc.get_exports(destination="FR") == []
+
+
 def test_get_exports_block_values_sorted_by_timestamp() -> None:
     """Values within a block must be sorted ascending by timestamp.
 
@@ -189,3 +199,28 @@ def test_get_exports_block_values_sorted_by_timestamp() -> None:
     assert values[0][0] == t0
     assert values[1][0] == t1
     assert values[2][0] == t2
+
+
+# ============================================================
+# get_exports — filter forwarding
+# ============================================================
+
+
+def test_get_exports_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ExportService(metrics_repo=FakeRepo([]))
+    assert svc.get_exports(zone="ES") == []
+
+
+def test_get_exports_with_destination_filter() -> None:
+    """destination filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ExportService(metrics_repo=FakeRepo([]))
+    assert svc.get_exports(destination="FR") == []

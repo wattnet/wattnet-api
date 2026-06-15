@@ -11,10 +11,8 @@ These tests validate:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
-
-import pytest
 
 from wattnet.api.models.impact_share import ImpactShare
 from wattnet.api.service.impact_share import ImpactShareService
@@ -79,7 +77,7 @@ class FakeRepo:
 # Helpers
 # ============================================================
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 def _make_share_metric(
@@ -183,6 +181,26 @@ def test_get_impact_share_returns_empty_when_no_metrics() -> None:
     results = svc.get_impact_share()
 
     assert results == []
+
+
+def test_get_impact_share_with_scope_filter() -> None:
+    """Calling get_impact_share(scope=...) must not raise and returns a list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ImpactShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_impact_share(scope="operational") == []
+
+
+def test_get_impact_share_with_source_filter() -> None:
+    """Calling get_impact_share(source=...) must not raise and returns a list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ImpactShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_impact_share(source="FR") == []
 
 
 # ============================================================
@@ -300,3 +318,28 @@ def test_group_metrics_result_is_impact_share_instance() -> None:
     results = svc.get_impact_share()
 
     assert isinstance(results[0], ImpactShare)
+
+
+# ============================================================
+# get_impact_share — filter forwarding
+# ============================================================
+
+
+def test_get_impact_share_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ImpactShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_impact_share(zone="ES") == []
+
+
+def test_get_impact_share_with_scope_filter() -> None:
+    """scope filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ImpactShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_impact_share(scope="operational") == []

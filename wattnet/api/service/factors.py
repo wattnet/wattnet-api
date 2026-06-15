@@ -3,9 +3,6 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.factor import Factor, FactorAggregate, FactorSeries
 from wattnet.api.service.operations import (
     build_time_series,
@@ -13,6 +10,8 @@ from wattnet.api.service.operations import (
     group_metrics_by_metadata,
 )
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
 
@@ -20,7 +19,7 @@ LOG = log.get(__name__)
 class FactorService:
     """Service to handle factor metrics."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the FactorService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
@@ -28,7 +27,7 @@ class FactorService:
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing FactorService...")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_factors(
         self,

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from tests.unit.service.helpers import FakeMetric
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 _URL = "/v1/impact-share"
 
 
@@ -131,3 +131,14 @@ def test_source_zone_and_source_lat_returns_400(client, mock_db) -> None:
     """
     mock_db([])
     assert client.get(f"{_URL}?source_zone=FR&source_lat=48").status_code == 400
+
+
+def test_start_and_end_returns_200(client, mock_db) -> None:
+    """Valid start and end datetimes must return 200.
+
+    :return: None
+    :rtype: None
+    """
+    mock_db([])
+    r = client.get(f"{_URL}?start=2025-01-01T00:00:00Z&end=2025-01-02T00:00:00Z")
+    assert r.status_code == 200

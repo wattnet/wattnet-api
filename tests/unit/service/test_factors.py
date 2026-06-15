@@ -12,16 +12,14 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
-
-import pytest
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.models.factor import Factor, FactorAggregate
 from wattnet.api.service.factors import FactorService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 _END = _NOW + timedelta(hours=2)
 
 
@@ -213,6 +211,26 @@ def test_factor_aggregate_has_aggregation_method() -> None:
     assert result.aggregation_method == "time-weighted-average"
 
 
+def test_aggregate_metrics_returns_empty_list_for_empty_input() -> None:
+    """_aggregate_metrics([]) must return an empty list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FactorService(metrics_repo=FakeRepo([]))
+    assert svc._aggregate_metrics([], _NOW, _END) == []
+
+
+def test_group_metrics_series_returns_empty_list_for_empty_input() -> None:
+    """_group_metrics_series([]) must return an empty list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FactorService(metrics_repo=FakeRepo([]))
+    assert svc._group_metrics_series([]) == []
+
+
 def test_factor_aggregate_preserves_metadata_fields() -> None:
     """FactorAggregate must preserve factor_type, production_type, scope, unit.
 
@@ -240,3 +258,38 @@ def test_factor_aggregate_preserves_metadata_fields() -> None:
     assert result.production_type == "solar"
     assert result.scope == "operational"
     assert result.unit == "gCO2/kWh"
+
+
+# ============================================================
+# get_factors — filter forwarding
+# ============================================================
+
+
+def test_get_factors_with_production_type_filter() -> None:
+    """production_type filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FactorService(metrics_repo=FakeRepo([]))
+    assert svc.get_factors(production_type="solar") == []
+
+
+def test_get_factors_with_factor_type_filter() -> None:
+    """factor_type filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FactorService(metrics_repo=FakeRepo([]))
+    assert svc.get_factors(factor_type="carbon") == []
+
+
+def test_get_factors_with_scope_filter() -> None:
+    """scope filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FactorService(metrics_repo=FakeRepo([]))
+    assert svc.get_factors(scope="operational") == []

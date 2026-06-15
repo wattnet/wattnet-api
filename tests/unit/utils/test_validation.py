@@ -12,7 +12,7 @@ These tests validate each validation function in isolation:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
@@ -23,6 +23,7 @@ from wattnet.api.utils.validation import (
     validate_aggregation_params,
     validate_factor_type,
     validate_footprint_type,
+    validate_impact_type,
     validate_location_filters,
     validate_operational_scope,
     validate_production_type,
@@ -30,7 +31,7 @@ from wattnet.api.utils.validation import (
     validate_time_range,
 )
 
-_NOW = datetime(2025, 6, 1, 12, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
 _LATER = _NOW + timedelta(hours=2)
 
 _GEO_PATH = "wattnet.api.utils.validation.geo.get_zone_code"
@@ -172,7 +173,7 @@ def test_aggregate_true_no_dates_raises_400() -> None:
 
 
 def test_make_utc_aware_naive_gets_utc() -> None:
-    """Naive datetime must be returned with UTC timezone."""
+    """Naive datetime must be returned with timezone.utc timezone."""
     naive = datetime(2025, 6, 1, 12, 0, 0)
     result = make_utc_aware(naive)
     assert result.tzinfo is not None
@@ -180,13 +181,13 @@ def test_make_utc_aware_naive_gets_utc() -> None:
 
 
 def test_make_utc_aware_utc_unchanged() -> None:
-    """UTC-aware datetime must stay UTC."""
+    """timezone.utc-aware datetime must stay timezone.utc."""
     result = make_utc_aware(_NOW)
     assert result.utcoffset().total_seconds() == 0
 
 
 def test_make_utc_aware_non_utc_converted() -> None:
-    """Non-UTC aware datetime must be converted to UTC."""
+    """Non-timezone.utc aware datetime must be converted to timezone.utc."""
     cet = timezone(timedelta(hours=2))
     dt_cet = datetime(2025, 6, 1, 14, 0, 0, tzinfo=cet)
     result = make_utc_aware(dt_cet)
@@ -218,6 +219,33 @@ def test_footprint_type_invalid_raises_400() -> None:
     """Unknown footprint_type must raise 400."""
     with pytest.raises(HTTPException) as exc:
         validate_footprint_type("nuclear")
+    assert exc.value.status_code == 400
+
+
+# ============================================================
+# validate_impact_type
+# ============================================================
+
+
+def test_impact_type_none_passes() -> None:
+    """None impact_type must not raise."""
+    validate_impact_type(None)
+
+
+def test_impact_type_water_passes() -> None:
+    """'water' must be accepted."""
+    validate_impact_type("water")
+
+
+def test_impact_type_case_insensitive_passes() -> None:
+    """Impact type check must be case-insensitive."""
+    validate_impact_type("Water")
+
+
+def test_impact_type_invalid_raises_400() -> None:
+    """Unknown impact_type must raise 400."""
+    with pytest.raises(HTTPException) as exc:
+        validate_impact_type("nuclear")
     assert exc.value.status_code == 400
 
 

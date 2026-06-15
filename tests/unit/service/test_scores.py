@@ -10,16 +10,14 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
-
-import pytest
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.models.score import GreenScore, GreenScoreAggregate
 from wattnet.api.service.scores import ScoreService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 _END = _NOW + timedelta(hours=2)
 
 
@@ -83,8 +81,8 @@ def test_get_scores_filters_none_values() -> None:
     assert len(results) == 1
 
 
-def test_get_scores_keeps_negative_values() -> None:
-    """Unlike other services, ScoreService does not filter out negative values.
+def test_get_scores_filters_negative_values() -> None:
+    """ScoreService must filter out negative sentinel values (valid range is [0, 100]).
 
     :return: None
     :rtype: None
@@ -96,7 +94,8 @@ def test_get_scores_keeps_negative_values() -> None:
 
     assert len(results) == 1
     values = results[0].series[0].values
-    assert len(values) == 2
+    assert len(values) == 1
+    assert values[0][1] == 50.0
 
 
 # ============================================================
@@ -243,3 +242,28 @@ def test_score_series_groups_by_validity_subgroups() -> None:
     results = svc.get_scores(aggregate=False)
 
     assert len(results[0].series) == 2
+
+
+# ============================================================
+# get_scores — filter forwarding
+# ============================================================
+
+
+def test_get_scores_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ScoreService(metrics_repo=FakeRepo([]))
+    assert svc.get_scores(zone="ES") == []
+
+
+def test_get_scores_with_scope_filter() -> None:
+    """scope filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ScoreService(metrics_repo=FakeRepo([]))
+    assert svc.get_scores(scope="operational") == []

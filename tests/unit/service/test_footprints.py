@@ -10,16 +10,14 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
-
-import pytest
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.models.footprint import Footprint, FootprintAggregate
 from wattnet.api.service.footprints import FootprintService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 _END = _NOW + timedelta(hours=2)
 
 
@@ -207,9 +205,7 @@ def test_footprint_aggregate_coverage_local() -> None:
     """
     svc = FootprintService(metrics_repo=FakeRepo([_m(_NOW, 100.0)]))
 
-    results = svc.get_footprints(
-        aggregate=True, start=_NOW, end=_END, use_global=False
-    )
+    results = svc.get_footprints(aggregate=True, start=_NOW, end=_END, use_global=False)
 
     assert results[0].coverage == "local"
 
@@ -234,6 +230,26 @@ def test_footprint_series_separate_zones() -> None:
     assert {r.zone for r in results} == {"ES", "FR"}
 
 
+def test_aggregate_metrics_returns_empty_list_for_empty_input() -> None:
+    """_aggregate_metrics([]) must return an empty list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintService(metrics_repo=FakeRepo([]))
+    assert svc._aggregate_metrics([], _NOW, _END, True) == []
+
+
+def test_group_metrics_series_returns_empty_list_for_empty_input() -> None:
+    """_group_metrics_series([]) must return an empty list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintService(metrics_repo=FakeRepo([]))
+    assert svc._group_metrics_series([], True) == []
+
+
 def test_footprint_series_groups_by_validity_subgroups() -> None:
     """Metrics with different valid/zone_status must produce separate series.
 
@@ -249,3 +265,38 @@ def test_footprint_series_groups_by_validity_subgroups() -> None:
     results = svc.get_footprints(aggregate=False)
 
     assert len(results[0].series) == 2
+
+
+# ============================================================
+# get_footprints — filter forwarding
+# ============================================================
+
+
+def test_get_footprints_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprints(zone="ES") == []
+
+
+def test_get_footprints_with_footprint_type_filter() -> None:
+    """footprint_type filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprints(footprint_type="carbon") == []
+
+
+def test_get_footprints_with_scope_filter() -> None:
+    """scope filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprints(scope="operational") == []

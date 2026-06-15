@@ -12,12 +12,12 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.service.mix_share import MixShareService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 def _m(
@@ -128,6 +128,16 @@ def test_get_mix_share_separate_series_by_validity() -> None:
     assert len(svc.get_mix_share()[0].series) == 2
 
 
+def test_get_mix_share_with_origin_filter() -> None:
+    """Calling get_mix_share(origin=...) must not raise and returns a list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = MixShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_mix_share(origin="FR") == []
+
+
 def test_get_mix_share_block_values_sorted_by_timestamp() -> None:
     """Values within a block must be sorted ascending by timestamp.
 
@@ -146,3 +156,36 @@ def test_get_mix_share_block_values_sorted_by_timestamp() -> None:
     assert values[0][0] == t0
     assert values[1][0] == t1
     assert values[2][0] == t2
+
+
+# ============================================================
+# get_mix_share — filter forwarding
+# ============================================================
+
+
+def test_get_mix_share_none_source_falls_back_to_unknown() -> None:
+    """A metric missing the 'source' key must produce origin='unknown', not crash.
+
+    :return: None
+    :rtype: None
+    """
+    metric = FakeMetric(
+        timestamp=_NOW,
+        value=0.5,
+        metadata={"zone": "ES", "valid": True, "zone_status": "complete"},
+    )
+    svc = MixShareService(metrics_repo=FakeRepo([metric]))
+
+    block = svc.get_mix_share()[0].series[0].shares[0]
+
+    assert block.origin == "unknown"
+
+
+def test_get_mix_share_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = MixShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_mix_share(zone="ES") == []

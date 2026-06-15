@@ -11,7 +11,7 @@ These tests validate:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 import pytest
@@ -79,7 +79,7 @@ class FakeRepo:
 # Helpers
 # ============================================================
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 _END = _NOW + timedelta(hours=2)
 
 
@@ -402,3 +402,28 @@ def test_series_groups_separate_zones() -> None:
     assert len(results) == 2
     zones = {r.zone for r in results}
     assert zones == {"ES", "FR"}
+
+
+# ============================================================
+# get_impacts — filter forwarding
+# ============================================================
+
+
+def test_get_impacts_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ImpactService(metrics_repo=FakeRepo([]))
+    assert svc.get_impacts(zone="ES") == []
+
+
+def test_get_impacts_with_scope_filter() -> None:
+    """scope filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = ImpactService(metrics_repo=FakeRepo([]))
+    assert svc.get_impacts(scope="operational") == []

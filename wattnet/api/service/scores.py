@@ -3,40 +3,33 @@
 from datetime import datetime
 from typing import List, Optional, cast
 
-from typing_extensions import Literal
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.score import GreenScore, GreenScoreAggregate, GreenScoreSeries
 from wattnet.api.service.operations import (
+    ZoneStatus,
     build_time_series,
     compute_time_weighted_average,
     group_metrics_by_metadata,
+    is_valid_agg,
+    resolve_zone_status,
 )
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
-
-ZoneStatus = Literal["complete", "preview", "missing"]
-
-priority_map = {
-    "missing": 0,
-    "preview": 1,
-    "complete": 2,
-}
 
 
 class ScoreService:
     """Service to handle GreenScore metrics for wattnet."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the ScoreService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing ScoreService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_scores(
         self,
@@ -81,7 +74,7 @@ class ScoreService:
         metrics = self.repo.query_metrics(
             metric_name=metric_name, start=start, end=end, labels=labels
         )
-        metrics = [m for m in metrics if m.value is not None]
+        metrics = [m for m in metrics if m.value is not None and m.value >= 0]
 
         if not metrics:
             return []
@@ -105,19 +98,8 @@ class ScoreService:
 
         for (scope, zone), mlist in grouped.items():
             value_agg = compute_time_weighted_average(mlist, start, end)
-            valid_agg = all(
-                m.metadata.get("valid", "").lower() == "true" for m in mlist
-            )
-            zone_status_values = [
-                m.metadata.get("zone_status", "missing") for m in mlist
-            ]
-            min_priority_value = min(
-                priority_map.get(zs, 0) for zs in zone_status_values
-            )
-            zone_status: ZoneStatus = cast(
-                ZoneStatus,
-                [k for k, v in priority_map.items() if v == min_priority_value][0],
-            )
+            valid_agg = is_valid_agg(mlist)
+            zone_status = resolve_zone_status(mlist)
 
             aggregates.append(
                 GreenScoreAggregate(
@@ -148,7 +130,7 @@ class ScoreService:
             validity_subgroup: dict[tuple, list[Metric]] = {}
             for m in mlist:
                 key = (
-                    m.metadata.get("valid", True),
+                    m.metadata.get("valid", "true").lower() == "true",
                     cast(ZoneStatus, m.metadata.get("zone_status", "missing")),
                 )
                 validity_subgroup.setdefault(key, []).append(m)

@@ -11,14 +11,14 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.service.mix import MixService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 def _m(
@@ -178,3 +178,28 @@ def test_get_mix_block_values_sorted_by_timestamp() -> None:
     assert values[0][0] == t0
     assert values[1][0] == t1
     assert values[2][0] == t2
+
+
+# ============================================================
+# get_mix — filter forwarding
+# ============================================================
+
+
+def test_get_mix_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = MixService(metrics_repo=FakeRepo([]))
+    assert svc.get_mix(zone="ES") == []
+
+
+def test_get_mix_with_production_type_filter() -> None:
+    """production_type filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = MixService(metrics_repo=FakeRepo([]))
+    assert svc.get_mix(production_type="solar") == []

@@ -3,12 +3,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.load import Load, LoadBlock, LoadSeries
 from wattnet.api.service.operations import group_metrics_by_metadata
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
 
@@ -16,7 +15,7 @@ LOG = log.get(__name__)
 class LoadService:
     """Service to handle load (total electricity demand) metrics for wattnet."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the LoadService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
@@ -24,7 +23,7 @@ class LoadService:
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing LoadService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_load(
         self,

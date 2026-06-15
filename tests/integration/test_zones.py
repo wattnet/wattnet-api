@@ -57,6 +57,44 @@ def test_returns_zone_structure(client, mock_zones) -> None:
     assert "FR" in body[0]["neighbours"]
 
 
+def test_get_zones_value_error_returns_500(client, monkeypatch) -> None:
+    """ValueError from zone service returns HTTP 500 with detail.
+
+    :return: None
+    :rtype: None
+    """
+
+    def _raise() -> None:
+        raise ValueError("bad zone config")
+
+    monkeypatch.setattr(
+        "wattnet.api.dependencies.zone_service.get_zones",
+        _raise,
+    )
+    r = client.get(_URL)
+    assert r.status_code == 500
+    assert "bad zone config" in r.json()["detail"]
+
+
+def test_get_zones_yaml_error_returns_500(client, monkeypatch) -> None:
+    """yaml.YAMLError from zone service returns HTTP 500.
+
+    :return: None
+    :rtype: None
+    """
+    import yaml
+
+    def _raise() -> None:
+        raise yaml.YAMLError("corrupt yaml")
+
+    monkeypatch.setattr(
+        "wattnet.api.dependencies.zone_service.get_zones",
+        _raise,
+    )
+    r = client.get(_URL)
+    assert r.status_code == 500
+
+
 def test_multiple_zones_returned(client, mock_zones) -> None:
     """Multiple zones are all returned in the response.
 

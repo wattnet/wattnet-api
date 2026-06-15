@@ -11,12 +11,12 @@ These tests validate:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
 from wattnet.api.service.footprint_share import FootprintShareService
 
-_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=UTC)
+_NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 def _m(
@@ -141,6 +141,26 @@ def test_get_footprint_share_separate_series_by_validity() -> None:
     assert len(svc.get_footprint_share()[0].series) == 2
 
 
+def test_get_footprint_share_with_source_filter() -> None:
+    """Calling get_footprint_share(source=...) must not raise and returns a list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprint_share(source="FR") == []
+
+
+def test_get_footprint_share_with_footprint_type_filter() -> None:
+    """Calling get_footprint_share(footprint_type=...) must not raise and returns a list.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprint_share(footprint_type="carbon") == []
+
+
 def test_get_footprint_share_block_values_sorted_by_timestamp() -> None:
     """Values within a block must be sorted ascending by timestamp.
 
@@ -159,3 +179,28 @@ def test_get_footprint_share_block_values_sorted_by_timestamp() -> None:
     assert values[0][0] == t0
     assert values[1][0] == t1
     assert values[2][0] == t2
+
+
+# ============================================================
+# get_footprint_share — filter forwarding
+# ============================================================
+
+
+def test_get_footprint_share_with_zone_filter() -> None:
+    """zone filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprint_share(zone="ES") == []
+
+
+def test_get_footprint_share_with_scope_filter() -> None:
+    """scope filter branch is executed when provided.
+
+    :return: None
+    :rtype: None
+    """
+    svc = FootprintShareService(metrics_repo=FakeRepo([]))
+    assert svc.get_footprint_share(scope="operational") == []

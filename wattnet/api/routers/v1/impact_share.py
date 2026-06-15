@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from fastapi_versioning import version
 
 from wattnet.api.dependencies import impact_share_service
@@ -114,14 +114,9 @@ def get_impact_share(
     source_zone = validation.validate_location_filters(
         source_zone, source_lat, source_lon
     )
+    validation.validate_impact_type(impact_type)
     validation.validate_time_range(start, end)
     validation.validate_operational_scope(scope)
-
-    if impact_type and impact_type.lower() != "water":
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid impact_type '{impact_type}'. Valid: [water]",
-        )
 
     return impact_share_service.get_impact_share(
         zone=zone.upper() if zone else None,
