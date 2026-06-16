@@ -24,8 +24,8 @@ def check_storage_system() -> bool:
         LOG.error("Storage system URL missing in config")
         return False
     try:
-        requests.get(storage_url, timeout=5)
-        return True
+        r = requests.get(storage_url, timeout=5)
+        return r.status_code == 200
     except requests.RequestException as e:
         LOG.error(f"Storage system check failed: {e}")
         return False
@@ -141,7 +141,7 @@ def check_epias() -> str:
         return "down"
 
 
-@router.get("/status")
+@router.get("")
 @version(1)
 async def status() -> dict:
     """Check the health of the storage system and external APIs.
@@ -157,7 +157,7 @@ async def status() -> dict:
     }
 
 
-@router.get("/status/storage")
+@router.get("/storage")
 @version(1)
 async def status_storage() -> dict:
     """Check the health of the storage system.
@@ -168,7 +168,7 @@ async def status_storage() -> dict:
     return {"storage": check_storage()}
 
 
-@router.get("/status/entso-e")
+@router.get("/entso-e")
 @version(1)
 async def status_entsoe() -> dict:
     """Check the health of the ENTSOE API.
@@ -179,7 +179,7 @@ async def status_entsoe() -> dict:
     return {"entso-e": check_entsoe()}
 
 
-@router.get("/status/elexon")
+@router.get("/elexon")
 @version(1)
 async def status_elexon() -> dict:
     """Check the health of the Elexon API.
@@ -190,7 +190,7 @@ async def status_elexon() -> dict:
     return {"elexon": check_elexon()}
 
 
-@router.get("/status/epias")
+@router.get("/epias")
 @version(1)
 async def status_epias() -> dict:
     """Check the health of the EPIAS API.

@@ -3,27 +3,20 @@
 from datetime import datetime
 from typing import List, Optional, cast
 
-from typing_extensions import Literal
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.impact import Impact, ImpactAggregate, ImpactSeries
 from wattnet.api.service.operations import (
+    ZoneStatus,
     build_time_series,
     compute_time_weighted_average,
     group_metrics_by_metadata,
+    is_valid_agg,
+    resolve_zone_status,
 )
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
-
-ZoneStatus = Literal["complete", "preview", "missing"]
-
-priority_map = {
-    "missing": 0,
-    "preview": 1,
-    "complete": 2,
-}
 
 
 class ImpactService:
@@ -32,14 +25,14 @@ class ImpactService:
     Water impact is read from the dedicated impact tables.
     """
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the ImpactService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing ImpactService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_impacts(
         self,
@@ -79,12 +72,11 @@ class ImpactService:
         :rtype: List
         """
         results = []
+        normalized_type = impact_type.lower() if impact_type else None
 
-        if impact_type in (None, "water"):
+        if normalized_type in (None, "water"):
             results.extend(
-                self._get_water_impacts(
-                    zone, scope, start, end, aggregate, use_global
-                )
+                self._get_water_impacts(zone, scope, start, end, aggregate, use_global)
             )
 
         return results
@@ -137,19 +129,8 @@ class ImpactService:
 
         for (i_type, scope, zone), mlist in grouped.items():
             value_agg = compute_time_weighted_average(mlist, start, end)
-            valid_agg = all(
-                m.metadata.get("valid", "").lower() == "true" for m in mlist
-            )
-            zone_status_values = [
-                m.metadata.get("zone_status", "missing") for m in mlist
-            ]
-            min_priority_value = min(
-                priority_map.get(zs, 0) for zs in zone_status_values
-            )
-            zone_status: ZoneStatus = cast(
-                ZoneStatus,
-                [k for k, v in priority_map.items() if v == min_priority_value][0],
-            )
+            valid_agg = is_valid_agg(mlist)
+            zone_status = resolve_zone_status(mlist)
 
             unit = mlist[0].metadata.get("unit", "unknown")
 
@@ -187,7 +168,7 @@ class ImpactService:
             validity_subgroup: dict[tuple, list[Metric]] = {}
             for m in mlist:
                 key = (
-                    m.metadata.get("valid", True),
+                    m.metadata.get("valid", "true").lower() == "true",
                     cast(ZoneStatus, m.metadata.get("zone_status", "missing")),
                 )
                 validity_subgroup.setdefault(key, []).append(m)

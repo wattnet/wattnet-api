@@ -20,9 +20,7 @@ class ImpactBase(BaseModel):
     impact_type: ImpactType = Field(..., description="Type of impact (water)")
     scope: ImpactScope = Field(..., description="Scope of the impact (operational)")
     zone: str = Field(..., description="wattnet zone code")
-    unit: ImpactUnit = Field(
-        ..., description="Unit of the impact value (stress-l/kWh)"
-    )
+    unit: ImpactUnit = Field(..., description="Unit of the impact value (stress-l/kWh)")
     coverage: CoverageType = Field(
         ..., description="Coverage type of the impact (global or local)"
     )

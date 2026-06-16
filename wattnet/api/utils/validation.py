@@ -10,6 +10,7 @@ from wattnet.api.service import geo
 
 VALID_FOOTPRINT_TYPES = {"carbon", "water"}
 VALID_FACTOR_TYPES = {"carbon", "water"}
+VALID_IMPACT_TYPES = {"water"}
 VALID_PRODUCTION_TYPES = {
     "biomass",
     "coal",
@@ -32,15 +33,15 @@ VALID_OPERATIONAL_SCOPE = {"operational"}
 
 
 def validate_location_filters(
-    zone_id: Optional[str], lat: Optional[float], lon: Optional[float]
+    zone: Optional[str], lat: Optional[float], lon: Optional[float]
 ) -> Optional[str]:
-    """Validate zone_id and lat/lon inputs.
+    """Validate zone and lat/lon inputs.
 
-    Validate that either zone_id or lat/lon are provided (but not both),
-    and return the resolved zone_id.
+    Validate that either zone or lat/lon are provided (but not both),
+    and return the resolved zone.
 
-    :param zone_id: wattnet zone code (mutually exclusive with lat/lon)
-    :type zone_id: Optional[str]
+    :param zone: wattnet zone code (mutually exclusive with lat/lon)
+    :type zone: Optional[str]
 
     :param lat: Latitude in decimal degrees (DD)
     :type lat: Optional[float]
@@ -49,14 +50,14 @@ def validate_location_filters(
     :type lon: Optional[float]
 
     :raises HTTPException: If validation fails:
-        - If both zone_id and lat/lon are provided (400)
+        - If both zone and lat/lon are provided (400)
         - If only one of lat or lon is provided (400)
         - If lat/lon are provided but no zone is found for those coordinates (404)
     """
-    if zone_id and (lat is not None or lon is not None):
+    if zone and (lat is not None or lon is not None):
         raise HTTPException(
             status_code=400,
-            detail="If zone_id is provided, latitude and longitude"
+            detail="If zone is provided, latitude and longitude "
             "must NOT be provided.",
         )
     if (lat is not None) != (lon is not None):
@@ -65,14 +66,14 @@ def validate_location_filters(
             detail="Both latitude and longitude must be provided together.",
         )
     if lat is not None and lon is not None:
-        zone_id_from_coords = geo.get_zone_code(lat, lon)
-        if not zone_id_from_coords:
+        zone_from_coords = geo.get_zone_code(lat, lon)
+        if not zone_from_coords:
             raise HTTPException(
                 status_code=404,
                 detail="No zone found for the provided coordinates.",
             )
-        return zone_id_from_coords
-    return zone_id
+        return zone_from_coords
+    return zone
 
 
 def validate_footprint_type(footprint_type: Optional[str]) -> None:
@@ -83,7 +84,10 @@ def validate_footprint_type(footprint_type: Optional[str]) -> None:
 
     :raises HTTPException: If footprint_type is invalid (400)
     """
-    if footprint_type is not None and footprint_type not in VALID_FOOTPRINT_TYPES:
+    if (
+        footprint_type is not None
+        and footprint_type.lower() not in VALID_FOOTPRINT_TYPES
+    ):
         raise HTTPException(
             status_code=400,
             detail=f"Invalid footprint_type '{footprint_type}'. "
@@ -105,6 +109,24 @@ def validate_factor_type(factor_type: Optional[str]) -> None:
             detail=(
                 f"Invalid factor_type '{factor_type}'. "
                 f"Valid values are: {sorted(VALID_FACTOR_TYPES)}."
+            ),
+        )
+
+
+def validate_impact_type(impact_type: Optional[str]) -> None:
+    """Validate that impact_type is one of the allowed values.
+
+    :param impact_type: Type of impact to filter (e.g., water)
+    :type impact_type: Optional[str]
+
+    :raises HTTPException: If impact_type is invalid (400)
+    """
+    if impact_type is not None and impact_type.lower() not in VALID_IMPACT_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Invalid impact_type '{impact_type}'. "
+                f"Valid values are: {sorted(VALID_IMPACT_TYPES)}."
             ),
         )
 

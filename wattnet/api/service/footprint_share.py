@@ -3,16 +3,15 @@
 from datetime import datetime
 from typing import List, Optional
 
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.footprint_share import (
     FootprintShare,
     FootprintShareBlock,
     FootprintShareSeries,
 )
-from wattnet.api.service.operations import group_metrics_by_metadata
+from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
 
@@ -20,7 +19,7 @@ LOG = log.get(__name__)
 class FootprintShareService:
     """Service to handle footprint share metrics."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the FootprintShareService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
@@ -28,7 +27,7 @@ class FootprintShareService:
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing FootprintShareService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_footprint_share(
         self,
@@ -82,6 +81,8 @@ class FootprintShareService:
             labels=labels,
         )
 
+        metrics = [m for m in metrics if m.value is not None]
+
         if not metrics:
             return []
 
@@ -115,18 +116,13 @@ class FootprintShareService:
 
                 for source_key, block_metrics in block_groups.items():
                     source_str = (
-                        source_key[0] if isinstance(source_key, tuple) else source_key
+                        source_key[0] if source_key[0] is not None else "unknown"
                     )
-                    if source_str is None:
-                        source_str = "unknown"
-
-                    values = sorted(
-                        [(m.timestamp, m.value) for m in block_metrics],
-                        key=lambda x: x[0],
-                    )
-
                     block_list.append(
-                        FootprintShareBlock(source=source_str, values=values)
+                        FootprintShareBlock(
+                            source=source_str,
+                            values=build_time_series(block_metrics),
+                        )
                     )
 
                 series_list.append(

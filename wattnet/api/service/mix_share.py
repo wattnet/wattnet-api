@@ -3,12 +3,11 @@
 from datetime import datetime
 from typing import List, Optional
 
+from wattnet.api.models.mix_share import MixShare, MixShareBlock, MixShareSeries
+from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
+from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
-
-from wattnet.api.models.mix_share import MixShare, MixShareBlock, MixShareSeries
-from wattnet.api.service.operations import group_metrics_by_metadata
-from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
@@ -16,14 +15,14 @@ LOG = log.get(__name__)
 class MixShareService:
     """Service to handle mix share metrics for Wattnet."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the MixShareService with a metrics repository.
 
         :param metrics_repo: Optional MetricsRepository instance for database access.
         If not provided, a new instance will be created.
         :type metrics_repo: MetricsRepository, optional
         """
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_mix_share(
         self,
@@ -64,6 +63,8 @@ class MixShareService:
             labels=labels,
         )
 
+        metrics = [m for m in metrics if m.value is not None]
+
         if not metrics:
             return []
 
@@ -83,8 +84,7 @@ class MixShareService:
         # Group by destination zone
         zone_groups = group_metrics_by_metadata(metrics, ["zone"])
 
-        for zone_key, zone_metrics in zone_groups.items():
-            zone_str = zone_key[0] if isinstance(zone_key, tuple) else zone_key
+        for (zone_str,), zone_metrics in zone_groups.items():
 
             # Group by series attributes (valid + zone_status)
             series_groups = group_metrics_by_metadata(
@@ -98,17 +98,13 @@ class MixShareService:
                 block_groups = group_metrics_by_metadata(series_metrics, ["source"])
                 block_list: List[MixShareBlock] = []
 
-                for origin_key, block_metrics in block_groups.items():
-                    origin_str = (
-                        origin_key[0] if isinstance(origin_key, tuple) else origin_key
+                for (origin,), block_metrics in block_groups.items():
+                    block_list.append(
+                        MixShareBlock(
+                            origin=origin if origin is not None else "unknown",
+                            values=build_time_series(block_metrics),
+                        )
                     )
-
-                    values = sorted(
-                        [(m.timestamp, m.value) for m in block_metrics],
-                        key=lambda x: x[0],
-                    )
-
-                    block_list.append(MixShareBlock(origin=origin_str, values=values))
 
                 series_list.append(
                     MixShareSeries(

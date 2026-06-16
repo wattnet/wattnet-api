@@ -3,12 +3,11 @@
 from datetime import datetime
 from typing import List, Optional
 
+from wattnet.api.models.flow_share import FlowShare, FlowShareBlock, FlowShareSeries
+from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
+from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
-
-from wattnet.api.models.flow_share import FlowShare, FlowShareBlock, FlowShareSeries
-from wattnet.api.service.operations import group_metrics_by_metadata
-from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
@@ -16,7 +15,7 @@ LOG = log.get(__name__)
 class FlowShareService:
     """Service to handle flow share metrics."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the FlowShareService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
@@ -24,7 +23,7 @@ class FlowShareService:
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing FlowShareService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_flow_share(
         self,
@@ -86,9 +85,7 @@ class FlowShareService:
 
         results = []
 
-        for zone_key, zone_metrics in zone_groups.items():
-            # Convert tuple to string if needed
-            zone_str = zone_key[0] if isinstance(zone_key, tuple) else zone_key
+        for (zone_str,), zone_metrics in zone_groups.items():
 
             # 2) Group by (valid, zone_status) => FlowShareSeries
             series_groups = group_metrics_by_metadata(
@@ -104,25 +101,15 @@ class FlowShareService:
 
                 block_list: List[FlowShareBlock] = []
 
-                for destination_key, block_metrics in block_groups.items():
-                    # Convert tuple to string if needed
-                    destination_str = (
-                        destination_key[0]
-                        if isinstance(destination_key, tuple)
-                        else destination_key
+                for (destination,), block_metrics in block_groups.items():
+                    block_list.append(
+                        FlowShareBlock(
+                            destination=(
+                                destination if destination is not None else "unknown"
+                            ),
+                            values=build_time_series(block_metrics),
+                        )
                     )
-
-                    values = sorted(
-                        [(m.timestamp, m.value) for m in block_metrics],
-                        key=lambda x: x[0],
-                    )
-
-                    block = FlowShareBlock(
-                        destination=destination_str,
-                        values=values,
-                    )
-
-                    block_list.append(block)
 
                 flow_series = FlowShareSeries(
                     valid=valid,

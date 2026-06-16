@@ -5,12 +5,12 @@ from typing import Dict, List
 
 import yaml
 
-from wattnet.api.models.zone import Zone
+from wattnet.api.models.zone import Provider, Zone
 from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
-_PROVIDER_MAP = {
+_PROVIDER_MAP: Dict[str, Provider] = {
     "entsoe": "ENTSO-E",
     "elexon": "Elexon",
     "epias": "EPIAS",
@@ -26,18 +26,8 @@ class ZoneService:
         crossborders_file_path: Path,
     ):
         """Initialize the ZoneService with mandatory YAML data files."""
-        self.zones_file_path = zones_file_path
-        self.crossborders_file_path = crossborders_file_path
-        LOG.info(
-            "Initialized ZoneService with zones file: %s and crossborders file: %s",
-            zones_file_path,
-            crossborders_file_path,
-        )
-
-    def get_zones(self) -> List[Zone]:
-        """Return merged zones list including neighbours."""
-        zones_raw = self._read_yaml_list(self.zones_file_path)
-        crossborders_raw = self._read_yaml_list(self.crossborders_file_path)
+        zones_raw = self._read_yaml_list(zones_file_path)
+        crossborders_raw = self._read_yaml_list(crossborders_file_path)
 
         neighbours_by_zone: Dict[str, List[str]] = {}
         for item in crossborders_raw:
@@ -60,7 +50,12 @@ class ZoneService:
                 )
             )
 
-        return sorted(zones, key=lambda x: x.zone)
+        self._zones = sorted(zones, key=lambda x: x.zone)
+        LOG.info("Initialized ZoneService with %d zones", len(self._zones))
+
+    def get_zones(self) -> List[Zone]:
+        """Return all zones with neighbours."""
+        return self._zones
 
     @staticmethod
     def _read_yaml_list(path: Path) -> List[dict]:
@@ -74,7 +69,7 @@ class ZoneService:
         return data
 
     @staticmethod
-    def _normalize_provider(provider: str) -> str:
+    def _normalize_provider(provider: str) -> Provider:
         """Normalize provider naming to API output conventions."""
         if provider not in _PROVIDER_MAP:
             raise ValueError(f"Unsupported provider '{provider}'")

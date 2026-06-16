@@ -2,7 +2,8 @@
 
 from typing import List
 
-from fastapi import APIRouter
+import yaml
+from fastapi import APIRouter, HTTPException
 from fastapi_versioning import version
 
 from wattnet.api.dependencies import zone_service
@@ -30,4 +31,7 @@ router = APIRouter()
 @version(1)
 def get_zones() -> List[Zone]:
     """Return all zones with neighbours."""
-    return zone_service.get_zones()
+    try:
+        return zone_service.get_zones()
+    except (ValueError, yaml.YAMLError) as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc

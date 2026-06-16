@@ -123,17 +123,10 @@ def get_impacts(
         end = validation.make_utc_aware(end)
 
     zone = validation.validate_location_filters(zone, lat, lon)
+    validation.validate_impact_type(impact_type)
     validation.validate_operational_scope(scope)
     validation.validate_time_range(start, end)
     validation.validate_aggregation_params(aggregate, start, end)
-
-    if impact_type and impact_type.lower() != "water":
-        from fastapi import HTTPException
-
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid impact_type '{impact_type}'. Valid: [water]",
-        )
 
     return impact_service.get_impacts(
         zone=zone.upper() if zone else None,

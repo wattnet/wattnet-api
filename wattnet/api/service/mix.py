@@ -3,12 +3,11 @@
 from datetime import datetime
 from typing import List, Optional
 
-from wattnet.storage.models import Metric
-from wattnet.storage.repository import MetricsRepository
-
 from wattnet.api.models.mix import Mix, MixBlock, MixSeries
 from wattnet.api.service.operations import group_metrics_by_metadata
 from wattnet.api.utils import log
+from wattnet.storage.models import Metric
+from wattnet.storage.repository import MetricsRepository
 
 LOG = log.get(__name__)
 
@@ -16,10 +15,10 @@ LOG = log.get(__name__)
 class MixService:
     """Service to handle mix generation metrics for wattnet."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the MixService with a MetricsRepository."""
         LOG.info("Initializing MixService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_mix(
         self,

@@ -56,38 +56,56 @@ def _get_level(level: str) -> int:
     return getattr(logging, level.upper(), logging.INFO)
 
 
-def get(name: str) -> logging.Logger:
-    """Return a configured logger.
+def setup_logging() -> None:
+    """Configure logging once for all wattnet.* loggers (api + storage).
 
-    :param name: Name of the logger (e.g., module or component name)
-    :type name: str
+    Must be called once at application startup before any loggers are used.
+    Configures the ``wattnet`` namespace logger so that both
+    ``wattnet.api.*`` and ``wattnet.storage.*`` loggers write to the same
+    handlers (console and/or file) as defined in settings.
 
-    :return: Configured logger instance
-    :rtype: logging.Logger
+    Idempotent: repeated calls are no-ops.
     """
-    logger = logging.getLogger(name)
-    logger.handlers.clear()  # prevent duplicate handlers
+    wattnet_logger = logging.getLogger("wattnet")
 
-    # --- Base config ---
+    if wattnet_logger.handlers:
+        return
+
     fmt = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
     level = _get_level(getattr(settings, "log_level", "INFO"))
     handlers = getattr(settings, "log_handlers", ["console"])
-    logger.setLevel(level)
 
-    # --- Console handler ---
+    wattnet_logger.setLevel(level)
+    # Prevent double-logging: wattnet.* logs are handled here
+    # not by uvicorn's root handler.
+    wattnet_logger.propagate = False
+
     if "console" in handlers:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
         console_handler.setFormatter(CustomFormatter(fmt))
-        logger.addHandler(console_handler)
+        wattnet_logger.addHandler(console_handler)
 
-    # --- File handler ---
     if "file" in handlers and getattr(settings, "log_file", None):
         log_file = settings.log_file
         log_file.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_file, mode="a")
         file_handler.setLevel(level)
         file_handler.setFormatter(logging.Formatter(fmt, datefmt="%d-%m-%Y %H:%M:%S"))
-        logger.addHandler(file_handler)
+        wattnet_logger.addHandler(file_handler)
 
-    return logger
+
+def get(name: str) -> logging.Logger:
+    """Return a logger for the given name.
+
+    Calls :func:`setup_logging` on first use so that any module importing
+    this function before ``app.py`` runs still gets a configured logger.
+
+    :param name: Name of the logger (e.g., module or component name)
+    :type name: str
+
+    :return: Logger instance
+    :rtype: logging.Logger
+    """
+    setup_logging()
+    return logging.getLogger(name)

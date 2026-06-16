@@ -3,12 +3,11 @@
 from datetime import datetime
 from typing import List, Optional
 
+from wattnet.api.models.generation import Generation, GenerationSeries, ProductionBlock
+from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
+from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
-
-from wattnet.api.models.generation import Generation, GenerationSeries, ProductionBlock
-from wattnet.api.service.operations import group_metrics_by_metadata
-from wattnet.api.utils import log
 
 LOG = log.get(__name__)
 
@@ -16,7 +15,7 @@ LOG = log.get(__name__)
 class GenerationService:
     """Service to handle generation metrics for wattnet."""
 
-    def __init__(self, metrics_repo: Optional[MetricsRepository] = None):
+    def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the GenerationService with a MetricsRepository.
 
         :param metrics_repo: Optional MetricsRepository instance.
@@ -24,7 +23,7 @@ class GenerationService:
         :type metrics_repo: MetricsRepository, optional
         """
         LOG.info("Initializing GenerationService")
-        self.repo = metrics_repo or MetricsRepository()
+        self.repo = metrics_repo
 
     def get_generation(
         self,
@@ -111,20 +110,14 @@ class GenerationService:
                     data_state,
                     datasource,
                 ), block_metrics in block_groups.items():
-
-                    values = sorted(
-                        [(m.timestamp, m.value) for m in block_metrics],
-                        key=lambda x: x[0],
+                    blocks.append(
+                        ProductionBlock(
+                            production_type=production_type,
+                            data_state=data_state,
+                            datasource=datasource,
+                            values=build_time_series(block_metrics),
+                        )
                     )
-
-                    block = ProductionBlock(
-                        production_type=production_type,
-                        data_state=data_state,
-                        datasource=datasource,
-                        values=values,
-                    )
-
-                    blocks.append(block)
 
                 generation_series = GenerationSeries(
                     valid=valid,
