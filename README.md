@@ -133,10 +133,13 @@ Or directly with Uvicorn:
 uvicorn wattnet.api.app:versioned_app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### With Docker Compose
+### With Docker
 
 ```bash
-docker compose up -d
+docker run -d \
+  -p 8000:8000 \
+  -e WATTNET_API_CLICKHOUSE_HOST=<host> \
+  ghcr.io/wattnet/wattnet-api:latest
 ```
 
 ## Interactive API Documentation
