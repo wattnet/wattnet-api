@@ -35,17 +35,22 @@ Thank you for your interest in contributing. This document covers how to set up 
 **Unit tests** (no external services needed):
 
 ```bash
-pytest tests/unit/
+poetry run pytest tests/unit/
 ```
 
-**Integration tests** (requires a running API instance):
+**Integration tests** (storage layer is mocked — no external services needed):
 
 ```bash
-docker compose -f tests/docker-compose.test.yml up -d --wait
-pytest -m integration
+poetry run pytest tests/integration/
 ```
 
-**Full tox matrix** (lint, type-check, security, unit + integration):
+Or via tox:
+
+```bash
+tox -e integration
+```
+
+**Full tox matrix** (unit tests on py3.10–3.14, lint, type-check, format, security, dependency audit, build):
 
 ```bash
 tox

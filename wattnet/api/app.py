@@ -29,7 +29,7 @@ summary = (
     "A comprehensive RESTful API for integrating wattnet into your applications. "
     "Query real-time, historical, and forecasted electricity footprints, "
     "create dashboards, automate analyses, and extend wattnet’s capabilities. "
-    "Fully documented with OpenAPI 3.1 and secured by OAuth 2.0."
+    "Fully documented with OpenAPI 3.1."
 )
 
 description = (
