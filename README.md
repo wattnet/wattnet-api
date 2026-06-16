@@ -12,6 +12,22 @@
 
 # RESTful API
 
+[![CI](https://github.com/wattnet/wattnet-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/wattnet/wattnet-api/actions/workflows/ci.yml)
+[![Publish](https://github.com/wattnet/wattnet-api/actions/workflows/publish.yml/badge.svg)](https://github.com/wattnet/wattnet-api/actions/workflows/publish.yml)
+[![Release Please](https://github.com/wattnet/wattnet-api/actions/workflows/release-please.yml/badge.svg?branch=main)](https://github.com/wattnet/wattnet-api/actions/workflows/release-please.yml)
+[![codecov](https://codecov.io/gh/wattnet/wattnet-api/graph/badge.svg)](https://codecov.io/gh/wattnet/wattnet-api)
+[![GitHub stars](https://img.shields.io/github/stars/wattnet/wattnet-api?style=social)](https://github.com/wattnet/wattnet-api/stargazers)
+[![PyPI version](https://img.shields.io/pypi/v/wattnet-api)](https://pypi.org/project/wattnet-api/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/wattnet-api?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/wattnet-api)
+[![Python](https://img.shields.io/pypi/pyversions/wattnet-api)](https://pypi.org/project/wattnet-api/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.121.1-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](https://www.openapis.org/)
+[![Docker Hub](https://img.shields.io/docker/v/wattnet/wattnet-api?sort=semver&logo=docker&label=Docker%20Hub&color=2496ED)](https://hub.docker.com/r/wattnet/wattnet-api)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 `wattnet-api` is the public-facing HTTP interface for the Wattnet platform. It exposes real-time, historical, and forecasted data on the carbon and water footprint of electricity consumption across Europe, fully documented with OpenAPI 3.1 and deployable as a Docker container.
 
 ## Purpose
@@ -20,13 +36,13 @@ Wattnet computes environmental metrics — carbon footprint, water impact, green
 
 The API is organized into five groups of endpoints:
 
-| Group | Prefix | Description |
-|---|---|---|
-| **Zones** | `/v1/zones` | Metadata and boundaries for supported electricity zones |
-| **Energy Metrics** | `/v1/generation`, `/v1/load`, `/v1/imports`, `/v1/exports`, `/v1/mix` | Electricity generation, consumption, and cross-border flows |
-| **Environmental Metrics** | `/v1/footprints`, `/v1/impacts`, `/v1/green-score` | Carbon and water footprint, carbon impact, and green score |
-| **Shares Metrics** | `/v1/flow-share`, `/v1/mix-share`, `/v1/footprint-share`, `/v1/impact-share` | Fractional attribution of flows, mix, footprint, and impact |
-| **Factors** | `/v1/factors` | Emission and consumption factors used in calculations |
+| Group                     | Prefix                                                                       | Description                                                 |
+| ------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| **Zones**                 | `/v1/zones`                                                                  | Metadata and boundaries for supported electricity zones     |
+| **Energy Metrics**        | `/v1/generation`, `/v1/load`, `/v1/imports`, `/v1/exports`, `/v1/mix`        | Electricity generation, consumption, and cross-border flows |
+| **Environmental Metrics** | `/v1/footprints`, `/v1/impacts`, `/v1/green-score`                           | Carbon and water footprint, carbon impact, and green score  |
+| **Shares Metrics**        | `/v1/flow-share`, `/v1/mix-share`, `/v1/footprint-share`, `/v1/impact-share` | Fractional attribution of flows, mix, footprint, and impact |
+| **Factors**               | `/v1/factors`                                                                | Emission and consumption factors used in calculations       |
 
 ## Architecture
 
@@ -86,22 +102,22 @@ The server reads settings from environment variables or a `.env` file. Copy the 
 cp config/.env.example config/.env.development
 ```
 
-| Variable | Default | Description |
-|---|---|---|
-| `WATTNET_ENV` | `development` | Active environment; selects `config/.env.<WATTNET_ENV>` |
-| `API_HOST` | `localhost` | Bind address for the Uvicorn server |
-| `API_PORT` | `8000` | Listening port |
-| `API_DEBUG` | `True` | Enable debug mode and verbose logging |
-| `GEOJSON_PATH` | _(bundled wattnet-data)_ | Directory with GeoJSON zone boundary files |
-| `ZONES_FILE_PATH` | _(bundled wattnet-data)_ | Path to the zones YAML file |
-| `CROSSBORDERS_FILE_PATH` | _(bundled wattnet-data)_ | Path to the crossborders YAML file |
-| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, …) |
-| `LOG_HANDLERS` | `["console"]` | Log outputs: `"console"` and/or `"file"` |
-| `LOG_FILE` | `./logs/wattnet-api.log` | Log file path (only used when `file` handler is active) |
-| `STORAGE_DB_URL` | `http://localhost:8123` | URL for the wattnet-storage ClickHouse backend |
-| `ENTSOE_URL` | `https://web-api.tp.entsoe.eu/api` | ENTSO-E Transparency Platform API endpoint |
-| `ELEXON_URL` | `https://data.elexon.co.uk/bmrs/api/v1` | ELEXON Balancing Mechanism Reporting Service endpoint |
-| `EPIAS_URL` | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
+| Variable                 | Default                                                 | Description                                             |
+| ------------------------ | ------------------------------------------------------- | ------------------------------------------------------- |
+| `WATTNET_ENV`            | `development`                                           | Active environment; selects `config/.env.<WATTNET_ENV>` |
+| `API_HOST`               | `localhost`                                             | Bind address for the Uvicorn server                     |
+| `API_PORT`               | `8000`                                                  | Listening port                                          |
+| `API_DEBUG`              | `True`                                                  | Enable debug mode and verbose logging                   |
+| `GEOJSON_PATH`           | _(bundled wattnet-data)_                                | Directory with GeoJSON zone boundary files              |
+| `ZONES_FILE_PATH`        | _(bundled wattnet-data)_                                | Path to the zones YAML file                             |
+| `CROSSBORDERS_FILE_PATH` | _(bundled wattnet-data)_                                | Path to the crossborders YAML file                      |
+| `LOG_LEVEL`              | `INFO`                                                  | Logging level (`DEBUG`, `INFO`, `WARNING`, …)           |
+| `LOG_HANDLERS`           | `["console"]`                                           | Log outputs: `"console"` and/or `"file"`                |
+| `LOG_FILE`               | `./logs/wattnet-api.log`                                | Log file path (only used when `file` handler is active) |
+| `STORAGE_DB_URL`         | `http://localhost:8123`                                 | URL for the wattnet-storage ClickHouse backend          |
+| `ENTSOE_URL`             | `https://web-api.tp.entsoe.eu/api`                      | ENTSO-E Transparency Platform API endpoint              |
+| `ELEXON_URL`             | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
+| `EPIAS_URL`              | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
 
 ## Running the API
 
@@ -127,10 +143,10 @@ docker compose up -d
 
 Once the server is running, explore endpoints, parameters, and responses interactively:
 
-| Interface | URL |
-|---|---|
-| Swagger UI | [http://localhost:8000/v1/docs](http://localhost:8000/v1/docs) |
-| ReDoc | [http://localhost:8000/v1/redoc](http://localhost:8000/v1/redoc) |
+| Interface    | URL                                                                            |
+| ------------ | ------------------------------------------------------------------------------ |
+| Swagger UI   | [http://localhost:8000/v1/docs](http://localhost:8000/v1/docs)                 |
+| ReDoc        | [http://localhost:8000/v1/redoc](http://localhost:8000/v1/redoc)               |
 | OpenAPI JSON | [http://localhost:8000/v1/openapi.json](http://localhost:8000/v1/openapi.json) |
 
 The production instance is available at **[https://api.wattnet.eu/docs](https://api.wattnet.eu/docs)**.

@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -139,6 +140,19 @@ class TestSetupLogging:
             setup_logging()
             setup_logging()
         assert len(logging.getLogger("wattnet").handlers) == 1
+
+    def test_file_handler_added_when_log_file_set(self, tmp_path):
+        log_file = tmp_path / "logs" / "wattnet.log"
+        with patch("wattnet.api.utils.log.settings") as mock_settings:
+            mock_settings.log_level = "INFO"
+            mock_settings.log_handlers = ["file"]
+            mock_settings.log_file = log_file
+            setup_logging()
+        handlers = logging.getLogger("wattnet").handlers
+        file_handlers = [h for h in handlers if isinstance(h, logging.FileHandler)]
+        assert file_handlers
+        assert log_file.exists()
+        file_handlers[0].close()
 
     def test_storage_loggers_reach_wattnet_handler(self):
         records = []
