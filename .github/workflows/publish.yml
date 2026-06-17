@@ -98,12 +98,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Sign GHCR image
         run: cosign sign --yes ghcr.io/wattnet/wattnet-api@${{ steps.build.outputs.digest }}
-      - name: Sign DockerHub image
-        run: cosign sign --yes wattnet/wattnet-api@${{ steps.build.outputs.digest }}
 
   sbom:
     name: Generate and attach SBOMs
