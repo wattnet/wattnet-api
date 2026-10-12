@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from tests.unit.service.helpers import FakeMetric
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
-_URL = "/v1/green-score"
+_URL = "/v1/environmental-score"
 
 
 def _m(**kw) -> FakeMetric:
@@ -29,7 +29,7 @@ def test_200_empty(client, mock_db) -> None:
 
 
 def test_returns_score_structure(client, mock_db) -> None:
-    """Valid metric produces a correctly nested GreenScore object.
+    """Valid metric produces a correctly nested EnvironmentalScore object.
 
     :return: None
     :rtype: None

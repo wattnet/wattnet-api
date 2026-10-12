@@ -3,7 +3,11 @@
 from datetime import datetime
 from typing import List, Optional, cast
 
-from wattnet.api.models.score import GreenScore, GreenScoreAggregate, GreenScoreSeries
+from wattnet.api.models.score import (
+    EnvironmentalScore,
+    EnvironmentalScoreAggregate,
+    EnvironmentalScoreSeries,
+)
 from wattnet.api.service.operations import (
     ZoneStatus,
     build_time_series,
@@ -20,7 +24,7 @@ LOG = log.get(__name__)
 
 
 class ScoreService:
-    """Service to handle GreenScore metrics for wattnet."""
+    """Service to handle EnvironmentalScore metrics for wattnet."""
 
     def __init__(self, metrics_repo: MetricsRepository):
         """Initialize the ScoreService with a MetricsRepository.
@@ -40,7 +44,7 @@ class ScoreService:
         aggregate: bool = False,
         use_global: bool = True,
     ) -> List:
-        """Retrieve GreenScore metrics filtered by zone, scope, and time range.
+        """Retrieve EnvironmentalScore metrics filtered by zone, scope, and time range.
 
         :param zone: Optional zone code to filter metrics.
         :type zone: str, optional
@@ -60,7 +64,7 @@ class ScoreService:
         :param use_global: Whether to query global or local score metrics.
         :type use_global: bool
 
-        :return: List of GreenScore or GreenScoreAggregate objects.
+        :return: List of EnvironmentalScore or EnvironmentalScoreAggregate objects.
         :rtype: List
         """
         metric_name = "global_score" if use_global else "local_score"
@@ -91,8 +95,8 @@ class ScoreService:
         start: datetime,
         end: datetime,
         use_global: bool,
-    ) -> List[GreenScoreAggregate]:
-        """Aggregate raw GreenScore metrics into GreenScoreAggregate objects."""
+    ) -> List[EnvironmentalScoreAggregate]:
+        """Aggregate raw EnvironmentalScore metrics into aggregate objects."""
         grouped = group_metrics_by_metadata(metrics, ["scope", "zone"])
         aggregates = []
 
@@ -102,7 +106,7 @@ class ScoreService:
             zone_status = resolve_zone_status(mlist)
 
             aggregates.append(
-                GreenScoreAggregate(
+                EnvironmentalScoreAggregate(
                     scope=scope,
                     zone=zone,
                     start=start,
@@ -121,8 +125,8 @@ class ScoreService:
         self,
         metrics: List[Metric],
         use_global: bool,
-    ) -> List[GreenScore]:
-        """Group raw GreenScore metrics into GreenScore objects with time series."""
+    ) -> List[EnvironmentalScore]:
+        """Group raw EnvironmentalScore metrics into scores with time series."""
         grouped = group_metrics_by_metadata(metrics, ["scope", "zone"])
         scores = []
 
@@ -138,7 +142,7 @@ class ScoreService:
             series_list = []
             for (valid, zone_status), smetrics in validity_subgroup.items():
                 series_list.append(
-                    GreenScoreSeries(
+                    EnvironmentalScoreSeries(
                         valid=valid,
                         zone_status=zone_status,
                         values=build_time_series(smetrics),
@@ -146,7 +150,7 @@ class ScoreService:
                 )
 
             scores.append(
-                GreenScore(
+                EnvironmentalScore(
                     scope=scope,
                     zone=zone,
                     series=series_list,

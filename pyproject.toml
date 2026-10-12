@@ -10,7 +10,7 @@ repository = "https://github.com/wattnet/wattnet-api"
 documentation = "https://api.wattnet.eu/docs"
 keywords = [
     "energy", "electricity", "carbon", "carbon-footprint", 
-    "water", "water-footprint", "water-impact", "greenscore",
+    "water", "water-footprint", "water-impact", "environmental-score",
     "api", "rest", "fastapi", 
     "sustainability", "wattnet",
 ]

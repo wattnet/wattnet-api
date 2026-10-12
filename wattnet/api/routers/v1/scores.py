@@ -7,7 +7,7 @@ from fastapi import APIRouter, Query
 from fastapi_versioning import version
 
 from wattnet.api.dependencies import score_service
-from wattnet.api.models.score import GreenScore, GreenScoreAggregate
+from wattnet.api.models.score import EnvironmentalScore, EnvironmentalScoreAggregate
 from wattnet.api.utils import validation
 
 router = APIRouter()
@@ -59,12 +59,12 @@ _use_global_query = Query(
 
 @router.get(
     "",
-    response_model=Union[List[GreenScoreAggregate], List[GreenScore]],
+    response_model=Union[List[EnvironmentalScoreAggregate], List[EnvironmentalScore]],
     status_code=200,
     responses={
         200: {
             "description": "List of scores matching the given filters",
-            "model": Union[List[GreenScoreAggregate], List[GreenScore]],
+            "model": Union[List[EnvironmentalScoreAggregate], List[EnvironmentalScore]],
         },
         400: {
             "description": "Invalid input parameters",
@@ -75,8 +75,8 @@ _use_global_query = Query(
             "content": {"application/json": {"example": {"detail": "Error message"}}},
         },
     },
-    summary="Retrieve GreenScore metrics",
-    description="""Retrieve GreenScore metrics filtered by:
+    summary="Retrieve EnvironmentalScore metrics",
+    description="""Retrieve EnvironmentalScore metrics filtered by:
 
 - `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).
 - `lat` and `lon`: Coordinates to lookup zone code.
@@ -106,8 +106,8 @@ def get_scores(
     end: Optional[datetime] = _end_query,
     aggregate: bool = _aggregate_query,
     use_global: bool = _use_global_query,
-) -> Union[List[GreenScoreAggregate], List[GreenScore]]:
-    """Endpoint to retrieve GreenScore metrics."""
+) -> Union[List[EnvironmentalScoreAggregate], List[EnvironmentalScore]]:
+    """Endpoint to retrieve EnvironmentalScore metrics."""
     if start:
         start = validation.make_utc_aware(start)
     if end:

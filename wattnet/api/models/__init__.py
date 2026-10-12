@@ -16,7 +16,11 @@ from .imports import Import, ImportBlock, ImportSeries
 from .load import Load, LoadSeries
 from .mix import Mix, MixBlock, MixSeries
 from .mix_share import MixShare, MixShareBlock, MixShareSeries
-from .score import GreenScore, GreenScoreAggregate, GreenScoreSeries
+from .score import (
+    EnvironmentalScore,
+    EnvironmentalScoreAggregate,
+    EnvironmentalScoreSeries,
+)
 from .zone import Zone
 
 __all__ = [
@@ -47,9 +51,9 @@ __all__ = [
     "Impact",
     "ImpactAggregate",
     "ImpactSeries",
-    "GreenScore",
-    "GreenScoreAggregate",
-    "GreenScoreSeries",
+    "EnvironmentalScore",
+    "EnvironmentalScoreAggregate",
+    "EnvironmentalScoreSeries",
     "FootprintShare",
     "FootprintShareBlock",
     "FootprintShareSeries",

@@ -60,7 +60,7 @@ api_router_v1.include_router(
     impacts_router, prefix="/impacts", tags=environmental_metrics_tags
 )
 api_router_v1.include_router(
-    scores_router, prefix="/green-score", tags=environmental_metrics_tags
+    scores_router, prefix="/environmental-score", tags=environmental_metrics_tags
 )
 
 # Shares-related endpoints
