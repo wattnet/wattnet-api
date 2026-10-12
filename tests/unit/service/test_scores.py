@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
-from wattnet.api.models.score import GreenScore, GreenScoreAggregate
+from wattnet.api.models.score import EnvironmentalScore, EnvironmentalScoreAggregate
 from wattnet.api.service.scores import ScoreService
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -103,8 +103,8 @@ def test_get_scores_filters_negative_values() -> None:
 # ============================================================
 
 
-def test_get_scores_returns_green_score_by_default() -> None:
-    """Default (aggregate=False) must return GreenScore time-series objects.
+def test_get_scores_returns_environmental_score_by_default() -> None:
+    """Default (aggregate=False) must return EnvironmentalScore time-series objects.
 
     :return: None
     :rtype: None
@@ -113,11 +113,11 @@ def test_get_scores_returns_green_score_by_default() -> None:
 
     results = svc.get_scores(aggregate=False)
 
-    assert isinstance(results[0], GreenScore)
+    assert isinstance(results[0], EnvironmentalScore)
 
 
 def test_get_scores_returns_aggregate_when_requested() -> None:
-    """aggregate=True with start/end must return GreenScoreAggregate objects.
+    """aggregate=True with start/end must return EnvironmentalScoreAggregate objects.
 
     :return: None
     :rtype: None
@@ -126,7 +126,7 @@ def test_get_scores_returns_aggregate_when_requested() -> None:
 
     results = svc.get_scores(aggregate=True, start=_NOW, end=_END)
 
-    assert isinstance(results[0], GreenScoreAggregate)
+    assert isinstance(results[0], EnvironmentalScoreAggregate)
 
 
 def test_get_scores_no_start_end_falls_back_to_series() -> None:
@@ -139,7 +139,7 @@ def test_get_scores_no_start_end_falls_back_to_series() -> None:
 
     results = svc.get_scores(aggregate=True)
 
-    assert isinstance(results[0], GreenScore)
+    assert isinstance(results[0], EnvironmentalScore)
 
 
 # ============================================================
@@ -213,7 +213,7 @@ def test_score_aggregate_coverage_local() -> None:
 
 
 def test_score_series_separate_zones() -> None:
-    """Metrics for different zones must produce separate GreenScore objects.
+    """Metrics for different zones must produce separate EnvironmentalScore objects.
 
     :return: None
     :rtype: None

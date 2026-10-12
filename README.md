@@ -32,7 +32,7 @@
 
 ## Purpose
 
-Wattnet computes environmental metrics — carbon footprint, water impact, green scores, generation mix — from open electricity market data. `wattnet-api` makes all of these metrics available over HTTP so that dashboards, research tools, and third-party applications can query them without coupling to Wattnet's internal data pipeline.
+Wattnet computes environmental metrics — carbon footprint, water impact, environmental scores, generation mix — from open electricity market data. `wattnet-api` makes all of these metrics available over HTTP so that dashboards, research tools, and third-party applications can query them without coupling to Wattnet's internal data pipeline.
 
 The API is organized into five groups of endpoints:
 
@@ -40,7 +40,7 @@ The API is organized into five groups of endpoints:
 | ------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | **Zones**                 | `/v1/zones`                                                                  | Metadata and boundaries for supported electricity zones     |
 | **Energy Metrics**        | `/v1/generation`, `/v1/load`, `/v1/imports`, `/v1/exports`, `/v1/mix`        | Electricity generation, consumption, and cross-border flows |
-| **Environmental Metrics** | `/v1/footprints`, `/v1/impacts`, `/v1/green-score`                           | Carbon and water footprint, carbon impact, and green score  |
+| **Environmental Metrics** | `/v1/footprints`, `/v1/impacts`, `/v1/environmental-score`                           | Carbon and water footprint, carbon impact, and environmental score  |
 | **Shares Metrics**        | `/v1/flow-share`, `/v1/mix-share`, `/v1/footprint-share`, `/v1/impact-share` | Fractional attribution of flows, mix, footprint, and impact |
 | **Factors**               | `/v1/factors`                                                                | Emission and consumption factors used in calculations       |
 

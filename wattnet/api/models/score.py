@@ -13,7 +13,7 @@ CoverageType = Literal["global", "local"]
 
 
 class ScoreBase(BaseModel):
-    """Base model for GreenScore data, containing common fields."""
+    """Base model for EnvironmentalScore data, containing common fields."""
 
     scope: ScoreScope = Field(..., description="Scope of the score (operational)")
     zone: str = Field(..., description="wattnet zone code")
@@ -22,8 +22,8 @@ class ScoreBase(BaseModel):
     )
 
 
-class GreenScoreSeries(BaseModel):
-    """Represents a series of GreenScore data grouped by validity and zone status."""
+class EnvironmentalScoreSeries(BaseModel):
+    """Represents a series of EnvironmentalScore data grouped by validity and zone."""
 
     valid: bool = Field(
         ..., description="Indicates if the data points are valid and immutable"
@@ -36,16 +36,16 @@ class GreenScoreSeries(BaseModel):
     )
 
 
-class GreenScore(ScoreBase):
-    """Represents GreenScore data for a specific zone with multiple series."""
+class EnvironmentalScore(ScoreBase):
+    """Represents EnvironmentalScore data for a specific zone with multiple series."""
 
-    series: List[GreenScoreSeries] = Field(
+    series: List[EnvironmentalScoreSeries] = Field(
         ..., description="Series grouped by status and validity"
     )
 
 
-class GreenScoreAggregate(ScoreBase):
-    """Represents aggregated GreenScore data for a specific zone."""
+class EnvironmentalScoreAggregate(ScoreBase):
+    """Represents aggregated EnvironmentalScore data for a specific zone."""
 
     start: datetime = Field(..., description="Start datetime of the aggregation period")
     end: datetime = Field(..., description="End datetime of the aggregation period")

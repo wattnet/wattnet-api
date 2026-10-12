@@ -16,6 +16,7 @@ VALID_PRODUCTION_TYPES = {
     "coal",
     "gas",
     "geothermal",
+    "hydro_pumped_storage",
     "hydro_reservoir",
     "hydro_river",
     "marine",
