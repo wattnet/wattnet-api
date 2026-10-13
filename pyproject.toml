@@ -45,7 +45,7 @@ wattnet-api = "wattnet.api.app:main"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.15"
-fastapi = "0.121.1"
+fastapi = "0.136.3"
 uvicorn = "0.38.0"
 requests = "^2.33.0"
 fastapi-versioning = "0.10.0"
