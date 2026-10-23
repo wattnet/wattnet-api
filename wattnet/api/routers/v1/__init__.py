@@ -21,6 +21,7 @@ from wattnet.api.routers.v1.mix_share import router as mix_share_router
 from wattnet.api.routers.v1.scores import router as scores_router
 from wattnet.api.routers.v1.status import router as status_router
 from wattnet.api.routers.v1.zones import router as zones_router
+from wattnet.api.security import bearer_auth
 
 api_router_v1 = APIRouter(route_class=versioned_api_route(1))
 
@@ -37,48 +38,86 @@ status_tags: List[TagType] = ["Status"]
 # Incluir todos los routers de v1
 
 # Zones endpoints
-api_router_v1.include_router(zones_router, prefix="/zones", tags=zones_tags)
+api_router_v1.include_router(
+    zones_router, prefix="/zones", tags=zones_tags, dependencies=bearer_auth
+)
 
 # Energy-related endpoints
 api_router_v1.include_router(
-    generation_router, prefix="/generation", tags=energy_metrics_tags
+    generation_router,
+    prefix="/generation",
+    tags=energy_metrics_tags,
+    dependencies=bearer_auth,
 )
-api_router_v1.include_router(load_router, prefix="/load", tags=energy_metrics_tags)
 api_router_v1.include_router(
-    imports_router, prefix="/imports", tags=energy_metrics_tags
+    load_router, prefix="/load", tags=energy_metrics_tags, dependencies=bearer_auth
 )
 api_router_v1.include_router(
-    exports_router, prefix="/exports", tags=energy_metrics_tags
+    imports_router,
+    prefix="/imports",
+    tags=energy_metrics_tags,
+    dependencies=bearer_auth,
 )
-api_router_v1.include_router(mix_router, prefix="/mix", tags=energy_metrics_tags)
+api_router_v1.include_router(
+    exports_router,
+    prefix="/exports",
+    tags=energy_metrics_tags,
+    dependencies=bearer_auth,
+)
+api_router_v1.include_router(
+    mix_router, prefix="/mix", tags=energy_metrics_tags, dependencies=bearer_auth
+)
 
 # Environmental-related endpoints
 api_router_v1.include_router(
-    footprints_router, prefix="/footprints", tags=environmental_metrics_tags
+    footprints_router,
+    prefix="/footprints",
+    tags=environmental_metrics_tags,
+    dependencies=bearer_auth,
 )
 api_router_v1.include_router(
-    impacts_router, prefix="/impacts", tags=environmental_metrics_tags
+    impacts_router,
+    prefix="/impacts",
+    tags=environmental_metrics_tags,
+    dependencies=bearer_auth,
 )
 api_router_v1.include_router(
-    scores_router, prefix="/environmental-score", tags=environmental_metrics_tags
+    scores_router,
+    prefix="/environmental-score",
+    tags=environmental_metrics_tags,
+    dependencies=bearer_auth,
 )
 
 # Shares-related endpoints
 api_router_v1.include_router(
-    flow_share_router, prefix="/flow-share", tags=shares_metrics_tags
+    flow_share_router,
+    prefix="/flow-share",
+    tags=shares_metrics_tags,
+    dependencies=bearer_auth,
 )
 api_router_v1.include_router(
-    mix_share_router, prefix="/mix-share", tags=shares_metrics_tags
+    mix_share_router,
+    prefix="/mix-share",
+    tags=shares_metrics_tags,
+    dependencies=bearer_auth,
 )
 api_router_v1.include_router(
-    footprint_share_router, prefix="/footprint-share", tags=shares_metrics_tags
+    footprint_share_router,
+    prefix="/footprint-share",
+    tags=shares_metrics_tags,
+    dependencies=bearer_auth,
 )
 api_router_v1.include_router(
-    impact_share_router, prefix="/impact-share", tags=shares_metrics_tags
+    impact_share_router,
+    prefix="/impact-share",
+    tags=shares_metrics_tags,
+    dependencies=bearer_auth,
 )
 
 # Factor-related endpoints
-api_router_v1.include_router(factors_router, prefix="/factors", tags=factors_tags)
+api_router_v1.include_router(
+    factors_router, prefix="/factors", tags=factors_tags, dependencies=bearer_auth
+)
 
 # Status endpoints
 api_router_v1.include_router(status_router, prefix="/status", tags=status_tags)
