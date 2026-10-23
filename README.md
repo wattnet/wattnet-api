@@ -46,9 +46,9 @@ The API is organized into five groups of endpoints:
 
 ## Architecture
 
-![API component diagram](https://github.com/wattnet/wattnet-architecture/blob/main/diagrams/png/structurizr-1-wattnet_api.png?raw=true)
+![API component diagram](https://github.com/wattnet/wattnet-software-architecture/blob/main/diagrams/png/structurizr-1-wattnet_api.png?raw=true)
 
-For the full system architecture see the [wattnet-architecture](https://github.com/wattnet/wattnet-architecture) repository.
+For the full software architecture see the [wattnet-software-architecture](https://github.com/wattnet/wattnet-software-architecture) repository.
 
 `wattnet-api` is a [FastAPI](https://fastapi.tiangolo.com/) application served by [Uvicorn](https://www.uvicorn.org/). It reads energy metrics from `wattnet-storage` and zone/GeoJSON data from `wattnet-data`. The API is versioned; all current endpoints live under `/v1`.
 
