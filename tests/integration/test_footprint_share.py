@@ -11,8 +11,15 @@ _URL = "/v1/footprint-share"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "gCO2/kWh", "footprint_type": "carbon",
-         "scope": "life-cycle", "source": "FR", "valid": "true", "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "gCO2/kWh",
+        "footprint_type": "carbon",
+        "scope": "life-cycle",
+        "source": "FR",
+        "valid": "true",
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 180.0, d)
 

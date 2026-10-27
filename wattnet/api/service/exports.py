@@ -92,7 +92,6 @@ class ExportService:
         results = []
 
         for (zone, unit), zone_metrics in zone_groups.items():
-
             # 2) Group by (valid, zone_status) => ExportSeries
             series_groups = group_metrics_by_metadata(
                 zone_metrics,
@@ -102,7 +101,6 @@ class ExportService:
             series_list: List[ExportSeries] = []
 
             for (valid, zone_status), series_metrics in series_groups.items():
-
                 # 3) Group by "to" + data_state + datasource => ExportBlock
                 block_groups = group_metrics_by_metadata(
                     series_metrics,
@@ -116,7 +114,6 @@ class ExportService:
                     data_state,
                     datasource,
                 ), block_metrics in block_groups.items():
-
                     values = sorted(
                         [(m.timestamp, m.value) for m in block_metrics],
                         key=lambda x: x[0],

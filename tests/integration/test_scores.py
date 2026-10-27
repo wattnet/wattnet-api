@@ -11,8 +11,13 @@ _URL = "/v1/environmental-score"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "%", "scope": "operational",
-         "valid": "true", "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "%",
+        "scope": "operational",
+        "valid": "true",
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 75.0, d)
 
@@ -110,8 +115,7 @@ def test_aggregate_with_dates_returns_200(client, mock_db) -> None:
     """
     mock_db([_m()])
     r = client.get(
-        f"{_URL}?aggregate=true"
-        "&start=2025-06-01T00:00:00Z&end=2025-06-02T00:00:00Z"
+        f"{_URL}?aggregate=true&start=2025-06-01T00:00:00Z&end=2025-06-02T00:00:00Z"
     )
     assert r.status_code == 200
 

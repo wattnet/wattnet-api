@@ -86,9 +86,7 @@ def test_default_crossborders_file_path_shape() -> None:
     from wattnet.api.settings import BASE_DIR, Settings
 
     default: Path = Settings.model_fields["crossborders_file_path"].default
-    assert default == (
-        BASE_DIR / "data" / "zones" / "entsoe_full_crossborders.yaml"
-    )
+    assert default == (BASE_DIR / "data" / "zones" / "entsoe_full_crossborders.yaml")
 
 
 def test_default_server_fields() -> None:
@@ -120,9 +118,9 @@ def test_geojson_path_exists() -> None:
     """Test that the geojson_path directory exists."""
     from wattnet.api.settings import settings
 
-    assert (
-        settings.geojson_path.is_dir()
-    ), f"geojson_path does not exist: {settings.geojson_path}"
+    assert settings.geojson_path.is_dir(), (
+        f"geojson_path does not exist: {settings.geojson_path}"
+    )
 
 
 @DATA_PRESENT
@@ -139,9 +137,9 @@ def test_zones_file_path_exists() -> None:
     """Test that the zones_file_path file exists."""
     from wattnet.api.settings import settings
 
-    assert (
-        settings.zones_file_path.is_file()
-    ), f"zones_file_path does not exist: {settings.zones_file_path}"
+    assert settings.zones_file_path.is_file(), (
+        f"zones_file_path does not exist: {settings.zones_file_path}"
+    )
 
 
 @DATA_PRESENT
@@ -149,9 +147,9 @@ def test_crossborders_file_path_exists() -> None:
     """Test that the crossborders_file_path file exists."""
     from wattnet.api.settings import settings
 
-    assert (
-        settings.crossborders_file_path.is_file()
-    ), f"crossborders_file_path does not exist: {settings.crossborders_file_path}"
+    assert settings.crossborders_file_path.is_file(), (
+        f"crossborders_file_path does not exist: {settings.crossborders_file_path}"
+    )
 
 
 # ---------------------------------------------------------------------------

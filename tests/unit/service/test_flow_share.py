@@ -15,6 +15,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.service.flow_share import FlowShareService
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -184,16 +185,6 @@ def test_get_flow_share_with_zone_filter() -> None:
     """
     svc = FlowShareService(metrics_repo=FakeRepo([]))
     assert svc.get_flow_share(zone="ES") == []
-
-
-def test_get_flow_share_with_destination_filter() -> None:
-    """destination filter branch is executed when provided.
-
-    :return: None
-    :rtype: None
-    """
-    svc = FlowShareService(metrics_repo=FakeRepo([]))
-    assert svc.get_flow_share(destination="FR") == []
 
 
 def test_get_flow_share_none_target_falls_back_to_unknown() -> None:

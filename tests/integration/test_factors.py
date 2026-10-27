@@ -11,9 +11,15 @@ _URL = "/v1/factors"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"factor_type": "carbon", "production_type": "solar",
-         "scope": "operational", "unit": "gCO2/kWh",
-         "source": "IPCC", "year": 2023, "source_link": "https://ipcc.ch"}
+    d = {
+        "factor_type": "carbon",
+        "production_type": "solar",
+        "scope": "operational",
+        "unit": "gCO2/kWh",
+        "source": "IPCC",
+        "year": 2023,
+        "source_link": "https://ipcc.ch",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 25.0, d)
 
@@ -110,8 +116,7 @@ def test_aggregate_with_dates_returns_200(client, mock_db) -> None:
     """
     mock_db([_m()])
     r = client.get(
-        f"{_URL}?aggregate=true"
-        "&start=2025-06-01T00:00:00Z&end=2025-06-02T00:00:00Z"
+        f"{_URL}?aggregate=true&start=2025-06-01T00:00:00Z&end=2025-06-02T00:00:00Z"
     )
     assert r.status_code == 200
 
