@@ -21,7 +21,7 @@ Thank you for your interest in contributing. This document covers how to set up 
 2. Install all dependency groups:
 
    ```bash
-   poetry install --with dev,test,lint,format,types,security
+   poetry install --with dev,test,lint,types,security
    ```
 
 3. Install the pre-commit hooks:
@@ -38,7 +38,7 @@ Thank you for your interest in contributing. This document covers how to set up 
 poetry run pytest tests/unit/
 ```
 
-**Integration tests** (storage layer is mocked — no external services needed):
+**Integration tests** (storage layer is mocked, no external services needed):
 
 ```bash
 poetry run pytest tests/integration/
@@ -61,12 +61,9 @@ tox
 We enforce a consistent style automatically. Before opening a PR, run:
 
 ```bash
-# Format code
-black wattnet/
-isort wattnet/
-
-# Lint
-flake8 wattnet/
+# Format and lint
+ruff format .
+ruff check wattnet
 
 # Type-check
 mypy -p wattnet.api
@@ -78,9 +75,9 @@ bandit -r wattnet/
 All of these also run via pre-commit on every commit and are verified in CI.
 
 Key rules:
-- Line length: 88 characters (Black default).
-- Import order: standard library → third-party → first-party (`isort` with Black profile).
-- Docstrings: required on all public modules, classes, and functions (`pydocstyle`).
+- Line length: 88 characters (Ruff default).
+- Import order: standard library → third-party → first-party, enforced by Ruff's isort rules.
+- Docstrings: required on all public modules, classes, and functions, enforced by Ruff's pydocstyle rules with the pep257 convention.
 - Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
 
 ## Submitting a Pull Request
