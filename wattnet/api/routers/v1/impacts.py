@@ -23,7 +23,7 @@ _lon_query = Query(
 _impact_type_query = Query(
     None,
     description=(
-        "Type of impact to filter [water]. " "If not provided, all types are returned."
+        "Type of impact to filter [water]. If not provided, all types are returned."
     ),
 )
 _scope_query = Query(

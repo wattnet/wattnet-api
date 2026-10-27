@@ -11,8 +11,14 @@ _URL = "/v1/load"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "MW", "data_state": "official",
-         "datasource": "ENTSO-E", "valid": True, "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "MW",
+        "data_state": "official",
+        "datasource": "ENTSO-E",
+        "valid": True,
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 5000.0, d)
 

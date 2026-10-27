@@ -86,7 +86,6 @@ class GenerationService:
         results = []
 
         for (zone, unit), zone_metrics in zone_groups.items():
-
             # 2) Group by (valid, zone_status) to produce GenerationSeries
             series_groups = group_metrics_by_metadata(
                 zone_metrics,
@@ -96,7 +95,6 @@ class GenerationService:
             series_list: List[GenerationSeries] = []
 
             for (valid, zone_status), series_metrics in series_groups.items():
-
                 # 3) Group metrics by (production_type, data_state, datasource)
                 block_groups = group_metrics_by_metadata(
                     series_metrics,

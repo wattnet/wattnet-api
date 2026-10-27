@@ -94,7 +94,11 @@ def compute_time_weighted_average(
     total_duration = Decimal("0")
 
     # Integrate all but last segment
-    for (m0, v0), (m1, _) in zip(zip(metrics, dvals), zip(metrics[1:], dvals[1:])):
+    for (m0, v0), (m1, _) in zip(
+        zip(metrics, dvals, strict=True),
+        zip(metrics[1:], dvals[1:], strict=True),
+        strict=False,
+    ):
         t0 = max(m0.timestamp, start)
         t1 = min(m1.timestamp, end)
         duration = Decimal((t1 - t0).total_seconds())

@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.models.score import EnvironmentalScore, EnvironmentalScoreAggregate
 from wattnet.api.service.scores import ScoreService
 

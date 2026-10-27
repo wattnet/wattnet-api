@@ -147,7 +147,7 @@ def test_aggregate_with_dates_returns_200(client, mock_db) -> None:
     """
     mock_db([_m()])
     r = client.get(
-        f"{_URL}?aggregate=true" "&start=2025-06-01T00:00:00Z&end=2025-06-02T00:00:00Z"
+        f"{_URL}?aggregate=true&start=2025-06-01T00:00:00Z&end=2025-06-02T00:00:00Z"
     )
     assert r.status_code == 200
 

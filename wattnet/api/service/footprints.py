@@ -182,7 +182,6 @@ class FootprintService:
         footprints = []
 
         for (footprint_type, scope, zone, unit), mlist in grouped.items():
-
             # Subgroup by (valid, zone_status)
             validity_subgroup: dict[tuple[bool, ZoneStatus], list[Metric]] = {}
             for m in mlist:

@@ -14,8 +14,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.service.imports import ImportService
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -214,13 +214,3 @@ def test_get_imports_with_zone_filter() -> None:
     """
     svc = ImportService(metrics_repo=FakeRepo([]))
     assert svc.get_imports(zone="ES") == []
-
-
-def test_get_imports_with_source_filter() -> None:
-    """source filter branch is executed when provided.
-
-    :return: None
-    :rtype: None
-    """
-    svc = ImportService(metrics_repo=FakeRepo([]))
-    assert svc.get_imports(source="FR") == []

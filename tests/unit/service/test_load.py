@@ -14,8 +14,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.service.load import LoadService
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)

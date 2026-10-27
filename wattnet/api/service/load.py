@@ -77,7 +77,6 @@ class LoadService:
         results = []
 
         for (zone, unit), zone_metrics in zone_groups.items():
-
             # Subgroup by (valid, zone_status)
             series_groups = group_metrics_by_metadata(
                 zone_metrics, ["valid", "zone_status"]

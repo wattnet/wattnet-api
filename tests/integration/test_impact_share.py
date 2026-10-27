@@ -11,8 +11,15 @@ _URL = "/v1/impact-share"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "stress-l/kWh", "impact_type": "water",
-         "scope": "operational", "source": "FR", "valid": "true", "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "stress-l/kWh",
+        "impact_type": "water",
+        "scope": "operational",
+        "source": "FR",
+        "valid": "true",
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 0.8, d)
 
