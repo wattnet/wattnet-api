@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.models.footprint import Footprint, FootprintAggregate
 from wattnet.api.service.footprints import FootprintService
 

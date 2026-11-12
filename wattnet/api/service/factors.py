@@ -200,7 +200,6 @@ class FactorService:
             year,
             source_link,
         ), mlist in grouped.items():
-
             values = build_time_series(mlist)
 
             results.append(

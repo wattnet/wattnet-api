@@ -86,7 +86,6 @@ class FlowShareService:
         results = []
 
         for (zone_str,), zone_metrics in zone_groups.items():
-
             # 2) Group by (valid, zone_status) => FlowShareSeries
             series_groups = group_metrics_by_metadata(
                 zone_metrics, ["valid", "zone_status"]
@@ -95,7 +94,6 @@ class FlowShareService:
             series_list: List[FlowShareSeries] = []
 
             for (valid, zone_status), series_metrics in series_groups.items():
-
                 # 3) Group by destination ('target' in DB)
                 block_groups = group_metrics_by_metadata(series_metrics, ["target"])
 

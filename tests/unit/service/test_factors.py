@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.models.factor import Factor, FactorAggregate
 from wattnet.api.service.factors import FactorService
 

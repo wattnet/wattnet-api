@@ -14,6 +14,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.service.footprint_share import FootprintShareService
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)

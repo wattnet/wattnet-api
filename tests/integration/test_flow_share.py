@@ -11,8 +11,13 @@ _URL = "/v1/flow-share"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "%", "target": "FR",
-         "valid": "true", "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "%",
+        "target": "FR",
+        "valid": "true",
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 15.0, d)
 
@@ -109,7 +114,9 @@ def test_destination_zone_and_destination_lat_returns_400(client, mock_db) -> No
     :rtype: None
     """
     mock_db([])
-    assert client.get(f"{_URL}?destination_zone=FR&destination_lat=48").status_code == 400
+    assert (
+        client.get(f"{_URL}?destination_zone=FR&destination_lat=48").status_code == 400
+    )
 
 
 def test_start_and_end_returns_200(client, mock_db) -> None:

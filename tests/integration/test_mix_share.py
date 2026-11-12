@@ -11,8 +11,13 @@ _URL = "/v1/mix-share"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "%", "source": "FR",
-         "valid": "true", "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "%",
+        "source": "FR",
+        "valid": "true",
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 20.0, d)
 

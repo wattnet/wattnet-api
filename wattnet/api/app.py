@@ -6,7 +6,6 @@
 # Documentation and tester with Swagger UI: http://localhost:8000/docs
 # Documentation with ReDoc: http://localhost:8000/redoc
 
-
 from pathlib import Path
 
 import uvicorn
