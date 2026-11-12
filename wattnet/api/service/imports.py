@@ -91,7 +91,6 @@ class ImportService:
         results = []
 
         for (zone, unit), zone_metrics in zone_groups.items():
-
             # 2) Group by (valid, zone_status) => ImportSeries
             series_groups = group_metrics_by_metadata(
                 zone_metrics,
@@ -101,7 +100,6 @@ class ImportService:
             series_list: List[ImportSeries] = []
 
             for (valid, zone_status), series_metrics in series_groups.items():
-
                 # 3) Group by source + data_state + datasource => ImportBlock
                 block_groups = group_metrics_by_metadata(
                     series_metrics,
@@ -115,7 +113,6 @@ class ImportService:
                     data_state,
                     datasource,
                 ), block_metrics in block_groups.items():
-
                     values = sorted(
                         [(m.timestamp, m.value) for m in block_metrics],
                         key=lambda x: x[0],

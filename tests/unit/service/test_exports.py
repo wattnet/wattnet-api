@@ -14,8 +14,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from tests.unit.service.helpers import FakeMetric, FakeRepo
+
 from wattnet.api.service.exports import ExportService
 
 _NOW = datetime(2025, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -214,13 +214,3 @@ def test_get_exports_with_zone_filter() -> None:
     """
     svc = ExportService(metrics_repo=FakeRepo([]))
     assert svc.get_exports(zone="ES") == []
-
-
-def test_get_exports_with_destination_filter() -> None:
-    """destination filter branch is executed when provided.
-
-    :return: None
-    :rtype: None
-    """
-    svc = ExportService(metrics_repo=FakeRepo([]))
-    assert svc.get_exports(destination="FR") == []

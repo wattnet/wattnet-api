@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -48,8 +47,13 @@ class TestGetLevel:
 class TestCustomFormatter:
     def _record(self, level=logging.INFO, msg="hello"):
         return logging.LogRecord(
-            name="test", level=level, pathname="", lineno=0,
-            msg=msg, args=(), exc_info=None,
+            name="test",
+            level=level,
+            pathname="",
+            lineno=0,
+            msg=msg,
+            args=(),
+            exc_info=None,
         )
 
     def test_format_returns_string(self):
@@ -61,7 +65,9 @@ class TestCustomFormatter:
         assert "hello world" in result
 
     def test_format_contains_ansi_color(self):
-        result = CustomFormatter("%(message)s").format(self._record(level=logging.DEBUG))
+        result = CustomFormatter("%(message)s").format(
+            self._record(level=logging.DEBUG)
+        )
         assert "\x1b[" in result
 
     def test_format_contains_reset(self):
@@ -76,7 +82,13 @@ class TestCustomFormatter:
 
     def test_all_standard_levels_produce_colored_output(self):
         fmt = CustomFormatter("%(levelname)s")
-        for level in (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL):
+        for level in (
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARNING,
+            logging.ERROR,
+            logging.CRITICAL,
+        ):
             result = fmt.format(self._record(level=level))
             assert "\x1b[" in result, f"No ANSI code for level {level}"
 

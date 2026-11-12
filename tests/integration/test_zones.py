@@ -14,11 +14,13 @@ def mock_zones(monkeypatch):
     :param monkeypatch: pytest monkeypatch fixture
     :return: callable(zones) that sets the return value for get_zones
     """
+
     def _configure(zones):
         monkeypatch.setattr(
             "wattnet.api.dependencies.zone_service.get_zones",
             lambda: zones,
         )
+
     return _configure
 
 
@@ -104,12 +106,24 @@ def test_multiple_zones_returned(client, mock_zones) -> None:
     from wattnet.api.models.zone import Zone
 
     zones = [
-        Zone(zone="ES", full_name="Spain", eic_code="10YES-REE------0",
-             country_code="ESP", country_name="Spain", provider="ENTSO-E",
-             neighbours=["FR"]),
-        Zone(zone="FR", full_name="France", eic_code="10YFR-RTE------C",
-             country_code="FRA", country_name="France", provider="ENTSO-E",
-             neighbours=["ES", "DE"]),
+        Zone(
+            zone="ES",
+            full_name="Spain",
+            eic_code="10YES-REE------0",
+            country_code="ESP",
+            country_name="Spain",
+            provider="ENTSO-E",
+            neighbours=["FR"],
+        ),
+        Zone(
+            zone="FR",
+            full_name="France",
+            eic_code="10YFR-RTE------C",
+            country_code="FRA",
+            country_name="France",
+            provider="ENTSO-E",
+            neighbours=["ES", "DE"],
+        ),
     ]
     mock_zones(zones)
     body = client.get(_URL).json()

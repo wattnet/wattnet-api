@@ -85,7 +85,6 @@ class MixShareService:
         zone_groups = group_metrics_by_metadata(metrics, ["zone"])
 
         for (zone_str,), zone_metrics in zone_groups.items():
-
             # Group by series attributes (valid + zone_status)
             series_groups = group_metrics_by_metadata(
                 zone_metrics, ["valid", "zone_status"]
@@ -93,7 +92,6 @@ class MixShareService:
             series_list: List[MixShareSeries] = []
 
             for (valid, zone_status), series_metrics in series_groups.items():
-
                 # Group by origin zone
                 block_groups = group_metrics_by_metadata(series_metrics, ["source"])
                 block_list: List[MixShareBlock] = []

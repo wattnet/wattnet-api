@@ -58,8 +58,7 @@ def validate_location_filters(
     if zone and (lat is not None or lon is not None):
         raise HTTPException(
             status_code=400,
-            detail="If zone is provided, latitude and longitude "
-            "must NOT be provided.",
+            detail="If zone is provided, latitude and longitude must NOT be provided.",
         )
     if (lat is not None) != (lon is not None):
         raise HTTPException(

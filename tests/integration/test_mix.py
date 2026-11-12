@@ -11,9 +11,15 @@ _URL = "/v1/mix"
 
 
 def _m(**kw) -> FakeMetric:
-    d = {"zone": "ES", "unit": "MW", "production_type": "solar",
-         "data_state": "official", "datasource": "flow_tracing",
-         "valid": True, "zone_status": "complete"}
+    d = {
+        "zone": "ES",
+        "unit": "MW",
+        "production_type": "solar",
+        "data_state": "official",
+        "datasource": "flow_tracing",
+        "valid": True,
+        "zone_status": "complete",
+    }
     d.update(kw)
     return FakeMetric(_NOW, 200.0, d)
 

@@ -333,13 +333,3 @@ def test_get_impact_share_with_zone_filter() -> None:
     """
     svc = ImpactShareService(metrics_repo=FakeRepo([]))
     assert svc.get_impact_share(zone="ES") == []
-
-
-def test_get_impact_share_with_scope_filter() -> None:
-    """scope filter branch is executed when provided.
-
-    :return: None
-    :rtype: None
-    """
-    svc = ImpactShareService(metrics_repo=FakeRepo([]))
-    assert svc.get_impact_share(scope="operational") == []

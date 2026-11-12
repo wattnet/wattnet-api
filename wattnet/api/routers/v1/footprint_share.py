@@ -62,8 +62,7 @@ _footprint_type_query = Query(
 _scope_query = Query(
     None,
     description=(
-        "Filter footprints by scope [operational, life-cycle]. "
-        "Default is 'life-cycle'."
+        "Filter footprints by scope [operational, life-cycle]. Default is 'life-cycle'."
     ),
 )
 

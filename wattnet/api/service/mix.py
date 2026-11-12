@@ -78,7 +78,6 @@ class MixService:
                     data_state,
                     datasource,
                 ), block_metrics in block_groups.items():
-
                     values = sorted(
                         [(m.timestamp, m.value) for m in block_metrics],
                         key=lambda x: x[0],
