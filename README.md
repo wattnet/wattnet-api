@@ -118,6 +118,7 @@ cp config/.env.example config/.env.development
 | `ENTSOE_URL`             | `https://web-api.tp.entsoe.eu/api`                      | ENTSO-E Transparency Platform API endpoint              |
 | `ELEXON_URL`             | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
 | `EPIAS_URL`              | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
+| `DEVELOPER_PORTAL_URL`   | _(none)_                                                | Portal where API tokens are obtained; when set, the documentation explains how to get one |
 
 ## Running the API
 
@@ -151,6 +152,8 @@ Once the server is running, explore endpoints, parameters, and responses interac
 | Swagger UI   | [http://localhost:8000/v1/docs](http://localhost:8000/v1/docs)                 |
 | ReDoc        | [http://localhost:8000/v1/redoc](http://localhost:8000/v1/redoc)               |
 | OpenAPI JSON | [http://localhost:8000/v1/openapi.json](http://localhost:8000/v1/openapi.json) |
+
+The data endpoints are documented with the Bearer token scheme, so Swagger UI offers **Authorize** to send a token with the requests. The API does not validate the token itself: a gateway in front of it does. When `DEVELOPER_PORTAL_URL` is set, the description of the API explains where to get a token.
 
 The production instance is available at **[https://api.wattnet.eu/docs](https://api.wattnet.eu/docs)**.
 
