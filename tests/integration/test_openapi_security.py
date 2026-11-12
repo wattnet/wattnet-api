@@ -20,16 +20,20 @@ def test_declares_only_the_bearer_scheme(schema) -> None:
 
 @pytest.mark.parametrize(
     "path",
-    ["/zones", "/generation", "/footprints", "/factors", "/status/storage"],
+    ["/zones", "/generation", "/footprints", "/factors"],
 )
 def test_authenticated_endpoints_require_the_scheme(schema, path) -> None:
     """Authenticated endpoints show the lock in the docs."""
     assert schema["paths"][path]["get"]["security"] == [{"HTTPBearer": []}]
 
 
-def test_the_aggregate_status_stays_public(schema) -> None:
-    """The aggregate status has no lock in the docs."""
-    assert "security" not in schema["paths"]["/status"]["get"]
+@pytest.mark.parametrize(
+    "path",
+    ["/status", "/status/storage", "/status/entso-e", "/status/elexon", "/status/epias"],
+)
+def test_the_status_endpoints_stay_public(schema, path) -> None:
+    """The status endpoints have no lock in the docs."""
+    assert "security" not in schema["paths"][path]["get"]
 
 
 def test_the_app_itself_never_rejects_a_missing_token(client) -> None:

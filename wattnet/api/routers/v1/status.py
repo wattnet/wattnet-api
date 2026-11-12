@@ -4,7 +4,6 @@ import requests
 from fastapi import APIRouter
 from fastapi_versioning import version
 
-from wattnet.api.security import bearer_auth
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 
@@ -158,7 +157,7 @@ async def status() -> dict:
     }
 
 
-@router.get("/storage", dependencies=bearer_auth)
+@router.get("/storage")
 @version(1)
 async def status_storage() -> dict:
     """Check the health of the storage system.
@@ -169,7 +168,7 @@ async def status_storage() -> dict:
     return {"storage": check_storage()}
 
 
-@router.get("/entso-e", dependencies=bearer_auth)
+@router.get("/entso-e")
 @version(1)
 async def status_entsoe() -> dict:
     """Check the health of the ENTSOE API.
@@ -180,7 +179,7 @@ async def status_entsoe() -> dict:
     return {"entso-e": check_entsoe()}
 
 
-@router.get("/elexon", dependencies=bearer_auth)
+@router.get("/elexon")
 @version(1)
 async def status_elexon() -> dict:
     """Check the health of the Elexon API.
@@ -191,7 +190,7 @@ async def status_elexon() -> dict:
     return {"elexon": check_elexon()}
 
 
-@router.get("/epias", dependencies=bearer_auth)
+@router.get("/epias")
 @version(1)
 async def status_epias() -> dict:
     """Check the health of the EPIAS API.
