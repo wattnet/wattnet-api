@@ -35,7 +35,7 @@ class MixService:
             labels["production_type"] = production_type
 
         metrics = self.repo.query_metrics(
-            metric_name="zone_mix_generation",
+            metric_name="zone_mix",
             start=start,
             end=end,
             labels=labels,
