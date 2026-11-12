@@ -91,6 +91,19 @@ def test_get_mix_filters_none_values() -> None:
     assert results[0].series[0].production[0].values[0][1] == pytest.approx(300.0)
 
 
+def test_get_mix_rounds_the_values() -> None:
+    """The values of the response have two decimals, whatever the storage returns.
+
+    :return: None
+    :rtype: None
+    """
+    svc = MixService(metrics_repo=FakeRepo([_m(_NOW, 300.123456)]))
+
+    results = svc.get_mix()
+
+    assert results[0].series[0].production[0].values[0][1] == 300.12
+
+
 def test_get_mix_filters_negative_values() -> None:
     """Metrics with negative values must be excluded.
 

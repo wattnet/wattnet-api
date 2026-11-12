@@ -10,11 +10,20 @@ from wattnet.storage.models import Metric
 
 ZoneStatus = Literal["complete", "preview", "missing"]
 
+# Decimals of every value the API returns. The library returns the value as it is stored
+# (a Float32), so the rounding is done here, where the value is presented.
+DECIMALS = 2
+
 _PRIORITY_MAP: Dict[str, int] = {
     "missing": 0,
     "preview": 1,
     "complete": 2,
 }
+
+
+def present(value: float) -> float:
+    """Return a value as the API shows it: rounded to ``DECIMALS`` decimals."""
+    return round(float(value), DECIMALS)
 
 
 def resolve_zone_status(metrics: List[Metric]) -> ZoneStatus:
@@ -84,7 +93,7 @@ def compute_time_weighted_average(
     precision = 0
     for m in metrics:
         if m.value is not None:
-            v = Decimal(str(m.value))
+            v = Decimal(str(present(m.value)))
             precision = max(precision, abs(int(v.as_tuple().exponent)))
             dvals.append(v)
         else:
@@ -136,10 +145,6 @@ def build_time_series(
     :return: List of tuples (timestamp, value) sorted by timestamp
     :rtype: List[Tuple[datetime, float]]
     """
-    values = [
-        (m.timestamp, float(Decimal(str(m.value))))
-        for m in metrics
-        if m.value is not None
-    ]
+    values = [(m.timestamp, present(m.value)) for m in metrics if m.value is not None]
     values.sort(key=lambda x: x[0])
     return values

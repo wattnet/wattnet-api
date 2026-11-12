@@ -267,3 +267,45 @@ def test_build_time_series_ignores_none_values() -> None:
 
     assert len(series) == 1
     assert series[0][1] == pytest.approx(5.0, rel=1e-9)
+
+
+# ============================================================
+# present: values are rounded where the API presents them
+# ============================================================
+
+
+def test_present_rounds_to_two_decimals() -> None:
+    """
+    The value of a Float32 comes with noise; the API shows it with two decimals.
+
+    :return: None
+    :rtype: None
+    """
+    assert ops.present(12.345000267) == 12.35
+    assert ops.present(0.001) == 0.0
+    assert isinstance(ops.present(3), float)
+
+
+def test_build_time_series_rounds_values() -> None:
+    """
+    A time series carries the rounded value, not the one of the storage.
+
+    :return: None
+    :rtype: None
+    """
+    metrics: List[FakeMetric] = [FakeMetric(datetime(2025, 1, 1), 1.23456789, {})]
+
+    assert ops.build_time_series(metrics)[0][1] == 1.23
+
+
+def test_compute_time_weighted_average_rounds_unrounded_input() -> None:
+    """
+    An input with many decimals gives an average with at most two.
+
+    :return: None
+    :rtype: None
+    """
+    start: datetime = datetime(2025, 1, 1, 0, 0, 0)
+    metrics: List[FakeMetric] = [FakeMetric(start, 10.123456789, {})]
+
+    assert ops.compute_time_weighted_average(metrics, start, start + timedelta(hours=1)) == 10.12

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from wattnet.api.models.load import Load, LoadBlock, LoadSeries
-from wattnet.api.service.operations import group_metrics_by_metadata
+from wattnet.api.service.operations import group_metrics_by_metadata, present
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -94,7 +94,7 @@ class LoadService:
 
                 for (data_state, datasource), block_metrics in block_groups.items():
                     values = sorted(
-                        [(m.timestamp, m.value) for m in block_metrics],
+                        [(m.timestamp, present(m.value)) for m in block_metrics],
                         key=lambda x: x[0],
                     )
 
