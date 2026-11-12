@@ -110,7 +110,6 @@ cp config/.env.example config/.env.development
 | `LOG_LEVEL`              | `INFO`                                                  | Logging level (`DEBUG`, `INFO`, `WARNING`, …)           |
 | `LOG_HANDLERS`           | `["console"]`                                           | Log outputs: `"console"` and/or `"file"`                |
 | `LOG_FILE`               | `./logs/wattnet-api.log`                                | Log file path (only used when `file` handler is active) |
-| `STORAGE_DB_URL`         | `http://localhost:8123`                                 | URL for the wattnet-storage ClickHouse backend          |
 | `ENTSOE_URL`             | `https://web-api.tp.entsoe.eu/api`                      | ENTSO-E Transparency Platform API endpoint              |
 | `ELEXON_URL`             | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
 | `EPIAS_URL`              | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |

@@ -25,6 +25,9 @@ def mock_requests_up(monkeypatch):
     mock = MagicMock()
     mock.return_value.status_code = 200
     monkeypatch.setattr("wattnet.api.routers.v1.status.requests.get", mock)
+    monkeypatch.setattr(
+        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: True)
+    )
 
 
 @pytest.fixture
@@ -38,6 +41,9 @@ def mock_requests_down(monkeypatch):
     monkeypatch.setattr(
         "wattnet.api.routers.v1.status.requests.get",
         MagicMock(side_effect=_requests.RequestException("unreachable")),
+    )
+    monkeypatch.setattr(
+        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: False)
     )
 
 
@@ -118,28 +124,27 @@ def test_status_epias_up(client, mock_requests_up) -> None:
 # ── Missing URL branches ──────────────────────────────────────────────────────
 
 
-def test_check_storage_system_non_200_returns_false(monkeypatch) -> None:
-    """check_storage_system() must return False when the server returns non-200.
-
-    :return: None
-    :rtype: None
-    """
-    mock = MagicMock()
-    mock.return_value.status_code = 503
-    monkeypatch.setattr("wattnet.api.routers.v1.status.requests.get", mock)
-    assert check_storage_system() is False
-
-
-def test_check_storage_system_missing_url_returns_false(monkeypatch) -> None:
-    """check_storage_system() must return False when storage_db_url is empty.
+def test_check_storage_system_ping_false_returns_false(monkeypatch) -> None:
+    """check_storage_system() must return False when the storage does not answer.
 
     :return: None
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.settings",
-        MagicMock(storage_db_url=""),
+        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: False)
     )
+    assert check_storage_system() is False
+
+
+def test_check_storage_system_ping_error_returns_false(monkeypatch) -> None:
+    """check_storage_system() must return False, not raise, when ping() fails.
+
+    :return: None
+    :rtype: None
+    """
+    repo = MagicMock()
+    repo.ping.side_effect = RuntimeError("no client")
+    monkeypatch.setattr("wattnet.api.routers.v1.status.metrics_repo", repo)
     assert check_storage_system() is False
 
 

@@ -4,6 +4,7 @@ import requests
 from fastapi import APIRouter
 from fastapi_versioning import version
 
+from wattnet.api.dependencies import metrics_repo
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 
@@ -13,20 +14,14 @@ router = APIRouter()
 
 
 def check_storage_system() -> bool:
-    """Check if the storage system is reachable.
+    """Check if the storage system answers, through the connection the queries use.
 
-    :return: True if the storage system is reachable, False otherwise
+    :return: True if the storage system answers, False otherwise
     :rtype: bool
     """
-    storage_url = settings.storage_db_url
-    LOG.debug(f"Storage URL: {storage_url}")
-    if not storage_url:
-        LOG.error("Storage system URL missing in config")
-        return False
     try:
-        r = requests.get(storage_url, timeout=5)
-        return r.status_code == 200
-    except requests.RequestException as e:
+        return bool(metrics_repo.ping())
+    except Exception as e:  # the check must never break the status endpoints
         LOG.error(f"Storage system check failed: {e}")
         return False
 
