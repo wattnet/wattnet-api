@@ -7,6 +7,7 @@
 # Documentation with ReDoc: http://localhost:8000/redoc
 
 from pathlib import Path
+from urllib.parse import urlparse
 
 import uvicorn
 from fastapi import FastAPI
@@ -23,6 +24,29 @@ LOG = log.get(__name__)
 
 # Get the directory where this file is located for relative paths
 _API_DIR = Path(__file__).parent
+
+
+def authentication_documentation(developer_portal_url: str | None) -> str:
+    """Explain how to get a token, when the deployment names its developer portal.
+
+    :param developer_portal_url: URL of the portal where accounts create their API
+        credentials, or None to leave the section out
+    :return: Markdown section of the API description, or an empty string
+    """
+    if not developer_portal_url:
+        return ""
+    return (
+        "### Authentication\n\n"
+        "The data endpoints require an OAuth 2.0 access token, sent in the "
+        "`Authorization: Bearer <token>` header. To get one, create a free account "
+        f"at [{urlparse(developer_portal_url).netloc or developer_portal_url}]"
+        f"({developer_portal_url}), create an API credential there and use its "
+        "client ID and secret to request a token, as shown in the portal. To try "
+        "the endpoints from this page, select **Authorize**, paste the token and "
+        "send the requests. Tokens are short-lived: when one expires, request a "
+        "new one with the same credential.\n\n"
+    )
+
 
 summary = (
     "A comprehensive RESTful API for integrating wattnet into your applications. "
@@ -126,7 +150,8 @@ description = (
     "[GitHub Organization](https://github.com/wattnet).\n\n"
     "[![Website Banner](/static/images/banner.png)]"
     "(https://wattnet.eu)\n\n"
-    "### Funding and acknowledgments\n\n"
+    + authentication_documentation(settings.developer_portal_url)
+    + "### Funding and acknowledgments\n\n"
     "This work was developed within the "
     "[GreenDIGIT](https://greendigit-project.eu/) project, funded "
     "by the European Union’s Horizon Europe research and "

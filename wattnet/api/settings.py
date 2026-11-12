@@ -42,6 +42,10 @@ class Settings(BaseSettings):
         BASE_DIR / "data" / "zones" / "entsoe_full_crossborders.yaml"
     )
 
+    # Documentation: the developer portal where API tokens are obtained, shown in
+    # the description of the API when set
+    developer_portal_url: str | None = None
+
     # Storage
     timeseries_step_minutes: int = 15
     storage_clients: list[str] = ["clickhouse"]
