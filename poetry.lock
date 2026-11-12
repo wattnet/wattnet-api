@@ -3163,8 +3163,8 @@ stevedore = "^5.7.0"
 [package.source]
 type = "git"
 url = "https://github.com/wattnet/wattnet-storage.git"
-reference = "9c84975e7cce8f8d5703cef428b6b94dc5875b5a"
-resolved_reference = "9c84975e7cce8f8d5703cef428b6b94dc5875b5a"
+reference = "7350590b2bf36acba334e51ba1dd556ad8d0336f"
+resolved_reference = "7350590b2bf36acba334e51ba1dd556ad8d0336f"
 
 [[package]]
 name = "zipp"
@@ -3302,4 +3302,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "508f916ee577dad74c0b1c8073c6648f5e1cb14bf011589dc823ce52b1f57b91"
+content-hash = "6717aeb89e541484291d30469fb6d7e23529bffb9b44b1d64660182376d5a726"
