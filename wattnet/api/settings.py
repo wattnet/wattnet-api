@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     # the description of the API when set
     developer_portal_url: str | None = None
 
+    # Access: the file of the access policy (empty: tiers are not checked) and the
+    # most a query may ask, in zones times days (a year of one zone is 365)
+    access_policy_path: Path | None = None
+    max_query_zone_days: int = 400
+
     # Storage
     timeseries_step_minutes: int = 15
     storage_clients: list[str] = ["clickhouse"]
