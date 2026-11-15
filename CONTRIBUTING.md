@@ -4,7 +4,7 @@ Thank you for your interest in contributing. This document covers how to set up 
 
 ## Prerequisites
 
-- Python ≥ 3.10
+- Python ≥ 3.11
 - [Poetry](https://python-poetry.org/) ≥ 2.0
 - Docker and Docker Compose (for integration tests)
 - Git
@@ -50,7 +50,7 @@ Or via tox:
 tox -e integration
 ```
 
-**Full tox matrix** (unit tests on py3.10–3.14, lint, type-check, format, security, dependency audit, build):
+**Full tox matrix** (unit tests on py3.11–3.14, lint, type-check, format, security, dependency audit, build):
 
 ```bash
 tox
