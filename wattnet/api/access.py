@@ -39,6 +39,9 @@ _LIMIT_KEYS = (
     "forecast",
 )
 _datetime = TypeAdapter(datetime)
+# The groups whose endpoints ask for the data of a zone: only there is a query that says
+# no zone every zone. The list of zones and the factors have no zone to ask.
+_ZONED_GROUPS = {"energy_metrics", "environmental_metrics", "shares_metrics"}
 
 
 @dataclass(frozen=True)
@@ -126,9 +129,12 @@ def _parse(value: Optional[str]) -> Optional[datetime]:
         return None  # the endpoint answers 422 for it
 
 
-def _zones_requested(params: Mapping[str, Any]) -> int:
-    """Count the zones a query asks: one if it says where, every zone if not."""
-    if any(p in params for p in _LOCATION_PARAMS):
+def _zones_requested(params: Mapping[str, Any], zoned: bool = True) -> int:
+    """Count the zones a query asks: one if it says where, every zone if not.
+
+    An endpoint that is not about the data of a zone (``zoned`` false) asks one.
+    """
+    if not zoned or any(p in params for p in _LOCATION_PARAMS):
         return 1
     from wattnet.api.dependencies import zone_service
 
@@ -139,9 +145,11 @@ def _forbid(detail: str) -> HTTPException:
     return HTTPException(status_code=403, detail=detail)
 
 
-def check_query(limits: Limits, params: Mapping[str, Any], now: datetime) -> None:
+def check_query(
+    limits: Limits, params: Mapping[str, Any], now: datetime, zoned: bool = True
+) -> None:
     """Raise a 403 if a query asks more than the limits allow."""
-    zones = _zones_requested(params)
+    zones = _zones_requested(params, zoned)
     if limits.max_zones_per_query is not None and zones > limits.max_zones_per_query:
         raise _forbid(
             f"This access level allows {limits.max_zones_per_query} zone per query: "
@@ -168,7 +176,7 @@ def check_query(limits: Limits, params: Mapping[str, Any], now: datetime) -> Non
         raise _forbid("This access level does not include forecast data.")
 
 
-def check_size(params: Mapping[str, Any]) -> None:
+def check_size(params: Mapping[str, Any], zoned: bool = True) -> None:
     """Raise a 400 if a query is too big for the server, whatever the tier.
 
     The size is the zones it asks times the days of its range: a year of one zone is
@@ -178,7 +186,7 @@ def check_size(params: Mapping[str, Any]) -> None:
     start, end = _parse(params.get("start")), _parse(params.get("end"))
     if not (start and end) or start >= end:
         return
-    cost = _zones_requested(params) * (end - start).total_seconds() / 86400
+    cost = _zones_requested(params, zoned) * (end - start).total_seconds() / 86400
     if cost > settings.max_query_zone_days:
         raise HTTPException(
             status_code=400,
@@ -192,6 +200,7 @@ def check_size(params: Mapping[str, Any]) -> None:
 
 def guard(group: str) -> Callable[[Request], None]:
     """Return the dependency of the endpoints of a group of the access policy."""
+    zoned = group in _ZONED_GROUPS
 
     def dependency(request: Request) -> None:
         params = request.query_params
@@ -202,7 +211,7 @@ def guard(group: str) -> Callable[[Request], None]:
                 raise _forbid("The request carries no known access level.")
             if group not in limits.groups:
                 raise _forbid("This access level does not include these endpoints.")
-            check_query(limits, params, datetime.now(timezone.utc))
-        check_size(params)
+            check_query(limits, params, datetime.now(timezone.utc), zoned)
+        check_size(params, zoned)
 
     return dependency
