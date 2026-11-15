@@ -87,33 +87,46 @@ docker pull wattnet/wattnet-api:latest
 Run the container:
 
 ```bash
-docker run -p 8000:8000 --env-file config/.env.production ghcr.io/wattnet/wattnet-api:latest
+docker run -p 8000:8000 --env-file .env ghcr.io/wattnet/wattnet-api:latest
 ```
 
 ## Configuration
 
-The server reads settings from environment variables or a `.env` file. Copy the example and adjust as needed:
+The server reads its settings from environment variables, from `/etc/wattnet/api.env` or from a `.env` file at the root of the project (in that order of priority, the environment first). The settings of the API start with `WATTNET_API_`; copy the example and adjust as needed:
 
 ```bash
-cp config/.env.example config/.env.development
+cp config/.env.example .env
 ```
 
-| Variable                 | Default                                                 | Description                                             |
-| ------------------------ | ------------------------------------------------------- | ------------------------------------------------------- |
-| `WATTNET_ENV`            | `development`                                           | Active environment; selects `config/.env.<WATTNET_ENV>` |
-| `API_HOST`               | `localhost`                                             | Bind address for the Uvicorn server                     |
-| `API_PORT`               | `8000`                                                  | Listening port                                          |
-| `API_DEBUG`              | `True`                                                  | Enable debug mode and verbose logging                   |
-| `GEOJSON_PATH`           | _(bundled wattnet-data)_                                | Directory with GeoJSON zone boundary files              |
-| `ZONES_FILE_PATH`        | _(bundled wattnet-data)_                                | Path to the zones YAML file                             |
-| `CROSSBORDERS_FILE_PATH` | _(bundled wattnet-data)_                                | Path to the crossborders YAML file                      |
-| `LOG_LEVEL`              | `INFO`                                                  | Logging level (`DEBUG`, `INFO`, `WARNING`, …)           |
-| `LOG_HANDLERS`           | `["console"]`                                           | Log outputs: `"console"` and/or `"file"`                |
-| `LOG_FILE`               | `./logs/wattnet-api.log`                                | Log file path (only used when `file` handler is active) |
-| `ENTSOE_URL`             | `https://web-api.tp.entsoe.eu/api`                      | ENTSO-E Transparency Platform API endpoint              |
-| `ELEXON_URL`             | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
-| `EPIAS_URL`              | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
-| `DEVELOPER_PORTAL_URL`   | _(none)_                                                | Portal where API tokens are obtained; when set, the documentation explains how to get one |
+| Variable                              | Default                                                 | Description                                             |
+| ------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- |
+| `WATTNET_API_HOST`                    | `0.0.0.0`                                               | Bind address for the server                             |
+| `WATTNET_API_PORT`                    | `8000`                                                  | Listening port                                          |
+| `WATTNET_API_WORKERS`                 | `1`                                                     | Worker processes of the container (Gunicorn)            |
+| `WATTNET_API_DEBUG`                   | `False`                                                 | Enable debug mode and verbose logging                   |
+| `WATTNET_API_GEOJSON_PATH`            | _(bundled wattnet-data)_                                | Directory with GeoJSON zone boundary files              |
+| `WATTNET_API_ZONES_FILE_PATH`         | _(bundled wattnet-data)_                                | Path to the zones YAML file                             |
+| `WATTNET_API_CROSSBORDERS_FILE_PATH`  | _(bundled wattnet-data)_                                | Path to the crossborders YAML file                      |
+| `WATTNET_API_LOG_LEVEL`               | `INFO`                                                  | Logging level (`DEBUG`, `INFO`, `WARNING`, …)           |
+| `WATTNET_API_LOG_HANDLERS`            | `["console"]`                                           | Log outputs: `"console"` and/or `"file"`                |
+| `WATTNET_API_LOG_FILE`                | `./logs/wattnet-api.log`                                | Log file path (only used when `file` handler is active) |
+| `WATTNET_API_ENTSOE_URL`              | `https://web-api.tp.entsoe.eu/api`                      | ENTSO-E Transparency Platform API endpoint              |
+| `WATTNET_API_ELEXON_URL`              | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
+| `WATTNET_API_EPIAS_URL`               | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
+| `WATTNET_API_DEVELOPER_PORTAL_URL`    | _(none)_                                                | Portal where API tokens are obtained; when set, the documentation explains how to get one |
+
+The connection to ClickHouse is configured by the storage library, with the prefix `CLICKHOUSE_` (not `WATTNET_API_`):
+
+| Variable                 | Default      | Description                                                                          |
+| ------------------------ | ------------ | ------------------------------------------------------------------------------------ |
+| `CLICKHOUSE_HOST`        | `localhost`  | ClickHouse host                                                                      |
+| `CLICKHOUSE_PORT`        | `8123`       | ClickHouse HTTP port                                                                 |
+| `CLICKHOUSE_USER`        | `default`    | User                                                                                 |
+| `CLICKHOUSE_PASSWORD`    | _(empty)_    | Password                                                                             |
+| `CLICKHOUSE_DATABASE`    | `wattnet`    | Database                                                                             |
+| `CLICKHOUSE_REPLICATED`  | `false`      | Create and use replicated tables, for a ClickHouse cluster with Keeper               |
+
+The API creates its tables when it starts (`CREATE ... IF NOT EXISTS`), so it does not start until ClickHouse answers.
 
 ## Running the API
 
@@ -134,9 +147,11 @@ uvicorn wattnet.api.app:versioned_app --host 0.0.0.0 --port 8000 --reload
 ```bash
 docker run -d \
   -p 8000:8000 \
-  -e WATTNET_API_CLICKHOUSE_HOST=<host> \
+  -e CLICKHOUSE_HOST=<host> \
   ghcr.io/wattnet/wattnet-api:latest
 ```
+
+The image runs as an unprivileged user (uid 10001). For a container platform, `GET /healthz` answers 200 while the process lives and `GET /readyz` answers 200 when ClickHouse answers and 503 when it does not; neither is part of the public API.
 
 ## Interactive API Documentation
 
