@@ -2868,7 +2868,7 @@ name = "wattnet-storage"
 version = "1.1.0"
 description = "Extensible plugin-based client for unified wattnet time-series metric storage across multiple backends."
 optional = false
-python-versions = ">=3.10,<3.15"
+python-versions = ">=3.11,<3.15"
 groups = ["main"]
 files = []
 develop = false
@@ -2882,8 +2882,8 @@ stevedore = "^5.7.0"
 [package.source]
 type = "git"
 url = "https://github.com/wattnet/wattnet-storage.git"
-reference = "f96e5df16bda748a040d9ac44b7a913a6923778c"
-resolved_reference = "f96e5df16bda748a040d9ac44b7a913a6923778c"
+reference = "5906dbd1689f45ba4c8ac6c4f8ce8809ede05798"
+resolved_reference = "5906dbd1689f45ba4c8ac6c4f8ce8809ede05798"
 
 [[package]]
 name = "zipp"
@@ -3021,4 +3021,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.15"
-content-hash = "f7b01ed2c82bad658e609d3d2844299adcc68c481ef20b5bc84b8eafa369d11a"
+content-hash = "c3ff88e2022b2720066fbcc6d06bc282c178669ea8182e42c50bc24d0985190b"
