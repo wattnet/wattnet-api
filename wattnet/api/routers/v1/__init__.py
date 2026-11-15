@@ -23,8 +23,12 @@ from wattnet.api.routers.v1.scores import router as scores_router
 from wattnet.api.routers.v1.status import router as status_router
 from wattnet.api.routers.v1.zones import router as zones_router
 from wattnet.api.security import bearer_auth
+from wattnet.api.utils import validation
 
-api_router_v1 = APIRouter(route_class=versioned_api_route(1))
+api_router_v1 = APIRouter(
+    route_class=versioned_api_route(1),
+    dependencies=[Depends(validation.validate_query_parameters)],
+)
 
 
 def _secured(group: str) -> list:

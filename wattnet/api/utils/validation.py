@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
+from fastapi.dependencies.utils import get_flat_dependant
 
 from wattnet.api.service import geo
 
@@ -247,3 +248,41 @@ def validate_aggregation_params(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="start and end datetimes are required when aggregate=True.",
         )
+
+
+def validate_query_parameters(request: Request) -> None:
+    """Refuse a query string that the endpoint would otherwise read in silence.
+
+    No parameter of the API is a list, so a repeated one has no meaning: the
+    server would keep one value and drop the rest. A name the endpoint does not
+    know (a typo such as ``zon``) would be ignored and widen the query, and an
+    empty value (``zone=``) would count as not sent.
+
+    :param request: The request being served
+    :type request: Request
+
+    :raises HTTPException: 400 for an unknown, repeated or empty parameter
+    """
+    dependant = get_flat_dependant(request.scope["route"].dependant)
+    known = {p.alias for p in dependant.query_params}
+    seen: set[str] = set()
+    for name, value in request.query_params.multi_items():
+        if name not in known:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Unknown query parameter '{name}'. "
+                    f"Accepted: {', '.join(sorted(known)) or 'none'}."
+                ),
+            )
+        if name in seen:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The query parameter '{name}' is repeated; send it once.",
+            )
+        if value == "":
+            raise HTTPException(
+                status_code=400,
+                detail=f"The query parameter '{name}' is empty; give it a value.",
+            )
+        seen.add(name)
