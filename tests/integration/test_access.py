@@ -93,3 +93,9 @@ def test_status_and_the_probes_need_no_tier(client, with_policy, monkeypatch) ->
     )
     assert client.get("/v1/status/storage").status_code == 200
     assert client.get("/healthz").status_code == 200
+
+
+
+def test_the_list_of_zones_needs_no_zone(client, with_policy) -> None:
+    """Free (one zone per query) can list the zones: that endpoint has no zone to ask."""
+    assert _get(client, "/v1/zones", "free").status_code == 200

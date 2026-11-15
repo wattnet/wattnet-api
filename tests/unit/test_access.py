@@ -178,6 +178,12 @@ def test_a_limit_of_two_zones_refuses_every_zone(three_zones) -> None:
     check_query(two, {"zone": "ES"}, NOW)
 
 
+def test_an_endpoint_without_a_zone_to_ask_asks_one(three_zones) -> None:
+    """The list of zones and the factors are not about one zone, so no zone is not all of them."""
+    check_query(FREE, {}, NOW, zoned=False)
+    _denied(FREE, {})  # a data endpoint without zone is every zone
+
+
 def test_the_range_is_limited() -> None:
     """A range wider than the tier allows is refused, and the limit itself passes."""
     where = {"zone": "ES"}
