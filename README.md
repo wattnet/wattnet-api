@@ -129,8 +129,9 @@ The connection to ClickHouse is configured by the storage library, with the pref
 | `CLICKHOUSE_PASSWORD`    | _(empty)_    | Password                                                                             |
 | `CLICKHOUSE_DATABASE`    | `wattnet`    | Database                                                                             |
 | `CLICKHOUSE_REPLICATED`  | `false`      | Create and use replicated tables, for a ClickHouse cluster with Keeper               |
+| `CLICKHOUSE_BOOTSTRAP`   | `true`       | Create the database and the tables when starting. `false` when they are made apart (the API only reads): on a replicated database each `CREATE` waits for the replicas and the start takes minutes |
 
-The API creates its tables when it starts (`CREATE ... IF NOT EXISTS`), so it does not start until ClickHouse answers.
+By default the API creates its tables when it starts (`CREATE ... IF NOT EXISTS`), so it does not start until ClickHouse answers; with `CLICKHOUSE_BOOTSTRAP=false` it creates nothing and `/readyz` answers 503 until ClickHouse does.
 
 ## Running the API
 

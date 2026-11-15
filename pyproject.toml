@@ -55,7 +55,7 @@ trio = "0.32.0"
 pydantic-settings = "^2.12.0"
 typing-extensions = "4.15.0"
 # From git until wattnet-storage 1.2.0 is released (it has zone_mix, the replicated ClickHouse and updated_at); then back to a version range.
-wattnet-storage = { git = "https://github.com/wattnet/wattnet-storage.git", rev = "f96e5df16bda748a040d9ac44b7a913a6923778c" }
+wattnet-storage = { git = "https://github.com/wattnet/wattnet-storage.git", rev = "5906dbd1689f45ba4c8ac6c4f8ce8809ede05798" }
 pyyaml = "^6.0"
 
 [tool.poetry.group.test.dependencies]
