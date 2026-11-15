@@ -50,7 +50,7 @@ For the full software architecture see the [wattnet-software-architecture](https
 
 ## Requirements
 
-- Python ≥ 3.10
+- Python ≥ 3.11
 - Docker (for containerised deployment)
 - A running [wattnet-storage](https://github.com/wattnet/wattnet-storage) backend
 
