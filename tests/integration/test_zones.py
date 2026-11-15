@@ -60,7 +60,7 @@ def test_returns_zone_structure(client, mock_zones) -> None:
 
 
 def test_get_zones_value_error_returns_500(client, monkeypatch) -> None:
-    """ValueError from zone service returns HTTP 500 with detail.
+    """ValueError from zone service returns HTTP 500 without the internal message.
 
     :return: None
     :rtype: None
@@ -75,7 +75,8 @@ def test_get_zones_value_error_returns_500(client, monkeypatch) -> None:
     )
     r = client.get(_URL)
     assert r.status_code == 500
-    assert "bad zone config" in r.json()["detail"]
+    assert r.json()["detail"] == "The zones could not be loaded."
+    assert "bad zone config" not in r.text
 
 
 def test_get_zones_yaml_error_returns_500(client, monkeypatch) -> None:

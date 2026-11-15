@@ -11,11 +11,12 @@ from urllib.parse import urlparse
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_versioning import VersionedFastAPI
 
 from wattnet.api.routers.v1 import api_router_v1
+from wattnet.api.routers.v1.status import check_storage_system
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 
@@ -224,6 +225,20 @@ versioned_app.mount(
 def favicon() -> FileResponse:
     """Route for favicon.ico."""
     return FileResponse(_API_DIR / "static" / "favicon.ico")
+
+
+@versioned_app.get("/healthz", include_in_schema=False)
+def healthz() -> dict:
+    """Liveness probe: the process answers, with no call to the storage or others."""
+    return {"status": "ok"}
+
+
+@versioned_app.get("/readyz", include_in_schema=False)
+def readyz() -> JSONResponse:
+    """Readiness probe: 200 when the storage answers, 503 when it does not."""
+    if check_storage_system():
+        return JSONResponse({"status": "ready"})
+    return JSONResponse({"status": "not ready"}, status_code=503)
 
 
 def main() -> None:

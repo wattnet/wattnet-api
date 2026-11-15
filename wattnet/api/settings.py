@@ -51,7 +51,6 @@ class Settings(BaseSettings):
     storage_clients: list[str] = ["clickhouse"]
 
     # External services
-    storage_db_url: str = "http://localhost:8123"
     entsoe_url: str = "https://web-api.tp.entsoe.eu/api"
     elexon_url: str = "https://data.elexon.co.uk/bmrs/api/v1"
     epias_url: str = "https://seffaflik.epias.com.tr/electricity-service/v1"

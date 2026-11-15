@@ -8,6 +8,9 @@ from fastapi_versioning import version
 
 from wattnet.api.dependencies import zone_service
 from wattnet.api.models.zone import Zone
+from wattnet.api.utils import log
+
+LOG = log.get(__name__)
 
 router = APIRouter()
 
@@ -34,4 +37,8 @@ def get_zones() -> List[Zone]:
     try:
         return zone_service.get_zones()
     except (ValueError, yaml.YAMLError) as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        # The text of the error is for the log: it can name files and settings.
+        LOG.error(f"Zones could not be loaded: {exc}")
+        raise HTTPException(
+            status_code=500, detail="The zones could not be loaded."
+        ) from exc

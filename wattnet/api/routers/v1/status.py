@@ -1,9 +1,13 @@
 """Router for status endpoints to check health of storage and external APIs."""
 
+import time
+from collections.abc import Callable
+
 import requests
 from fastapi import APIRouter
 from fastapi_versioning import version
 
+from wattnet.api.dependencies import metrics_repo
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 
@@ -11,26 +15,49 @@ LOG = log.get(__name__)
 
 router = APIRouter()
 
+# The status endpoints are public and each call reaches a third party (ENTSO-E, Elexon,
+# EPIAS), so the answer of a provider is kept for a few seconds.
+# shortcut: not thread-safe, two calls at once may both ask the provider; fine here.
+_CACHE_SECONDS = 30
+_states: list[dict] = []
+
+
+def _cached(check: Callable[[], bool]) -> Callable[[], bool]:
+    """Return ``check`` remembering its answer for ``_CACHE_SECONDS`` seconds."""
+    state = {"at": float("-inf"), "value": False}
+    _states.append(state)
+
+    def cached() -> bool:
+        now = time.monotonic()
+        if now - state["at"] >= _CACHE_SECONDS:
+            state["value"], state["at"] = check(), now
+        return bool(state["value"])
+
+    cached.__name__ = check.__name__
+    cached.__doc__ = check.__doc__
+    return cached
+
+
+def clear_cache() -> None:
+    """Forget the remembered answers of the providers (for the tests)."""
+    for state in _states:
+        state["at"] = float("-inf")
+
 
 def check_storage_system() -> bool:
-    """Check if the storage system is reachable.
+    """Check if the storage system answers, through the connection the queries use.
 
-    :return: True if the storage system is reachable, False otherwise
+    :return: True if the storage system answers, False otherwise
     :rtype: bool
     """
-    storage_url = settings.storage_db_url
-    LOG.debug(f"Storage URL: {storage_url}")
-    if not storage_url:
-        LOG.error("Storage system URL missing in config")
-        return False
     try:
-        r = requests.get(storage_url, timeout=5)
-        return r.status_code == 200
-    except requests.RequestException as e:
+        return bool(metrics_repo.ping())
+    except Exception as e:  # the check must never break the status endpoints
         LOG.error(f"Storage system check failed: {e}")
         return False
 
 
+@_cached
 def check_entsoe_api() -> bool:
     """Check if the ENTSOE API is reachable.
 
@@ -49,6 +76,7 @@ def check_entsoe_api() -> bool:
         return False
 
 
+@_cached
 def check_elexon_api() -> bool:
     """Check if the Elexon API is reachable.
 
@@ -67,6 +95,7 @@ def check_elexon_api() -> bool:
         return False
 
 
+@_cached
 def check_epias_api() -> bool:
     """Check if the EPIAS API is reachable.
 
@@ -143,7 +172,7 @@ def check_epias() -> str:
 
 @router.get("")
 @version(1)
-async def status() -> dict:
+def status() -> dict:
     """Check the health of the storage system and external APIs.
 
     :return: Dictionary with the status of storage, ENTSOE API, and Elexon API
@@ -159,7 +188,7 @@ async def status() -> dict:
 
 @router.get("/storage")
 @version(1)
-async def status_storage() -> dict:
+def status_storage() -> dict:
     """Check the health of the storage system.
 
     :return: Dictionary with the status of the storage system
@@ -170,7 +199,7 @@ async def status_storage() -> dict:
 
 @router.get("/entso-e")
 @version(1)
-async def status_entsoe() -> dict:
+def status_entsoe() -> dict:
     """Check the health of the ENTSOE API.
 
     :return: Dictionary with the status of the ENTSOE API
@@ -181,7 +210,7 @@ async def status_entsoe() -> dict:
 
 @router.get("/elexon")
 @version(1)
-async def status_elexon() -> dict:
+def status_elexon() -> dict:
     """Check the health of the Elexon API.
 
     :return: Dictionary with the status of the Elexon API
@@ -192,7 +221,7 @@ async def status_elexon() -> dict:
 
 @router.get("/epias")
 @version(1)
-async def status_epias() -> dict:
+def status_epias() -> dict:
     """Check the health of the EPIAS API.
 
     :return: Dictionary with the status of the EPIAS API
