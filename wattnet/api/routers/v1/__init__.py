@@ -3,9 +3,10 @@
 from enum import Enum
 from typing import List, Union
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi_versioning import versioned_api_route
 
+from wattnet.api import access
 from wattnet.api.routers.v1.exports import router as exports_router
 from wattnet.api.routers.v1.factors import router as factors_router
 from wattnet.api.routers.v1.flow_share import router as flow_share_router
@@ -25,6 +26,12 @@ from wattnet.api.security import bearer_auth
 
 api_router_v1 = APIRouter(route_class=versioned_api_route(1))
 
+
+def _secured(group: str) -> list:
+    """Return the dependencies of a group: the Bearer scheme and the access tier."""
+    return [*bearer_auth, Depends(access.guard(group))]
+
+
 # TAGS:
 TagType = Union[str, Enum]
 
@@ -39,7 +46,7 @@ status_tags: List[TagType] = ["Status"]
 
 # Zones endpoints
 api_router_v1.include_router(
-    zones_router, prefix="/zones", tags=zones_tags, dependencies=bearer_auth
+    zones_router, prefix="/zones", tags=zones_tags, dependencies=_secured("zones")
 )
 
 # Energy-related endpoints
@@ -47,25 +54,31 @@ api_router_v1.include_router(
     generation_router,
     prefix="/generation",
     tags=energy_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("energy_metrics"),
 )
 api_router_v1.include_router(
-    load_router, prefix="/load", tags=energy_metrics_tags, dependencies=bearer_auth
+    load_router,
+    prefix="/load",
+    tags=energy_metrics_tags,
+    dependencies=_secured("energy_metrics"),
 )
 api_router_v1.include_router(
     imports_router,
     prefix="/imports",
     tags=energy_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("energy_metrics"),
 )
 api_router_v1.include_router(
     exports_router,
     prefix="/exports",
     tags=energy_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("energy_metrics"),
 )
 api_router_v1.include_router(
-    mix_router, prefix="/mix", tags=energy_metrics_tags, dependencies=bearer_auth
+    mix_router,
+    prefix="/mix",
+    tags=energy_metrics_tags,
+    dependencies=_secured("energy_metrics"),
 )
 
 # Environmental-related endpoints
@@ -73,19 +86,19 @@ api_router_v1.include_router(
     footprints_router,
     prefix="/footprints",
     tags=environmental_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("environmental_metrics"),
 )
 api_router_v1.include_router(
     impacts_router,
     prefix="/impacts",
     tags=environmental_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("environmental_metrics"),
 )
 api_router_v1.include_router(
     scores_router,
     prefix="/environmental-score",
     tags=environmental_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("environmental_metrics"),
 )
 
 # Shares-related endpoints
@@ -93,30 +106,33 @@ api_router_v1.include_router(
     flow_share_router,
     prefix="/flow-share",
     tags=shares_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("shares_metrics"),
 )
 api_router_v1.include_router(
     mix_share_router,
     prefix="/mix-share",
     tags=shares_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("shares_metrics"),
 )
 api_router_v1.include_router(
     footprint_share_router,
     prefix="/footprint-share",
     tags=shares_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("shares_metrics"),
 )
 api_router_v1.include_router(
     impact_share_router,
     prefix="/impact-share",
     tags=shares_metrics_tags,
-    dependencies=bearer_auth,
+    dependencies=_secured("shares_metrics"),
 )
 
 # Factor-related endpoints
 api_router_v1.include_router(
-    factors_router, prefix="/factors", tags=factors_tags, dependencies=bearer_auth
+    factors_router,
+    prefix="/factors",
+    tags=factors_tags,
+    dependencies=_secured("factors"),
 )
 
 # Status endpoints

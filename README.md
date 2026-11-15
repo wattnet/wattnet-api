@@ -114,6 +114,10 @@ cp config/.env.example .env
 | `WATTNET_API_ELEXON_URL`              | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
 | `WATTNET_API_EPIAS_URL`               | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
 | `WATTNET_API_DEVELOPER_PORTAL_URL`    | _(none)_                                                | Portal where API tokens are obtained; when set, the documentation explains how to get one |
+| `WATTNET_API_ACCESS_POLICY_PATH`      | _(none)_                                                | YAML file of the access policy. When set, the gate in front of the API must send the tier in `X-Wattnet-Tier` and each tier gets its groups of endpoints, zones per query, query range, history and forecast. Read again when the file changes |
+| `WATTNET_API_MAX_QUERY_ZONE_DAYS`     | `400`                                                   | The most a query may ask, in zones times days of range (a year of one zone is 365; without `zone` a query asks every zone). It applies to every tier |
+
+The access policy is the same file that the gate and the developer portal read (the tiers, their groups of endpoints and their limits). Without it the tiers are not checked, as in development; the cap of `WATTNET_API_MAX_QUERY_ZONE_DAYS` applies in both cases. A query that asks more than its tier allows is answered `403`, and one that is too big for the server `400`.
 
 The connection to ClickHouse is configured by the storage library, with the prefix `CLICKHOUSE_` (not `WATTNET_API_`):
 
