@@ -75,14 +75,18 @@ def test_parse_policy_keeps_the_tiers_that_make_requests() -> None:
     assert tiers["research"].forecast is True
 
 
+_LIMITS = (
+    "{max_zones_per_query: 1, max_query_range_days: 1, history_days: 1, forecast: true}"
+)
+
+
 @pytest.mark.parametrize(
     "text",
     [
         "just text",
         "tiers: []",
         "tiers: {free: {access: {endpoint_groups: [zones]}, limits: {forecast: true}}}",
-        "tiers: {free: {limits: {max_zones_per_query: 1, max_query_range_days: 1, "
-        "history_days: 1, forecast: true}}}",
+        f"tiers: {{free: {{limits: {_LIMITS}}}}}",  # all the limits, no groups
     ],
 )
 def test_parse_policy_rejects_an_invalid_policy(text: str) -> None:
