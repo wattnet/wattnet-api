@@ -23,5 +23,6 @@ exec gunicorn wattnet.api:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --workers "$WORKERS" \
     --bind "0.0.0.0:$PORT" \
+    --no-control-socket \
     --access-logfile - \
     --error-logfile -
