@@ -16,6 +16,10 @@ COPY data /app/data
 COPY scripts/docker-entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Not root: the files above are only read. The id is fixed so that a deployment can ask for it (runAsUser).
+RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin wattnet
+USER 10001
+
 EXPOSE 8000
 
 ENTRYPOINT ["entrypoint.sh"]
