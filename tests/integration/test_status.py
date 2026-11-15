@@ -11,9 +11,16 @@ from wattnet.api.routers.v1.status import (
     check_entsoe_api,
     check_epias_api,
     check_storage_system,
+    clear_cache,
 )
 
 _URL = "/v1/status"
+
+
+@pytest.fixture(autouse=True)
+def _no_cache() -> None:
+    """Start every test with no answer of a provider remembered."""
+    clear_cache()
 
 
 @pytest.fixture
@@ -185,3 +192,23 @@ def test_check_epias_api_missing_url_returns_false(monkeypatch) -> None:
         MagicMock(epias_url=""),
     )
     assert check_epias_api() is False
+
+
+def test_provider_answer_is_kept_for_a_few_seconds(monkeypatch) -> None:
+    """The third party is asked once in the cache time, and again after it.
+
+    :return: None
+    :rtype: None
+    """
+    clock = [100.0]
+    monkeypatch.setattr("wattnet.api.routers.v1.status.time.monotonic", lambda: clock[0])
+    mock = MagicMock()
+    monkeypatch.setattr("wattnet.api.routers.v1.status.requests.get", mock)
+
+    assert check_entsoe_api() is True
+    assert check_entsoe_api() is True
+    assert mock.call_count == 1
+
+    clock[0] += 31
+    assert check_entsoe_api() is True
+    assert mock.call_count == 2
