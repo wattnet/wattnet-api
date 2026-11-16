@@ -20,6 +20,10 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin wattnet
 USER 10001
 
+# The commit of a snapshot, which the documentation shows as the version (a release leaves it empty and shows the version of the package).
+ARG BUILD_COMMIT=""
+ENV BUILD_COMMIT=$BUILD_COMMIT
+
 EXPOSE 8000
 
 ENTRYPOINT ["entrypoint.sh"]
