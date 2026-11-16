@@ -69,7 +69,7 @@ def check_entsoe_api() -> bool:
         LOG.error("ENTSOE API URL missing in config")
         return False
     try:
-        requests.get(entsoe_url, timeout=5)
+        requests.get(entsoe_url, timeout=settings.external_timeout_seconds)
         return True  # If the request succeeds, we assume the API is reachable
     except requests.RequestException as e:
         LOG.error(f"ENTSOE API check failed: {e}")
@@ -88,7 +88,7 @@ def check_elexon_api() -> bool:
         LOG.error("Elexon API URL missing in config")
         return False
     try:
-        requests.get(elexon_url, timeout=5)
+        requests.get(elexon_url, timeout=settings.external_timeout_seconds)
         return True  # If the request succeeds, we assume the API is reachable
     except requests.RequestException as e:
         LOG.error(f"Elexon API check failed: {e}")
@@ -107,7 +107,7 @@ def check_epias_api() -> bool:
         LOG.error("EPIAS API URL missing in config")
         return False
     try:
-        requests.get(epias_url, timeout=5)
+        requests.get(epias_url, timeout=settings.external_timeout_seconds)
         return True  # If the request succeeds, we assume the API is reachable
     except requests.RequestException as e:
         LOG.error(f"EPIAS API check failed: {e}")
