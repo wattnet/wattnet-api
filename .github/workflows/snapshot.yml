@@ -6,6 +6,9 @@
 # visibility for all its tags). The environments that deploy a snapshot need their own credentials with read access to it.
 name: Snapshot
 
+# The title of each run in the Actions tab: the commit that is built (the whole one, an expression cannot cut it), or the ref that was asked.
+run-name: Snapshot ${{ inputs.ref || github.sha }}
+
 on:
   workflow_dispatch:
     inputs:
