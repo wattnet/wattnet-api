@@ -6,6 +6,9 @@
 # Documentation and tester with Swagger UI: http://localhost:8000/docs
 # Documentation with ReDoc: http://localhost:8000/redoc
 
+import os
+import re
+from importlib.metadata import version as package_version
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -25,6 +28,20 @@ LOG = log.get(__name__)
 
 # Get the directory where this file is located for relative paths
 _API_DIR = Path(__file__).parent
+
+
+def build_version() -> str:
+    """Return the version that the documentation shows.
+
+    A snapshot image is built with the commit in ``BUILD_COMMIT`` and shows it; a
+    release has none and shows the version of the package.
+
+    :return: the commit when ``BUILD_COMMIT`` is a hexadecimal id, else the version
+    """
+    commit = os.environ.get("BUILD_COMMIT", "")
+    if re.fullmatch(r"[0-9a-f]{7,40}", commit):
+        return commit
+    return package_version("wattnet-api")
 
 
 def authentication_documentation(developer_portal_url: str | None) -> str:
@@ -211,7 +228,7 @@ versioned_app = VersionedFastAPI(
     enable_latest=True,
     summary=summary,
     description=description + main_documentation,
-    version="1.0.0",
+    version=build_version(),
     terms_of_service="https://wattnet.eu/terms",
 )
 
