@@ -173,13 +173,22 @@ Every error answers with the sentence that says what is wrong, in `detail`, and 
 
 | Status | Codes |
 | --- | --- |
-| 400 | `zone_and_coordinates_conflict`, `coordinates_incomplete`, `invalid_footprint_type`, `invalid_factor_type`, `invalid_impact_type`, `invalid_production_type`, `invalid_scope`, `invalid_operational_scope`, `time_range_incomplete`, `time_range_inverted`, `aggregate_requires_time_range`, `unknown_parameter`, `repeated_parameter`, `empty_parameter`, `query_too_big` |
+| 400 | `zone_and_coordinates_conflict`, `coordinates_incomplete`, `invalid_footprint_type`, `invalid_factor_type`, `invalid_impact_type`, `invalid_production_type`, `invalid_scope`, `invalid_operational_scope`, `time_range_incomplete`, `time_range_inverted`, `aggregate_requires_time_range`, `unknown_parameter`, `repeated_parameter`, `empty_parameter`, `query_too_big`, `invalid_resolution`, `resolution_with_aggregate` |
 | 403 | `access_level_unknown`, `endpoint_group_not_allowed`, `zone_limit_exceeded`, `range_limit_exceeded`, `history_limit_exceeded`, `forecast_not_allowed` |
 | 404 | `zone_not_found_for_coordinates`, `not_found` |
 | 422 | `validation_error` |
 | 500 | `zones_unavailable` |
 
 The aggregates (`aggregate=true`) of `footprints`, `impacts`, `environmental-score` and `factors` carry `updated_at`, the most recent moment any value of the period was stored.
+## Resolution of the series
+
+The series of `load`, `generation`, `imports`, `exports`, `mix`, `footprints`, `impacts` and `environmental-score` come at the resolution of the data, 15 minutes. A year of one zone is about 35,000 points per series; with `resolution=1h` or `resolution=1d` each value is the average of its hour or day, and ClickHouse does the average, so far fewer rows travel. Without `resolution`, or with `resolution=15m`, nothing changes.
+
+- The periods follow the UTC calendar: with `1h` they are the hours in UTC and with `1d` the days in UTC, whatever `start` is. The first and the last one average only the points inside the range, so they can have fewer points than the others.
+- The negative values are left out before the average, as they are left out of the series without a resolution, so a period is the average of the values that stay.
+- The version of each point that counts is chosen as always; a period is `valid` only if all its points are, and its `zone_status` is the worst of them.
+- It cannot be used with `aggregate=true` (answered `400`: the aggregate is already one value), and the shares and the factors do not take it (`400`: the average of percentages is not the share of the sums, and a factor is one value per year).
+- The limit of `WATTNET_API_MAX_QUERY_ZONE_DAYS` counts the range asked, not the rows returned.
 
 ## Interactive API Documentation
 

@@ -302,3 +302,45 @@ def validate_query_parameters(request: Request) -> None:
                 detail=f"The query parameter '{name}' is empty; give it a value.",
             )
         seen.add(name)
+
+
+# What a client may ask as the resolution of a series, in minutes. The first is the
+# resolution of the data, so it is the series as it is.
+RESOLUTIONS = {"15m": None, "1h": 60, "1d": 1440}
+
+
+def validate_resolution(
+    resolution: Optional[str], aggregate: bool = False
+) -> Optional[int]:
+    """Check the resolution of a series and return its minutes (None: as it is).
+
+    :param resolution: One of ``15m``, ``1h`` and ``1d``, or None
+    :type resolution: str, optional
+
+    :param aggregate: Whether the query asks for the aggregate instead of the series
+    :type aggregate: bool
+
+    :return: Minutes of each bucket, or None to return the series at its own resolution
+    :rtype: int, optional
+
+    :raises ApiError: 400 for another value, or with ``aggregate=true``
+    """
+    if resolution is None:
+        return None
+    if resolution not in RESOLUTIONS:
+        raise ApiError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_resolution",
+            detail=(
+                f"Invalid resolution '{resolution}'. "
+                f"Valid values are: {list(RESOLUTIONS)}."
+            ),
+        )
+    if aggregate:
+        raise ApiError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            code="resolution_with_aggregate",
+            detail="resolution cannot be used with aggregate=true: "
+            "the aggregate is already one value.",
+        )
+    return RESOLUTIONS[resolution]

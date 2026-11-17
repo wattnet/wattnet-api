@@ -64,6 +64,17 @@ _end_query = Query(
 )
 
 
+_resolution_query = Query(
+    None,
+    description=(
+        "Resolution of the series: `15m` (the data as it is, the default), `1h` or "
+        "`1d`, each value being the average of its hour or day in UTC. The first and "
+        "the last periods only average the points inside the range. Not with "
+        "`aggregate=true`."
+    ),
+)
+
+
 @router.get(
     "",
     response_model=List[Mix],
@@ -101,6 +112,7 @@ def get_mix(
     production_type: Optional[str] = _production_type_query,
     start: Optional[datetime] = _start_query,
     end: Optional[datetime] = _end_query,
+    resolution: Optional[str] = _resolution_query,
 ) -> List[Mix]:
     """Endpoint to retrieve mix generation data filtered."""
     if start:
@@ -112,9 +124,12 @@ def get_mix(
     validation.validate_production_type(production_type)
     validation.validate_time_range(start, end)
 
+    resolution_minutes = validation.validate_resolution(resolution, False)
+
     return mix_service.get_mix(
         zone=zone.upper() if zone else None,
         production_type=production_type.lower() if production_type else None,
         start=start,
         end=end,
+        resolution_minutes=resolution_minutes,
     )

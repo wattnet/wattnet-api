@@ -74,6 +74,17 @@ _end_query = Query(
 )
 
 
+_resolution_query = Query(
+    None,
+    description=(
+        "Resolution of the series: `15m` (the data as it is, the default), `1h` or "
+        "`1d`, each value being the average of its hour or day in UTC. The first and "
+        "the last periods only average the points inside the range. Not with "
+        "`aggregate=true`."
+    ),
+)
+
+
 @router.get(
     "",
     response_model=List[Export],
@@ -113,6 +124,7 @@ def get_exports(
     destination_lon: Optional[float] = _destination_lon_query,
     start: Optional[datetime] = _start_query,
     end: Optional[datetime] = _end_query,
+    resolution: Optional[str] = _resolution_query,
 ) -> List[Export]:
     """Endpoint to retrieve export data filtered by various parameters.
 
@@ -168,11 +180,14 @@ def get_exports(
     validation.validate_time_range(start, end)
 
     # Fetch exports
+    resolution_minutes = validation.validate_resolution(resolution, False)
+
     exports = export_service.get_exports(
         zone=zone.upper() if zone else None,
         destination=destination_zone.upper() if destination_zone else None,
         start=start,
         end=end,
+        resolution_minutes=resolution_minutes,
     )
 
     return exports

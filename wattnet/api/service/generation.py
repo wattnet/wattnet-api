@@ -4,7 +4,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from wattnet.api.models.generation import Generation, GenerationSeries, ProductionBlock
-from wattnet.api.service.operations import group_metrics_by_metadata, series_fields
+from wattnet.api.service.operations import (
+    group_metrics_by_metadata,
+    resolution_kwargs,
+    series_fields,
+)
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -31,6 +35,7 @@ class GenerationService:
         production_type: Optional[str] = None,
         start: Optional[datetime] = None,
         end: Optional[datetime] = None,
+        resolution_minutes: Optional[int] = None,
     ) -> List[Generation]:
         """Retrieve generation metrics filtered by zone, production type, and time.
 
@@ -58,7 +63,11 @@ class GenerationService:
             labels["production_type"] = production_type
 
         metrics = self.repo.query_metrics(
-            metric_name="zone_generation", start=start, end=end, labels=labels
+            metric_name="zone_generation",
+            start=start,
+            end=end,
+            labels=labels,
+            **resolution_kwargs(resolution_minutes),
         )
 
         metrics = [m for m in metrics if m.value is not None and m.value >= 0]
