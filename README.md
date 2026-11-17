@@ -159,6 +159,13 @@ docker run -d \
 
 The image runs as an unprivileged user (uid 10001). For a container platform, `GET /healthz` answers 200 while the process lives and `GET /readyz` answers 200 when ClickHouse answers and 503 when it does not; neither is part of the public API.
 
+## Time series: `points` and `values`
+
+Every series of the data endpoints (`generation`, `load`, `imports`, `exports`, `mix`, `footprints`, `impacts`, `environmental-score`, `flow-share`, `mix-share`, `footprint-share`, `impact-share` and `factors`) carries its data twice, in the same place of the same structure:
+
+- `points`: a list of objects `{"timestamp", "value", "updated_at"}`. `updated_at` is the moment that version of the value was stored. Objects can grow with new fields without breaking the clients that read them by name.
+- `values`: the list of `[timestamp, value]` pairs that the API has always returned, with the same rounding and order. It is **deprecated** (marked as such in the OpenAPI document) and it is removed after 28 February 2027, the same day the legacy authentication ends. Read `points` instead.
+
 ## Interactive API Documentation
 
 Once the server is running, explore endpoints, parameters, and responses interactively:

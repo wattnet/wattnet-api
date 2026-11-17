@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.testclient import TestClient as StarletteClient
 
 from tests.unit.service.helpers import FakeMetric  # noqa: F401 – re-exported for tests
 
@@ -89,3 +90,36 @@ def mock_geo(monkeypatch):
         )
 
     return _configure
+
+
+def _check_points(node) -> None:
+    """Every series that has ``values`` has the same data as ``points`` objects."""
+    if isinstance(node, list):
+        for item in node:
+            _check_points(item)
+    elif isinstance(node, dict):
+        if "values" in node:
+            assert "points" in node, "a series with values must have points"
+            assert len(node["points"]) == len(node["values"])
+            for (ts, value), point in zip(node["values"], node["points"], strict=True):
+                assert point["timestamp"] == ts
+                assert point["value"] == value
+                assert point["updated_at"]
+        for item in node.values():
+            _check_points(item)
+
+
+@pytest.fixture(autouse=True)
+def points_match_values(monkeypatch):
+    """Check in every response of every integration test that ``points`` repeats ``values``."""
+    original = StarletteClient.request
+
+    def request(self, *args, **kwargs):
+        response = original(self, *args, **kwargs)
+        if "json" in response.headers.get("content-type", ""):
+            body = response.json()
+            if isinstance(body, list):  # the data endpoints, not the OpenAPI document
+                _check_points(body)
+        return response
+
+    monkeypatch.setattr(StarletteClient, "request", request)

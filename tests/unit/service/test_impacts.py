@@ -10,11 +10,11 @@ These tests validate:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 import pytest
+from tests.unit.service.helpers import FakeMetric
 
 from wattnet.api.models.impact import ImpactAggregate
 from wattnet.api.service.impacts import ImpactService
@@ -22,23 +22,6 @@ from wattnet.api.service.impacts import ImpactService
 # ============================================================
 # Test doubles
 # ============================================================
-
-
-@dataclass
-class FakeMetric:
-    """Minimal Metric test double.
-
-    :param timestamp: Timestamp of the metric
-    :type timestamp: datetime
-    :param value: Metric value
-    :type value: float | None
-    :param metadata: Metadata dictionary
-    :type metadata: Dict[str, object]
-    """
-
-    timestamp: datetime
-    value: Optional[float]
-    metadata: Dict[str, object]
 
 
 class FakeRepo:

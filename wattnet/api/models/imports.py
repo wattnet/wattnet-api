@@ -6,6 +6,8 @@ from typing import List
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated, Literal, Union
 
+from wattnet.api.models.point import Point
+
 HybridEstimationSource = Annotated[
     str, Field(pattern=r"^wattnet-hybrid-estimation:.*$")
 ]
@@ -30,7 +32,13 @@ class ImportBlock(BaseModel):
     data_state: DataState = Field(..., description="official/estimated/missing")
     datasource: DataSource = Field(..., description="Data provider for this block")
     values: List[tuple[datetime, float]] = Field(
-        ..., description="Time series of imported energy values"
+        ...,
+        deprecated="Use points instead, values is removed after 28 February 2027",
+        description="Time series of imported energy values",
+    )
+    points: List[Point] = Field(
+        ...,
+        description="Objects {timestamp, value, updated_at}; replaces `values`",
     )
 
 

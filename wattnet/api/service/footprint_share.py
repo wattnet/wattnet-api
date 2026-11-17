@@ -8,7 +8,7 @@ from wattnet.api.models.footprint_share import (
     FootprintShareBlock,
     FootprintShareSeries,
 )
-from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
+from wattnet.api.service.operations import group_metrics_by_metadata, series_fields
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -121,7 +121,7 @@ class FootprintShareService:
                     block_list.append(
                         FootprintShareBlock(
                             source=source_str,
-                            values=build_time_series(block_metrics),
+                            **series_fields(block_metrics),
                         )
                     )
 

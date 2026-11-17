@@ -6,6 +6,8 @@ from typing import List
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
+from wattnet.api.models.point import Point
+
 ZoneStatus = Literal["complete", "preview", "missing"]
 FootprintType = Literal["carbon", "water"]
 FootprintScope = Literal["operational", "life-cycle"]
@@ -21,7 +23,13 @@ class FootprintShareBlock(BaseModel):
 
     source: str = Field(..., description="Origin zone contributing to the footprint")
     values: List[tuple[datetime, float]] = Field(
-        ..., description="Time series of footprint values for this source"
+        ...,
+        deprecated="Use points instead, values is removed after 28 February 2027",
+        description="Time series of footprint values for this source",
+    )
+    points: List[Point] = Field(
+        ...,
+        description="Objects {timestamp, value, updated_at}; replaces `values`",
     )
 
 

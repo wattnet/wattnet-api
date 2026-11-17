@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from wattnet.api.models.exports import Export, ExportBlock, ExportSeries
-from wattnet.api.service.operations import group_metrics_by_metadata, present
+from wattnet.api.service.operations import group_metrics_by_metadata, series_fields
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -114,16 +114,11 @@ class ExportService:
                     data_state,
                     datasource,
                 ), block_metrics in block_groups.items():
-                    values = sorted(
-                        [(m.timestamp, present(m.value)) for m in block_metrics],
-                        key=lambda x: x[0],
-                    )
-
                     block = ExportBlock(
                         destination=destination_to,  # Pydantic field
                         data_state=data_state,
                         datasource=datasource,
-                        values=values,
+                        **series_fields(block_metrics),
                     )
 
                     block_list.append(block)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 
@@ -17,11 +17,14 @@ class FakeMetric:
     :type value: float | None
     :param metadata: Metadata dictionary
     :type metadata: Dict[str, object]
+    :param updated_at: When the value was stored
+    :type updated_at: datetime
     """
 
     timestamp: datetime
     value: Optional[float]
     metadata: Dict[str, object]
+    updated_at: datetime = datetime(2025, 6, 2, tzinfo=timezone.utc)
 
 
 class FakeRepo:

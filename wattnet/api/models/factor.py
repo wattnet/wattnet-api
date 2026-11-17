@@ -6,6 +6,8 @@ from typing import List, Optional, Tuple
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
+from wattnet.api.models.point import Point
+
 FactorType = Literal["carbon", "water"]
 FactorScope = Literal["operational", "life-cycle"]
 ProductionType = Literal[
@@ -61,7 +63,13 @@ class FactorSeries(BaseModel):
     """
 
     values: List[Tuple[datetime, float]] = Field(
-        default_factory=list, description="List of (timestamp, value) tuples"
+        default_factory=list,
+        deprecated="Use points instead, values is removed after 28 February 2027",
+        description="List of (timestamp, value) tuples",
+    )
+    points: List[Point] = Field(
+        ...,
+        description="Objects {timestamp, value, updated_at}; replaces `values`",
     )
 
 

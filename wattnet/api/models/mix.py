@@ -6,6 +6,8 @@ from typing import List, Tuple
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
+from wattnet.api.models.point import Point
+
 DataState = Literal["official", "estimated", "missing"]
 ZoneStatus = Literal["complete", "preview", "missing"]
 DataSource = Literal["flow_tracing"]
@@ -37,7 +39,13 @@ class MixBlock(BaseModel):
     data_state: DataState = Field(..., description="official/estimated/missing")
     datasource: DataSource = Field(..., description="Data provider for this block")
     values: List[Tuple[datetime, float]] = Field(
-        ..., description="Time series: (timestamp, mix_generation_value)"
+        ...,
+        deprecated="Use points instead, values is removed after 28 February 2027",
+        description="Time series: (timestamp, mix_generation_value)",
+    )
+    points: List[Point] = Field(
+        ...,
+        description="Objects {timestamp, value, updated_at}; replaces `values`",
     )
 
 
