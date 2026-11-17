@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     # most a query may ask, in zones times days (a year of one zone is 365)
     access_policy_path: Path | None = None
     max_query_zone_days: int = 400
+    # seconds a client may reuse an answer with data (Cache-Control); 0 sends none
+    cache_max_age_seconds: int = 60
 
     # Storage
     timeseries_step_minutes: int = 15
