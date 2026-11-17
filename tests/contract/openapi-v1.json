@@ -1,0 +1,4991 @@
+{
+ "components": {
+  "schemas": {
+   "EnvironmentalScore": {
+    "description": "Represents EnvironmentalScore data for a specific zone with multiple series.",
+    "properties": {
+     "coverage": {
+      "description": "Coverage type of the score (global or local)",
+      "enum": [
+       "global",
+       "local"
+      ],
+      "title": "Coverage",
+      "type": "string"
+     },
+     "scope": {
+      "const": "operational",
+      "description": "Scope of the score (operational)",
+      "title": "Scope",
+      "type": "string"
+     },
+     "series": {
+      "description": "Series grouped by status and validity",
+      "items": {
+       "$ref": "#/components/schemas/EnvironmentalScoreSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "scope",
+     "zone",
+     "coverage",
+     "series"
+    ],
+    "title": "EnvironmentalScore",
+    "type": "object"
+   },
+   "EnvironmentalScoreAggregate": {
+    "description": "Represents aggregated EnvironmentalScore data for a specific zone.",
+    "properties": {
+     "aggregation_method": {
+      "const": "time-weighted-average",
+      "default": "time-weighted-average",
+      "description": "Method used for aggregation",
+      "title": "Aggregation Method",
+      "type": "string"
+     },
+     "coverage": {
+      "description": "Coverage type of the score (global or local)",
+      "enum": [
+       "global",
+       "local"
+      ],
+      "title": "Coverage",
+      "type": "string"
+     },
+     "end": {
+      "description": "End datetime of the aggregation period",
+      "format": "date-time",
+      "title": "End",
+      "type": "string"
+     },
+     "scope": {
+      "const": "operational",
+      "description": "Scope of the score (operational)",
+      "title": "Scope",
+      "type": "string"
+     },
+     "start": {
+      "description": "Start datetime of the aggregation period",
+      "format": "date-time",
+      "title": "Start",
+      "type": "string"
+     },
+     "valid": {
+      "description": "Indicates if the aggregated data is valid and immutable",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "value": {
+      "description": "Aggregated score value over the period, in range [0, 100]",
+      "title": "Value",
+      "type": "number"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     },
+     "zone_status": {
+      "description": "Status of the zone for the aggregated score",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "scope",
+     "zone",
+     "coverage",
+     "start",
+     "end",
+     "value",
+     "valid",
+     "zone_status"
+    ],
+    "title": "EnvironmentalScoreAggregate",
+    "type": "object"
+   },
+   "EnvironmentalScoreSeries": {
+    "description": "Represents a series of EnvironmentalScore data grouped by validity and zone.",
+    "properties": {
+     "valid": {
+      "description": "Indicates if the data points are valid and immutable",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "values": {
+      "description": "List of (timestamp, value) tuples in range [0, 100]",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     },
+     "zone_status": {
+      "description": "Status of the zone for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "values"
+    ],
+    "title": "EnvironmentalScoreSeries",
+    "type": "object"
+   },
+   "Export": {
+    "description": "Represents export data for a specific zone, including multiple series.",
+    "properties": {
+     "series": {
+      "description": "Multiple series grouped by valid/zone_status",
+      "items": {
+       "$ref": "#/components/schemas/ExportSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "MW",
+      "description": "Unit of energy (constant per zone)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "Origin zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "unit",
+     "series"
+    ],
+    "title": "Export",
+    "type": "object"
+   },
+   "ExportBlock": {
+    "description": "Represents export data for a specific destination zone.",
+    "properties": {
+     "data_state": {
+      "description": "official/estimated/missing",
+      "enum": [
+       "official",
+       "estimated",
+       "missing"
+      ],
+      "title": "Data State",
+      "type": "string"
+     },
+     "datasource": {
+      "anyOf": [
+       {
+        "enum": [
+         "ENTSO-E",
+         "Elexon",
+         "EPIAS"
+        ],
+        "type": "string"
+       },
+       {
+        "pattern": "^wattnet-hybrid-estimation:.*$",
+        "type": "string"
+       }
+      ],
+      "description": "Data provider for this block",
+      "title": "Datasource"
+     },
+     "destination": {
+      "description": "Destination zone code",
+      "title": "Destination",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series of exported energy values",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "destination",
+     "data_state",
+     "datasource",
+     "values"
+    ],
+    "title": "ExportBlock",
+    "type": "object"
+   },
+   "ExportSeries": {
+    "description": "Represents a series of export data for a zone.\n\nRepresents a series of export data for a specific zone, including validity,\nzone status, and list of destination zones contributing to the exports.",
+    "properties": {
+     "exports": {
+      "description": "List of export blocks per destination",
+      "items": {
+       "$ref": "#/components/schemas/ExportBlock"
+      },
+      "title": "Exports",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of the series for the zone",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Zone status for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "exports"
+    ],
+    "title": "ExportSeries",
+    "type": "object"
+   },
+   "Factor": {
+    "description": "Represents factor data for a specific production type & scope.\n\nRepresents factor data for a specific production type and scope, including multiple\nseries grouped by validity and zone status.",
+    "properties": {
+     "factor_type": {
+      "description": "Type of factor (e.g., carbon, water)",
+      "enum": [
+       "carbon",
+       "water"
+      ],
+      "title": "Factor Type",
+      "type": "string"
+     },
+     "production_type": {
+      "description": "Type of production (e.g., solar, wind, coal)",
+      "enum": [
+       "biomass",
+       "coal",
+       "gas",
+       "geothermal",
+       "marine",
+       "hydro_reservoir",
+       "hydro_river",
+       "nuclear",
+       "oil",
+       "other",
+       "other_renewable",
+       "solar",
+       "waste",
+       "wind_offshore",
+       "wind_onshore"
+      ],
+      "title": "Production Type",
+      "type": "string"
+     },
+     "scope": {
+      "description": "Scope of the factor (e.g., operational, life-cycle)",
+      "enum": [
+       "operational",
+       "life-cycle"
+      ],
+      "title": "Scope",
+      "type": "string"
+     },
+     "series": {
+      "description": "Series grouped by production_type/scope etc.",
+      "items": {
+       "$ref": "#/components/schemas/FactorSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "source": {
+      "description": "Source of the factor data",
+      "title": "Source",
+      "type": "string"
+     },
+     "source_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Link to the source of the factor data",
+      "title": "Source Link"
+     },
+     "unit": {
+      "description": "Unit of the factor value (e.g., gCO2/kWh, l/kWh)",
+      "enum": [
+       "gCO2/kWh",
+       "l/kWh"
+      ],
+      "title": "Unit",
+      "type": "string"
+     },
+     "year": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Year of the factor data (if applicable)",
+      "title": "Year"
+     }
+    },
+    "required": [
+     "factor_type",
+     "production_type",
+     "scope",
+     "unit",
+     "source"
+    ],
+    "title": "Factor",
+    "type": "object"
+   },
+   "FactorAggregate": {
+    "description": "Represents an aggregated factor value over a specified time period.\n\nRepresents an aggregated factor value over a specified time period, including\naggregation method and validity.",
+    "properties": {
+     "aggregation_method": {
+      "const": "time-weighted-average",
+      "default": "time-weighted-average",
+      "description": "Method used for aggregation",
+      "title": "Aggregation Method",
+      "type": "string"
+     },
+     "end": {
+      "description": "End datetime of the aggregation period",
+      "format": "date-time",
+      "title": "End",
+      "type": "string"
+     },
+     "factor_type": {
+      "description": "Type of factor (e.g., carbon, water)",
+      "enum": [
+       "carbon",
+       "water"
+      ],
+      "title": "Factor Type",
+      "type": "string"
+     },
+     "production_type": {
+      "description": "Type of production (e.g., solar, wind, coal)",
+      "enum": [
+       "biomass",
+       "coal",
+       "gas",
+       "geothermal",
+       "marine",
+       "hydro_reservoir",
+       "hydro_river",
+       "nuclear",
+       "oil",
+       "other",
+       "other_renewable",
+       "solar",
+       "waste",
+       "wind_offshore",
+       "wind_onshore"
+      ],
+      "title": "Production Type",
+      "type": "string"
+     },
+     "scope": {
+      "description": "Scope of the factor (e.g., operational, life-cycle)",
+      "enum": [
+       "operational",
+       "life-cycle"
+      ],
+      "title": "Scope",
+      "type": "string"
+     },
+     "source": {
+      "description": "Source of the factor data",
+      "title": "Source",
+      "type": "string"
+     },
+     "source_link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Link to the source of the factor data",
+      "title": "Source Link"
+     },
+     "start": {
+      "description": "Start datetime of the aggregation period",
+      "format": "date-time",
+      "title": "Start",
+      "type": "string"
+     },
+     "unit": {
+      "description": "Unit of the factor value (e.g., gCO2/kWh, l/kWh)",
+      "enum": [
+       "gCO2/kWh",
+       "l/kWh"
+      ],
+      "title": "Unit",
+      "type": "string"
+     },
+     "value": {
+      "description": "Aggregated factor value over the period",
+      "title": "Value",
+      "type": "number"
+     },
+     "year": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Year of the factor data (if applicable)",
+      "title": "Year"
+     }
+    },
+    "required": [
+     "factor_type",
+     "production_type",
+     "scope",
+     "unit",
+     "source",
+     "start",
+     "end",
+     "value"
+    ],
+    "title": "FactorAggregate",
+    "type": "object"
+   },
+   "FactorSeries": {
+    "description": "Represents a time series of factor values.\n\nRepresents a time series of factor values for a specific production type and scope,\nincluding validity, zone status, and list of (timestamp, value) tuples.",
+    "properties": {
+     "values": {
+      "description": "List of (timestamp, value) tuples",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "title": "FactorSeries",
+    "type": "object"
+   },
+   "FlowShare": {
+    "description": "Represents flow share data for a specific origin zone.\n\nRepresents flow share data for a specific origin zone, including multiple series\ngrouped by validity and zone status.",
+    "properties": {
+     "series": {
+      "description": "Multiple series grouped by valid/zone_status",
+      "items": {
+       "$ref": "#/components/schemas/FlowShareSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "%",
+      "default": "%",
+      "description": "Unit of flow share (always %)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "Origin zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "series"
+    ],
+    "title": "FlowShare",
+    "type": "object"
+   },
+   "FlowShareBlock": {
+    "description": "Represents flow share data for a specific destination zone.\n\nRepresents flow share data for a specific destination zone,\nincluding time series of values.",
+    "properties": {
+     "destination": {
+      "description": "Destination zone code",
+      "title": "Destination",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series of flow share values (%)",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "destination",
+     "values"
+    ],
+    "title": "FlowShareBlock",
+    "type": "object"
+   },
+   "FlowShareSeries": {
+    "description": "Represents a series of flow share data for a specific origin zone.\n\nRepresents a series of flow share data for a specific origin zone,\nincluding validity, zone status, and list of destination zones\ncontributing to the flow share.",
+    "properties": {
+     "flows": {
+      "description": "List of flow share blocks per destination",
+      "items": {
+       "$ref": "#/components/schemas/FlowShareBlock"
+      },
+      "title": "Flows",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of the series for the zone",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Zone status for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "flows"
+    ],
+    "title": "FlowShareSeries",
+    "type": "object"
+   },
+   "Footprint": {
+    "description": "Represents footprint data for a specific destination zone.\n\nRepresents footprint data for a specific destination zone, including multiple\nseries grouped by validity and zone status.",
+    "properties": {
+     "coverage": {
+      "description": "Coverage type of the footprint (global or local)",
+      "enum": [
+       "global",
+       "local"
+      ],
+      "title": "Coverage",
+      "type": "string"
+     },
+     "footprint_type": {
+      "description": "Type of footprint (e.g., carbon, water)",
+      "enum": [
+       "carbon",
+       "water"
+      ],
+      "title": "Footprint Type",
+      "type": "string"
+     },
+     "scope": {
+      "description": "Scope of the footprint (e.g., operational, life-cycle)",
+      "enum": [
+       "operational",
+       "life-cycle"
+      ],
+      "title": "Scope",
+      "type": "string"
+     },
+     "series": {
+      "description": "Series grouped by status and validity",
+      "items": {
+       "$ref": "#/components/schemas/FootprintSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "description": "Unit of the footprint value (e.g., gCO2/kWh, l/kWh)",
+      "enum": [
+       "gCO2/kWh",
+       "l/kWh"
+      ],
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "footprint_type",
+     "scope",
+     "zone",
+     "unit",
+     "coverage",
+     "series"
+    ],
+    "title": "Footprint",
+    "type": "object"
+   },
+   "FootprintAggregate": {
+    "description": "Represents aggregated footprint data for a specific destination zone.\n\nRepresents aggregated footprint data for a specific destination zone, including\naggregation period, method, validity, and zone status.",
+    "properties": {
+     "aggregation_method": {
+      "const": "time-weighted-average",
+      "default": "time-weighted-average",
+      "description": "Method used for aggregation",
+      "title": "Aggregation Method",
+      "type": "string"
+     },
+     "coverage": {
+      "description": "Coverage type of the footprint (global or local)",
+      "enum": [
+       "global",
+       "local"
+      ],
+      "title": "Coverage",
+      "type": "string"
+     },
+     "end": {
+      "description": "End datetime of the aggregation period",
+      "format": "date-time",
+      "title": "End",
+      "type": "string"
+     },
+     "footprint_type": {
+      "description": "Type of footprint (e.g., carbon, water)",
+      "enum": [
+       "carbon",
+       "water"
+      ],
+      "title": "Footprint Type",
+      "type": "string"
+     },
+     "scope": {
+      "description": "Scope of the footprint (e.g., operational, life-cycle)",
+      "enum": [
+       "operational",
+       "life-cycle"
+      ],
+      "title": "Scope",
+      "type": "string"
+     },
+     "start": {
+      "description": "Start datetime of the aggregation period",
+      "format": "date-time",
+      "title": "Start",
+      "type": "string"
+     },
+     "unit": {
+      "description": "Unit of the footprint value (e.g., gCO2/kWh, l/kWh)",
+      "enum": [
+       "gCO2/kWh",
+       "l/kWh"
+      ],
+      "title": "Unit",
+      "type": "string"
+     },
+     "valid": {
+      "description": "Indicates if the aggregated data is valid and inmutable",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "value": {
+      "description": "Aggregated footprint value over the period",
+      "title": "Value",
+      "type": "number"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     },
+     "zone_status": {
+      "description": "Status of the zone for the aggregated footprint",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "footprint_type",
+     "scope",
+     "zone",
+     "unit",
+     "coverage",
+     "start",
+     "end",
+     "value",
+     "valid",
+     "zone_status"
+    ],
+    "title": "FootprintAggregate",
+    "type": "object"
+   },
+   "FootprintSeries": {
+    "description": "Represents a series of footprint data for a specific destination zone.\n\nRepresents a series of footprint data for a specific destination zone, including\nvalidity, zone status, and list of origin zones contributing to the footprint.",
+    "properties": {
+     "valid": {
+      "description": "Indicates if the data points are valid and inmutable",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "values": {
+      "description": "List of (timestamp, value) tuples",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     },
+     "zone_status": {
+      "description": "Status of the zone for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "values"
+    ],
+    "title": "FootprintSeries",
+    "type": "object"
+   },
+   "FootprintShare": {
+    "description": "Represents footprint share data for a specific destination zone.\n\nRepresents footprint share data for a specific destination zone, including multiple\nseries grouped by validity and zone status.",
+    "properties": {
+     "footprint_type": {
+      "description": "Type of footprint (carbon or water)",
+      "enum": [
+       "carbon",
+       "water"
+      ],
+      "title": "Footprint Type",
+      "type": "string"
+     },
+     "scope": {
+      "description": "Scope of footprint (operational or life-cycle)",
+      "enum": [
+       "operational",
+       "life-cycle"
+      ],
+      "title": "Scope",
+      "type": "string"
+     },
+     "series": {
+      "description": "Series grouped by valid/zone_status",
+      "items": {
+       "$ref": "#/components/schemas/FootprintShareSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "description": "Unit of the footprint value",
+      "enum": [
+       "gCO2/kWh",
+       "l/kWh"
+      ],
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "Destination zone for the footprint",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "footprint_type",
+     "scope",
+     "unit",
+     "series"
+    ],
+    "title": "FootprintShare",
+    "type": "object"
+   },
+   "FootprintShareBlock": {
+    "description": "Represents footprint share data for a specific origin zone.\n\nRepresents footprint share data for a specific origin zone contributing to the\nfootprint of a destination zone, including time series of values.",
+    "properties": {
+     "source": {
+      "description": "Origin zone contributing to the footprint",
+      "title": "Source",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series of footprint values for this source",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "source",
+     "values"
+    ],
+    "title": "FootprintShareBlock",
+    "type": "object"
+   },
+   "FootprintShareSeries": {
+    "description": "Represents a series of footprint share data for a specific destination zone.\n\nRepresents a series of footprint share data for a specific destination zone,\nincluding validity, zone status, and list of origin zones contributing to the\nfootprint.",
+    "properties": {
+     "blocks": {
+      "description": "List of origin zones contributing to the footprint",
+      "items": {
+       "$ref": "#/components/schemas/FootprintShareBlock"
+      },
+      "title": "Blocks",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of the series for the zone",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Zone status for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "blocks"
+    ],
+    "title": "FootprintShareSeries",
+    "type": "object"
+   },
+   "Generation": {
+    "description": "Represents generation data for a specific zone.\n\nRepresents generation data for a specific zone, including multiple series\ngrouped by validity and zone status.",
+    "properties": {
+     "series": {
+      "description": "Multiple versions of the zone data grouped by status",
+      "items": {
+       "$ref": "#/components/schemas/GenerationSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "MW",
+      "description": "Energy unit (fixed per zone)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "unit",
+     "series"
+    ],
+    "title": "Generation",
+    "type": "object"
+   },
+   "GenerationSeries": {
+    "description": "Represents a series of generation data for a specific zone.\n\nRepresents a series of generation data for a specific zone, including validity,\nzone status, and list of production blocks grouped by production type.",
+    "properties": {
+     "production": {
+      "description": "Generation blocks grouped by production type",
+      "items": {
+       "$ref": "#/components/schemas/ProductionBlock"
+      },
+      "title": "Production",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of this version of zone data",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Status of the zone data",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "production"
+    ],
+    "title": "GenerationSeries",
+    "type": "object"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "title": "Detail",
+      "type": "array"
+     }
+    },
+    "title": "HTTPValidationError",
+    "type": "object"
+   },
+   "Impact": {
+    "description": "Represents impact data for a specific zone with multiple series.",
+    "properties": {
+     "coverage": {
+      "description": "Coverage type of the impact (global or local)",
+      "enum": [
+       "global",
+       "local"
+      ],
+      "title": "Coverage",
+      "type": "string"
+     },
+     "impact_type": {
+      "const": "water",
+      "description": "Type of impact (water)",
+      "title": "Impact Type",
+      "type": "string"
+     },
+     "scope": {
+      "const": "operational",
+      "description": "Scope of the impact (operational)",
+      "title": "Scope",
+      "type": "string"
+     },
+     "series": {
+      "description": "Series grouped by status and validity",
+      "items": {
+       "$ref": "#/components/schemas/ImpactSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "stress-l/kWh",
+      "description": "Unit of the impact value (stress-l/kWh)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "impact_type",
+     "scope",
+     "zone",
+     "unit",
+     "coverage",
+     "series"
+    ],
+    "title": "Impact",
+    "type": "object"
+   },
+   "ImpactAggregate": {
+    "description": "Represents aggregated impact data for a specific zone.",
+    "properties": {
+     "aggregation_method": {
+      "const": "time-weighted-average",
+      "default": "time-weighted-average",
+      "description": "Method used for aggregation",
+      "title": "Aggregation Method",
+      "type": "string"
+     },
+     "coverage": {
+      "description": "Coverage type of the impact (global or local)",
+      "enum": [
+       "global",
+       "local"
+      ],
+      "title": "Coverage",
+      "type": "string"
+     },
+     "end": {
+      "description": "End datetime of the aggregation period",
+      "format": "date-time",
+      "title": "End",
+      "type": "string"
+     },
+     "impact_type": {
+      "const": "water",
+      "description": "Type of impact (water)",
+      "title": "Impact Type",
+      "type": "string"
+     },
+     "scope": {
+      "const": "operational",
+      "description": "Scope of the impact (operational)",
+      "title": "Scope",
+      "type": "string"
+     },
+     "start": {
+      "description": "Start datetime of the aggregation period",
+      "format": "date-time",
+      "title": "Start",
+      "type": "string"
+     },
+     "unit": {
+      "const": "stress-l/kWh",
+      "description": "Unit of the impact value (stress-l/kWh)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "valid": {
+      "description": "Indicates if the aggregated data is valid and immutable",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "value": {
+      "description": "Aggregated impact value over the period",
+      "title": "Value",
+      "type": "number"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     },
+     "zone_status": {
+      "description": "Status of the zone for the aggregated impact",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "impact_type",
+     "scope",
+     "zone",
+     "unit",
+     "coverage",
+     "start",
+     "end",
+     "value",
+     "valid",
+     "zone_status"
+    ],
+    "title": "ImpactAggregate",
+    "type": "object"
+   },
+   "ImpactSeries": {
+    "description": "Represents a series of impact data grouped by validity and zone status.",
+    "properties": {
+     "valid": {
+      "description": "Indicates if the data points are valid and immutable",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "values": {
+      "description": "List of (timestamp, value) tuples",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     },
+     "zone_status": {
+      "description": "Status of the zone for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "values"
+    ],
+    "title": "ImpactSeries",
+    "type": "object"
+   },
+   "ImpactShare": {
+    "description": "Represents impact share data for a specific destination zone.",
+    "properties": {
+     "impact_type": {
+      "const": "water",
+      "description": "Type of impact (water)",
+      "title": "Impact Type",
+      "type": "string"
+     },
+     "scope": {
+      "const": "operational",
+      "description": "Scope of impact (operational)",
+      "title": "Scope",
+      "type": "string"
+     },
+     "series": {
+      "description": "Series grouped by valid/zone_status",
+      "items": {
+       "$ref": "#/components/schemas/ImpactShareSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "stress-l/kWh",
+      "description": "Unit of the impact value",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "Destination zone for the impact",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "impact_type",
+     "scope",
+     "unit",
+     "series"
+    ],
+    "title": "ImpactShare",
+    "type": "object"
+   },
+   "ImpactShareBlock": {
+    "description": "Represents impact share data for a specific origin zone.",
+    "properties": {
+     "source": {
+      "description": "Origin zone contributing to the impact",
+      "title": "Source",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series of impact values for this source",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "source",
+     "values"
+    ],
+    "title": "ImpactShareBlock",
+    "type": "object"
+   },
+   "ImpactShareSeries": {
+    "description": "Represents a series of impact share data grouped by validity and zone status.",
+    "properties": {
+     "blocks": {
+      "description": "List of origin zones contributing to the impact",
+      "items": {
+       "$ref": "#/components/schemas/ImpactShareBlock"
+      },
+      "title": "Blocks",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of the series for the zone",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Zone status for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "blocks"
+    ],
+    "title": "ImpactShareSeries",
+    "type": "object"
+   },
+   "Import": {
+    "description": "Represents import data for a specific destination zone.\n\nRepresents import data for a specific destination zone, including multiple\nseries grouped by validity and zone status.",
+    "properties": {
+     "series": {
+      "description": "Multiple series grouped by valid/zone_status",
+      "items": {
+       "$ref": "#/components/schemas/ImportSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "MW",
+      "description": "Unit of energy (constant per zone)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "Wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "unit",
+     "series"
+    ],
+    "title": "Import",
+    "type": "object"
+   },
+   "ImportBlock": {
+    "description": "Represents import data for a specific source zone.\n\nRepresents import data for a specific source zone contributing to the imports\nof a destination zone, including time series of values.",
+    "properties": {
+     "data_state": {
+      "description": "official/estimated/missing",
+      "enum": [
+       "official",
+       "estimated",
+       "missing"
+      ],
+      "title": "Data State",
+      "type": "string"
+     },
+     "datasource": {
+      "anyOf": [
+       {
+        "enum": [
+         "ENTSO-E",
+         "Elexon",
+         "EPIAS"
+        ],
+        "type": "string"
+       },
+       {
+        "pattern": "^wattnet-hybrid-estimation:.*$",
+        "type": "string"
+       }
+      ],
+      "description": "Data provider for this block",
+      "title": "Datasource"
+     },
+     "source": {
+      "description": "Origin zone of the import",
+      "title": "Source",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series of imported energy values",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "source",
+     "data_state",
+     "datasource",
+     "values"
+    ],
+    "title": "ImportBlock",
+    "type": "object"
+   },
+   "ImportSeries": {
+    "description": "Represents a series of import data for a specific destination zone.\n\nRepresents a series of import data for a specific destination zone,\nincluding validity, zone status, and list of source zones\ncontributing to the imports.",
+    "properties": {
+     "imports": {
+      "description": "List of import blocks for different sources",
+      "items": {
+       "$ref": "#/components/schemas/ImportBlock"
+      },
+      "title": "Imports",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of this series for the zone",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Zone status for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "imports"
+    ],
+    "title": "ImportSeries",
+    "type": "object"
+   },
+   "Load": {
+    "description": "Represents total electricity demand data for a specific zone.",
+    "properties": {
+     "series": {
+      "description": "Multiple versions of the zone data grouped by status",
+      "items": {
+       "$ref": "#/components/schemas/LoadSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "MW",
+      "description": "Energy unit (fixed per zone)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "unit",
+     "series"
+    ],
+    "title": "Load",
+    "type": "object"
+   },
+   "LoadBlock": {
+    "description": "Represents load data for a specific state/source combination.",
+    "properties": {
+     "data_state": {
+      "description": "official/estimated/missing",
+      "enum": [
+       "official",
+       "estimated",
+       "missing"
+      ],
+      "title": "Data State",
+      "type": "string"
+     },
+     "datasource": {
+      "anyOf": [
+       {
+        "enum": [
+         "ENTSO-E",
+         "Elexon",
+         "EPIAS"
+        ],
+        "type": "string"
+       },
+       {
+        "pattern": "^wattnet-hybrid-estimation:.*$",
+        "type": "string"
+       }
+      ],
+      "description": "Data provider for this block",
+      "title": "Datasource"
+     },
+     "values": {
+      "description": "Time series: (timestamp, load_value)",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "data_state",
+     "datasource",
+     "values"
+    ],
+    "title": "LoadBlock",
+    "type": "object"
+   },
+   "LoadSeries": {
+    "description": "Represents a series of load data for a specific zone.\n\nGroups load values by validity and zone status, analogous to\nGenerationSeries but without production type breakdown.",
+    "properties": {
+     "blocks": {
+      "description": "Load blocks grouped by source",
+      "items": {
+       "$ref": "#/components/schemas/LoadBlock"
+      },
+      "title": "Blocks",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of this version of zone data",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Status of the zone data",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "blocks"
+    ],
+    "title": "LoadSeries",
+    "type": "object"
+   },
+   "Mix": {
+    "description": "Represents mix generation data for a specific zone.",
+    "properties": {
+     "series": {
+      "description": "Multiple versions of the zone data grouped by status",
+      "items": {
+       "$ref": "#/components/schemas/MixSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "MW",
+      "description": "Energy unit (fixed per zone)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "unit",
+     "series"
+    ],
+    "title": "Mix",
+    "type": "object"
+   },
+   "MixBlock": {
+    "description": "Represents mix generation data for a production type.",
+    "properties": {
+     "data_state": {
+      "description": "official/estimated/missing",
+      "enum": [
+       "official",
+       "estimated",
+       "missing"
+      ],
+      "title": "Data State",
+      "type": "string"
+     },
+     "datasource": {
+      "const": "flow_tracing",
+      "description": "Data provider for this block",
+      "title": "Datasource",
+      "type": "string"
+     },
+     "production_type": {
+      "description": "Energy source type",
+      "enum": [
+       "biomass",
+       "coal",
+       "gas",
+       "geothermal",
+       "marine",
+       "hydro_reservoir",
+       "hydro_river",
+       "hydro_pumped_storage",
+       "nuclear",
+       "oil",
+       "other",
+       "other_renewable",
+       "solar",
+       "waste",
+       "wind_offshore",
+       "wind_onshore"
+      ],
+      "title": "Production Type",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series: (timestamp, mix_generation_value)",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "production_type",
+     "data_state",
+     "datasource",
+     "values"
+    ],
+    "title": "MixBlock",
+    "type": "object"
+   },
+   "MixSeries": {
+    "description": "Represents a series of mix data for a specific zone.",
+    "properties": {
+     "production": {
+      "description": "Mix blocks grouped by production type",
+      "items": {
+       "$ref": "#/components/schemas/MixBlock"
+      },
+      "title": "Production",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of this version of zone data",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Status of the zone data",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "production"
+    ],
+    "title": "MixSeries",
+    "type": "object"
+   },
+   "MixShare": {
+    "description": "Represents mix share data for a specific destination zone.\n\nRepresents mix share data for a specific destination zone, including multiple\nseries grouped by validity and zone status.",
+    "properties": {
+     "series": {
+      "description": "Multiple series grouped by valid/zone_status",
+      "items": {
+       "$ref": "#/components/schemas/MixShareSeries"
+      },
+      "title": "Series",
+      "type": "array"
+     },
+     "unit": {
+      "const": "%",
+      "default": "%",
+      "description": "Unit of mix share (always %)",
+      "title": "Unit",
+      "type": "string"
+     },
+     "zone": {
+      "description": "Destination zone where mix is measured",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "series"
+    ],
+    "title": "MixShare",
+    "type": "object"
+   },
+   "MixShareBlock": {
+    "description": "Represents mix share data for a specific origin zone.\n\nRepresents mix share data for a specific origin zone contributing to the mix\nof a destination zone, including time series of values.",
+    "properties": {
+     "origin": {
+      "description": "Origin zone contributing to the mix",
+      "title": "Origin",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series of mix share values (%)",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "origin",
+     "values"
+    ],
+    "title": "MixShareBlock",
+    "type": "object"
+   },
+   "MixShareSeries": {
+    "description": "Represents a series of mix share data for a specific destination zone.\n\nRepresents a series of mix share data for a specific destination zone,\nincluding validity, zone status, and list of origin zones contributing to\nthe mix.",
+    "properties": {
+     "shares": {
+      "description": "List of origin zones contributing to the mix",
+      "items": {
+       "$ref": "#/components/schemas/MixShareBlock"
+      },
+      "title": "Shares",
+      "type": "array"
+     },
+     "valid": {
+      "description": "Validity of the series for the zone",
+      "title": "Valid",
+      "type": "boolean"
+     },
+     "zone_status": {
+      "description": "Zone status for this series",
+      "enum": [
+       "complete",
+       "preview",
+       "missing"
+      ],
+      "title": "Zone Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "valid",
+     "zone_status",
+     "shares"
+    ],
+    "title": "MixShareSeries",
+    "type": "object"
+   },
+   "ProductionBlock": {
+    "description": "Represents generation data for a specific production type.\n\nRepresents generation data for a specific production type,\nincluding time series of values.",
+    "properties": {
+     "data_state": {
+      "description": "official/estimated/missing",
+      "enum": [
+       "official",
+       "estimated",
+       "missing"
+      ],
+      "title": "Data State",
+      "type": "string"
+     },
+     "datasource": {
+      "anyOf": [
+       {
+        "enum": [
+         "ENTSO-E",
+         "Elexon",
+         "EPIAS"
+        ],
+        "type": "string"
+       },
+       {
+        "pattern": "^wattnet-hybrid-estimation:.*$",
+        "type": "string"
+       }
+      ],
+      "description": "Data provider for this block",
+      "title": "Datasource"
+     },
+     "production_type": {
+      "description": "Energy source type",
+      "enum": [
+       "biomass",
+       "coal",
+       "gas",
+       "geothermal",
+       "marine",
+       "hydro_reservoir",
+       "hydro_river",
+       "hydro_pumped_storage",
+       "nuclear",
+       "oil",
+       "other",
+       "other_renewable",
+       "solar",
+       "waste",
+       "wind_offshore",
+       "wind_onshore"
+      ],
+      "title": "Production Type",
+      "type": "string"
+     },
+     "values": {
+      "description": "Time series: (timestamp, generation_value)",
+      "items": {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      "title": "Values",
+      "type": "array"
+     }
+    },
+    "required": [
+     "production_type",
+     "data_state",
+     "datasource",
+     "values"
+    ],
+    "title": "ProductionBlock",
+    "type": "object"
+   },
+   "ValidationError": {
+    "properties": {
+     "ctx": {
+      "title": "Context",
+      "type": "object"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "title": "Location",
+      "type": "array"
+     },
+     "msg": {
+      "title": "Message",
+      "type": "string"
+     },
+     "type": {
+      "title": "Error Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError",
+    "type": "object"
+   },
+   "Zone": {
+    "description": "Represents zone metadata enriched with electrical neighbours.",
+    "properties": {
+     "country_code": {
+      "description": "ISO 3166-1 alpha-3 country code",
+      "title": "Country Code",
+      "type": "string"
+     },
+     "country_name": {
+      "description": "Country name",
+      "title": "Country Name",
+      "type": "string"
+     },
+     "eic_code": {
+      "description": "Energy Identification Code (EIC)",
+      "title": "Eic Code",
+      "type": "string"
+     },
+     "full_name": {
+      "description": "Full descriptive name of the zone",
+      "title": "Full Name",
+      "type": "string"
+     },
+     "neighbours": {
+      "description": "Connected cross-border zones for this zone",
+      "items": {
+       "type": "string"
+      },
+      "title": "Neighbours",
+      "type": "array"
+     },
+     "provider": {
+      "description": "Normalized data provider",
+      "enum": [
+       "ENTSO-E",
+       "Elexon",
+       "EPIAS"
+      ],
+      "title": "Provider",
+      "type": "string"
+     },
+     "zone": {
+      "description": "wattnet zone code",
+      "title": "Zone",
+      "type": "string"
+     }
+    },
+    "required": [
+     "zone",
+     "full_name",
+     "eic_code",
+     "country_code",
+     "country_name",
+     "provider",
+     "neighbours"
+    ],
+    "title": "Zone",
+    "type": "object"
+   }
+  },
+  "securitySchemes": {
+   "HTTPBearer": {
+    "scheme": "bearer",
+    "type": "http"
+   }
+  }
+ },
+ "info": {
+  "description": "<a href=\"https://wattnet.eu\" target=\"_blank\" rel=\"noopener noreferrer\"><img width=\"200\" src=\"/static/images/wattnet-logo-full-light-transparent-cropped.png\" alt=\"Wattnet Logo\" style=\"margin: 1rem 0;\"></a>\n\n[![GitHub](https://img.shields.io/badge/github.com%2Fwattnet-242424?style=flat&logo=github&logoColor=white&labelColor=444444)](https://github.com/wattnet) [![Website](https://img.shields.io/badge/wattnet.eu-1D488C?style=flat&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0id2F0dG5ldC1pY29uIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjE4MCAxODAgNjQwIDY0MCI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9ImNvbG9yIj4KICAgIDxwYXRoIGlkPSJTdmdqc0cxODUyIiBjbGFzcz0iY2xzLTEiIGQ9Ik03OTcuODUsNDYwLjg0bC0yLjMyLTIwLjIyaC0xOC41MmMtMTEzLjYyLDAtMTk0LjU5LDI3LjEyLTI0Ni43Miw3OC45OC0xLjg5LDEuODgtMy41Niw0LjQ0LTUuMzgsNi4zMywxOC4zNCwyMy40OSwzMi4wNiw0OC4wNyw0Mi4zLDczLjM5LDMyLjM3LTQ5Ljg5LDg2Ljg0LTk2LjMxLDE3My4yNS0xMjEuOTUtOTAuNyw1OC43Mi0xMzMuNjIsMTQ1LjMyLTE1MC4zNSwyMTMuMDUsMy41LDI3LjM5LDQuNzgsNTYuMDgsNC43OCw4Ni4yNSwwLDIuNi0uMjMsNS4xOC0uNTYsNy43LDQzLjg4LTE0LjU4LDg0LjEtMzkuNzgsMTE3LjY5LTczLjIyLDY2LjE4LTY1LjgzLDk3LjUzLTE1Ny42Niw4NS44NS0yNTAuM1pNNTUzLjM2LDc3Ni42OGMwLTEwMC44NS0xMy45OC0xODQuNzUtODYuNjctMjU3LjA4LTUyLjExLTUxLjg2LTEzMS43NS03OC45OC0yNDUuMzctNzguOThoLTE4LjUybC0yLjMxLDIwLjIyYy0xMS42OSw5Mi42NCwxOS41NSwxODQuNDgsODUuNzEsMjUwLjI5LDU2LjgsNTYuNTMsMTMyLjM3LDg4LjE2LDIxMi44LDg4LjE2LDEyLjYsMCwyNC4zOS0uNTYsMzYuODktMi4xMmwxNy40Ni0yLjA3di0xOC40M2gwWk0zMzAuMTEsNjY4LjQzYy00My44OC00My42NS02OC4yOC0xMDAuMjEtNjkuODctMTYwLjk2LDc0Ljg3LDQuODUsMTI5LjgxLDI0LjI0LDE2My40OCw1Ny43NSw0NC42Miw0NC40MSw2NC4wMSw5Mi40Nyw2OC40MSwxNzIuNzItNjEuMjEtMS42Ny0xMTguNTItMjYuMi0xNjIuMDItNjkuNVpNNzc5LjU1LDM2Ny41bC00Ni44NS0xMDguNjZjLTUuNS0xMi43LTE3LjUyLTEzLjQtMjYuNjktMS41M2wtMTMuMDMsMTYuODVjLTUyLjUxLTQ0LjM0LTEyMC4zNC03NC4xNi0xOTQuNDQtNzQuMTYtMTMxLjU0LDAtMjQzLjYsODQuODQtMjg0LjUsMTk4LjY4aDcuMjljMjIuMzYsMCw0My41NSwzLjg5LDYzLjY5LDUuNzcsMzYuNjctODEuMTIsMTE4LjQ3LTEzNi40LDIxMy41Mi0xMzYuNCw1OC43NSwwLDExMi40OSwyMi40MSwxNTMuNjMsNTguMTNsLS4yMi42NS0xMy4zNSwxNy40NWMtOS4xOSwxMS44OC01LjQzLDIzLjMzLDguMzMsMjUuMzRsMTE3LjU1LDE3LjMyYzEzLjgsMi4wMywyMC41Ny02LjcsMTUuMDctMTkuNDJaIi8+CiAgPC9nPgo8L3N2Zz4K&labelColor=5374A7)](https://wattnet.eu) [![Dashboard](https://img.shields.io/badge/dashboard.wattnet.eu-94CE24?style=flat&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0id2F0dG5ldC1pY29uIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjE4MCAxODAgNjQwIDY0MCI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9ImNvbG9yIj4KICAgIDxwYXRoIGlkPSJTdmdqc0cxODUyIiBjbGFzcz0iY2xzLTEiIGQ9Ik03OTcuODUsNDYwLjg0bC0yLjMyLTIwLjIyaC0xOC41MmMtMTEzLjYyLDAtMTk0LjU5LDI3LjEyLTI0Ni43Miw3OC45OC0xLjg5LDEuODgtMy41Niw0LjQ0LTUuMzgsNi4zMywxOC4zNCwyMy40OSwzMi4wNiw0OC4wNyw0Mi4zLDczLjM5LDMyLjM3LTQ5Ljg5LDg2Ljg0LTk2LjMxLDE3My4yNS0xMjEuOTUtOTAuNyw1OC43Mi0xMzMuNjIsMTQ1LjMyLTE1MC4zNSwyMTMuMDUsMy41LDI3LjM5LDQuNzgsNTYuMDgsNC43OCw4Ni4yNSwwLDIuNi0uMjMsNS4xOC0uNTYsNy43LDQzLjg4LTE0LjU4LDg0LjEtMzkuNzgsMTE3LjY5LTczLjIyLDY2LjE4LTY1LjgzLDk3LjUzLTE1Ny42Niw4NS44NS0yNTAuM1pNNTUzLjM2LDc3Ni42OGMwLTEwMC44NS0xMy45OC0xODQuNzUtODYuNjctMjU3LjA4LTUyLjExLTUxLjg2LTEzMS43NS03OC45OC0yNDUuMzctNzguOThoLTE4LjUybC0yLjMxLDIwLjIyYy0xMS42OSw5Mi42NCwxOS41NSwxODQuNDgsODUuNzEsMjUwLjI5LDU2LjgsNTYuNTMsMTMyLjM3LDg4LjE2LDIxMi44LDg4LjE2LDEyLjYsMCwyNC4zOS0uNTYsMzYuODktMi4xMmwxNy40Ni0yLjA3di0xOC40M2gwWk0zMzAuMTEsNjY4LjQzYy00My44OC00My42NS02OC4yOC0xMDAuMjEtNjkuODctMTYwLjk2LDc0Ljg3LDQuODUsMTI5LjgxLDI0LjI0LDE2My40OCw1Ny43NSw0NC42Miw0NC40MSw2NC4wMSw5Mi40Nyw2OC40MSwxNzIuNzItNjEuMjEtMS42Ny0xMTguNTItMjYuMi0xNjIuMDItNjkuNVpNNzc5LjU1LDM2Ny41bC00Ni44NS0xMDguNjZjLTUuNS0xMi43LTE3LjUyLTEzLjQtMjYuNjktMS41M2wtMTMuMDMsMTYuODVjLTUyLjUxLTQ0LjM0LTEyMC4zNC03NC4xNi0xOTQuNDQtNzQuMTYtMTMxLjU0LDAtMjQzLjYsODQuODQtMjg0LjUsMTk4LjY4aDcuMjljMjIuMzYsMCw0My41NSwzLjg5LDYzLjY5LDUuNzcsMzYuNjctODEuMTIsMTE4LjQ3LTEzNi40LDIxMy41Mi0xMzYuNCw1OC43NSwwLDExMi40OSwyMi40MSwxNTMuNjMsNTguMTNsLS4yMi42NS0xMy4zNSwxNy40NWMtOS4xOSwxMS44OC01LjQzLDIzLjMzLDguMzMsMjUuMzRsMTE3LjU1LDE3LjMyYzEzLjgsMi4wMywyMC41Ny02LjcsMTUuMDctMTkuNDJaIi8+CiAgPC9nPgo8L3N2Zz4K&labelColor=1E8449)](https://dashboard.wattnet.eu) [![Docker Hub](https://img.shields.io/badge/hub.docker.com%2Fu%2Fwattnet-1D63ED?style=flat&logo=docker&logoColor=white&labelColor=003F8C)](https://hub.docker.com/u/wattnet)\n\n#### An open-source service for tracking the environmental footprint of electricity across Europe.\n\nExplore the environmental footprint of electricity, powered by open data. Access real-time, historical, and forecasted indicators on the carbon and water impact of electricity consumption across Europe.\n\nWattnet is designed for researchers, developers, and decision-makers who rely on accurate, transparent, and reproducible environmental metrics.\n\nFor more information, please visit our [official website](https://wattnet.eu) or our [GitHub Organization](https://github.com/wattnet).\n\n[![Website Banner](/static/images/banner.png)](https://wattnet.eu)\n\n### Funding and acknowledgments\n\nThis work was developed within the [GreenDIGIT](https://greendigit-project.eu/) project, funded by the European Union\u2019s Horizon Europe research and innovation programme under grant agreement No. [101131207](https://cordis.europa.eu/project/id/101131207), and by the Swiss State Secretariat for Education, Research and Innovation (SERI).\n\n<img width=\"648\" src=\"/static/images/funding-logos.png\" alt=\"Funded by the European Union, the Swiss State Secretariat for Education, Research and Innovation (SERI), and the GreenDIGIT project\" style=\"margin: 1rem 0;\">\n\n### About the service\n\nA service provided by <a href=\"https://www.csic.es\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #0366d6; text-decoration: none;\">Spanish National Research Council (CSIC)</a>, deployed on the Scientific Cloud at <a href=\"https://ifca.unican.es/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #0366d6; text-decoration: none;\">Institute of Physics of Cantabria (IFCA)</a>, developed by the <a href=\"https://advancedcomputing.ifca.es\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #0366d6; text-decoration: none;\">IFCA Advanced Computing and e-Science Group</a>.\n\n##### \u00a9 2026 Spanish National Research Council (CSIC). All rights reserved.",
+  "title": "wattnet RESTful API"
+ },
+ "openapi": "3.1.0",
+ "paths": {
+  "/environmental-score": {
+   "get": {
+    "description": "Retrieve EnvironmentalScore metrics filtered by:\n\n- `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup zone code.\n- `scope`: Scope of the score. Valid values: [operational].\n    Default is 'operational'.\n- `start` and `end`: Filter by datetime range (both required if one is\n    provided). If not provided, only last available data is returned.\n- `aggregate`: If true, return aggregated scores over the time range.\n    If false (default), return time series grouped by status.\n- `use_global`: If true (default), return the global score based on\n    global impacts and footprints including electricity exchanges.\n    If false, use only local generation data.\n\nIf `lat` and `lon` are provided, the corresponding zone will be\ndetermined automatically.\n\nNote: If `aggregate` is true, `start` and `end` are required.",
+    "operationId": "get_scores_environmental_score_get",
+    "parameters": [
+     {
+      "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Filter by scope [operational]. Default is 'operational'.",
+      "in": "query",
+      "name": "scope",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": "operational",
+       "description": "Filter by scope [operational]. Default is 'operational'.",
+       "title": "Scope"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     },
+     {
+      "description": "If true, return aggregated scores over the time range. If false (default), return time series grouped by status.",
+      "in": "query",
+      "name": "aggregate",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "If true, return aggregated scores over the time range. If false (default), return time series grouped by status.",
+       "title": "Aggregate",
+       "type": "boolean"
+      }
+     },
+     {
+      "description": "If true (default), return the global score based on global impacts and footprints including electricity exchanges. If false, use only local generation data.",
+      "in": "query",
+      "name": "use_global",
+      "required": false,
+      "schema": {
+       "default": true,
+       "description": "If true (default), return the global score based on global impacts and footprints including electricity exchanges. If false, use only local generation data.",
+       "title": "Use Global",
+       "type": "boolean"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "anyOf": [
+          {
+           "items": {
+            "$ref": "#/components/schemas/EnvironmentalScoreAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/EnvironmentalScore"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/EnvironmentalScoreAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/EnvironmentalScore"
+           },
+           "type": "array"
+          }
+         ],
+         "title": "Response 200 Get Scores Environmental Score Get"
+        }
+       }
+      },
+      "description": "List of scores matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve EnvironmentalScore metrics",
+    "tags": [
+     "Environmental Metrics"
+    ]
+   }
+  },
+  "/exports": {
+   "get": {
+    "description": "Retrieve a list of export data filtered by:\n- `zone`: origin wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup the origin zone code.\n- `destination_zone`: Optional destination zone code to filter exports.\n- `destination_lat` and `destination_lon`: Coordinates to lookup destination zone\n  code (mutually exclusive with `destination_zone`).\n- `start` and `end`: Filter by datetime range (both required if one is provided).\n  If not provided, only last available data is returned.",
+    "operationId": "get_exports_exports_get",
+    "parameters": [
+     {
+      "description": "Filter by origin wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by origin wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD) for origin zone",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD) for origin zone",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD) for origin zone",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD) for origin zone",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Destination zone code for exports (mutually exclusive with destination_lat/destination_lon)",
+      "in": "query",
+      "name": "destination_zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Destination zone code for exports (mutually exclusive with destination_lat/destination_lon)",
+       "title": "Destination Zone"
+      }
+     },
+     {
+      "description": "Latitude for destination zone",
+      "in": "query",
+      "name": "destination_lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude for destination zone",
+       "title": "Destination Lat"
+      }
+     },
+     {
+      "description": "Longitude for destination zone",
+      "in": "query",
+      "name": "destination_lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude for destination zone",
+       "title": "Destination Lon"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Export"
+         },
+         "title": "Response 200 Get Exports Exports Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of export data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve export data",
+    "tags": [
+     "Energy Metrics"
+    ]
+   }
+  },
+  "/factors": {
+   "get": {
+    "description": "Retrieve a list of factors filtered by:\n\n- `factor_type`: Type of factor. Valid values: carbon, water. If not provided,\n  all types are returned.\n- `scope`: Scope of the factor. Valid values: operational, life-cycle. If not\n  provided, all scopes are returned.\n- `production_type`: Production type filter. Valid values include: biomass, coal,\n  gas, geothermal, hydro_reservoir, hydro_river, marine, nuclear, oil, other,\n  other_renewable, solar, waste, wind_offshore, wind_onshore.\n- `start` and `end`: Datetime range to filter factors (both required if one is\n  provided). If not provided, only last available data is returned.\n- `aggregate`: If true, return aggregated footprints over the time range. If\n  false (default), return time series grouped by fields.\n\nNote: If `aggregate` is true, `start` and `end` are required to define the\naggregation period.",
+    "operationId": "get_factors_factors_get",
+    "parameters": [
+     {
+      "description": "Filter factors by type [carbon, water]. If not provided, all types are returned.",
+      "in": "query",
+      "name": "factor_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter factors by type [carbon, water]. If not provided, all types are returned.",
+       "title": "Factor Type"
+      }
+     },
+     {
+      "description": "Filter factors by scope [operational, life-cycle]. If not provided, all scopes are returned.",
+      "in": "query",
+      "name": "scope",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter factors by scope [operational, life-cycle]. If not provided, all scopes are returned.",
+       "title": "Scope"
+      }
+     },
+     {
+      "description": "Filter factors by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore. If not provided, all types are returned.",
+      "in": "query",
+      "name": "production_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter factors by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore. If not provided, all types are returned.",
+       "title": "Production Type"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     },
+     {
+      "description": "If true, return aggregated factors over the time range. If false (default), return time series grouped by fields.",
+      "in": "query",
+      "name": "aggregate",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": false,
+       "description": "If true, return aggregated factors over the time range. If false (default), return time series grouped by fields.",
+       "title": "Aggregate"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "anyOf": [
+          {
+           "items": {
+            "$ref": "#/components/schemas/FactorAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/Factor"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/FactorAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/Factor"
+           },
+           "type": "array"
+          }
+         ],
+         "title": "Response 200 Get Factors Factors Get"
+        }
+       }
+      },
+      "description": "List of factors matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve factors",
+    "tags": [
+     "Factors"
+    ]
+   }
+  },
+  "/flow-share": {
+   "get": {
+    "description": "Retrieve the flow share of energy from a given origin zone to other zones\nin the network.\n\nThis metric represents, for a specific origin zone, the percentage of its total\nenergy production that is exported to each destination zone.\n\nFilters:\n- `zone`: origin wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup origin zone code.\n- `destination_zone`: Optional destination zone code to filter flow shares.\n- `destination_lat` and `destination_lon`: Coordinates to lookup destination\n  zone code (mutually exclusive with `destination_zone`).\n- `start` and `end`: Filter by datetime range (both required if one is provided).\n  If not provided, only last available data is returned.",
+    "operationId": "get_flow_share_flow_share_get",
+    "parameters": [
+     {
+      "description": "Filter by origin wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by origin wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Filter by destination wattnet zone code (mutually exclusive with destination_lat/destination_lon)",
+      "in": "query",
+      "name": "destination_zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by destination wattnet zone code (mutually exclusive with destination_lat/destination_lon)",
+       "title": "Destination Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD) for destination zone",
+      "in": "query",
+      "name": "destination_lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD) for destination zone",
+       "title": "Destination Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD) for destination zone",
+      "in": "query",
+      "name": "destination_lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD) for destination zone",
+       "title": "Destination Lon"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FlowShare"
+         },
+         "title": "Response 200 Get Flow Share Flow Share Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of flow share data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve flow share data",
+    "tags": [
+     "Shares Metrics"
+    ]
+   }
+  },
+  "/footprint-share": {
+   "get": {
+    "description": "Retrieve the footprint of a destination zone decomposed\ninto contributions from each origin zone.\n\nFilters:\n- `zone`: Destination wattnet zone code\n  (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup destination\n  zone code.\n- `source_zone`: Optional origin zone to filter\n  contributions.\n- `source_lat` and `source_lon`: Coordinates to lookup\n  origin zone (mutually exclusive with `source_zone`).\n- `footprint_type`: carbon or water\n- `scope`: operational or life-cycle\n- `start` / `end`: Datetime range to filter\n  (both required if one is provided). Only last available\n  data is returned if omitted.",
+    "operationId": "get_footprint_share_footprint_share_get",
+    "parameters": [
+     {
+      "description": "Destination zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Destination zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Origin zone code (mutually exclusive with source_lat/source_lon)",
+      "in": "query",
+      "name": "source_zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Origin zone code (mutually exclusive with source_lat/source_lon)",
+       "title": "Source Zone"
+      }
+     },
+     {
+      "description": "Latitude for origin zone",
+      "in": "query",
+      "name": "source_lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude for origin zone",
+       "title": "Source Lat"
+      }
+     },
+     {
+      "description": "Longitude for origin zone",
+      "in": "query",
+      "name": "source_lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude for origin zone",
+       "title": "Source Lon"
+      }
+     },
+     {
+      "description": "Type of footprint to filter [carbon, water]. If not provided, all types are returned.",
+      "in": "query",
+      "name": "footprint_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Type of footprint to filter [carbon, water]. If not provided, all types are returned.",
+       "title": "Footprint Type"
+      }
+     },
+     {
+      "description": "Filter footprints by scope [operational, life-cycle]. Default is 'life-cycle'.",
+      "in": "query",
+      "name": "scope",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter footprints by scope [operational, life-cycle]. Default is 'life-cycle'.",
+       "title": "Scope"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FootprintShare"
+         },
+         "title": "Response 200 Get Footprint Share Footprint Share Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of footprint share data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve footprint share data",
+    "tags": [
+     "Shares Metrics"
+    ]
+   }
+  },
+  "/footprints": {
+   "get": {
+    "description": "Retrieve a list of environmental footprints filtered by:\n\n- `zone`: wattnet zone code\n  (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup zone code.\n- `footprint_type`: Type of footprint. Valid values:\n  [carbon, water]. If not provided, all types are returned.\n- `scope`: Scope of the footprint. Valid values:\n  [operational, life-cycle]. Default is 'life-cycle'.\n- `start` and `end`: Filter by datetime range\n  (both required if one is provided). If not provided,\n  only last available data is returned.\n- `aggregate`: If true, return aggregated footprints over\n  the time range. If false (default), return time series\n  grouped by status.\n- `use_global`: If true (default), compute the global\n  footprint including electricity exchanges via flow tracing.\n  If false, use only the local footprint based on local\n  generation.\n\nIf `lat` and `lon` are provided, the corresponding zone\nwill be determined automatically.\n\nNote: If `aggregate` is true, `start` and `end` are required\nto define the aggregation period.",
+    "operationId": "get_footprints_footprints_get",
+    "parameters": [
+     {
+      "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Type of footprint to filter [carbon, water]. If not provided, all types are returned.",
+      "in": "query",
+      "name": "footprint_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Type of footprint to filter [carbon, water]. If not provided, all types are returned.",
+       "title": "Footprint Type"
+      }
+     },
+     {
+      "description": "Filter footprints by scope [operational, life-cycle]. Default is 'life-cycle'.",
+      "in": "query",
+      "name": "scope",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": "life-cycle",
+       "description": "Filter footprints by scope [operational, life-cycle]. Default is 'life-cycle'.",
+       "title": "Scope"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     },
+     {
+      "description": "If true, return aggregated footprints over the time range. If false (default), return time series grouped by status.",
+      "in": "query",
+      "name": "aggregate",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "If true, return aggregated footprints over the time range. If false (default), return time series grouped by status.",
+       "title": "Aggregate",
+       "type": "boolean"
+      }
+     },
+     {
+      "description": "If true (default), compute the global footprint including electricity exchanges via flow tracing. If false, use only the local footprint based on local generation.",
+      "in": "query",
+      "name": "use_global",
+      "required": false,
+      "schema": {
+       "default": true,
+       "description": "If true (default), compute the global footprint including electricity exchanges via flow tracing. If false, use only the local footprint based on local generation.",
+       "title": "Use Global",
+       "type": "boolean"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "anyOf": [
+          {
+           "items": {
+            "$ref": "#/components/schemas/FootprintAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/Footprint"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/FootprintAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/Footprint"
+           },
+           "type": "array"
+          }
+         ],
+         "title": "Response 200 Get Footprints Footprints Get"
+        }
+       }
+      },
+      "description": "List of footprints matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve environmental footprints",
+    "tags": [
+     "Environmental Metrics"
+    ]
+   }
+  },
+  "/generation": {
+   "get": {
+    "description": "Retrieve a list of generation data filtered by:\n- `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup zone code.\n- `production_type`: Type of production to filter\n  (e.g., solar, wind, hydro). If not provided, all types are returned.\n- `start` and `end`: Filter by datetime range\n  (both required if one is provided). If not provided,\n  only last available data is returned.",
+    "operationId": "get_generation_generation_get",
+    "parameters": [
+     {
+      "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Filter generation by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, hydro_pumped_storage, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore. If not provided, all types are returned.",
+      "in": "query",
+      "name": "production_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter generation by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, hydro_pumped_storage, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore. If not provided, all types are returned.",
+       "title": "Production Type"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Generation"
+         },
+         "title": "Response 200 Get Generation Generation Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of generation data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve generation data",
+    "tags": [
+     "Energy Metrics"
+    ]
+   }
+  },
+  "/impact-share": {
+   "get": {
+    "description": "Retrieve the impact of a destination zone decomposed\ninto contributions from each origin zone.\n\nFilters:\n- `zone`: Destination wattnet zone code\n  (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup destination zone.\n- `source_zone`: Optional origin zone to filter contributions.\n- `source_lat` and `source_lon`: Coordinates to lookup origin zone\n  (mutually exclusive with `source_zone`).\n- `impact_type`: water. If not provided, all types are returned.\n- `scope`: operational. Default is 'operational'.\n- `start` / `end`: Datetime range to filter (both required if one is\n  provided). Only last available data is returned if omitted.",
+    "operationId": "get_impact_share_impact_share_get",
+    "parameters": [
+     {
+      "description": "Destination zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Destination zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Origin zone code (mutually exclusive with source_lat/source_lon)",
+      "in": "query",
+      "name": "source_zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Origin zone code (mutually exclusive with source_lat/source_lon)",
+       "title": "Source Zone"
+      }
+     },
+     {
+      "description": "Latitude for origin zone",
+      "in": "query",
+      "name": "source_lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude for origin zone",
+       "title": "Source Lat"
+      }
+     },
+     {
+      "description": "Longitude for origin zone",
+      "in": "query",
+      "name": "source_lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude for origin zone",
+       "title": "Source Lon"
+      }
+     },
+     {
+      "description": "Type of impact to filter [water]. If not provided, all types are returned.",
+      "in": "query",
+      "name": "impact_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Type of impact to filter [water]. If not provided, all types are returned.",
+       "title": "Impact Type"
+      }
+     },
+     {
+      "description": "Filter by scope [operational]. Default is 'operational'.",
+      "in": "query",
+      "name": "scope",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": "operational",
+       "description": "Filter by scope [operational]. Default is 'operational'.",
+       "title": "Scope"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/ImpactShare"
+         },
+         "title": "Response 200 Get Impact Share Impact Share Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of impact share data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve impact share data",
+    "tags": [
+     "Shares Metrics"
+    ]
+   }
+  },
+  "/impacts": {
+   "get": {
+    "description": "Retrieve a list of environmental impacts filtered by:\n\n- `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup zone code.\n- `impact_type`: Type of impact. Valid values: [water].\n    If not provided, all types are returned.\n- `scope`: Scope of the impact. Valid values: [operational].\n    Default is 'operational'.\n- `start` and `end`: Filter by datetime range (both required if one is\n    provided). If not provided, only last available data is returned.\n- `aggregate`: If true, return aggregated impacts over the time range.\n    If false (default), return time series grouped by status.\n- `use_global`: If true (default), return the global impact including\n    electricity exchanges via flow tracing. If false, use only the local\n    impact based on local generation.\n\nIf `lat` and `lon` are provided, the corresponding zone will be\ndetermined automatically.\n\nNote: If `aggregate` is true, `start` and `end` are required.",
+    "operationId": "get_impacts_impacts_get",
+    "parameters": [
+     {
+      "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Type of impact to filter [water]. If not provided, all types are returned.",
+      "in": "query",
+      "name": "impact_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Type of impact to filter [water]. If not provided, all types are returned.",
+       "title": "Impact Type"
+      }
+     },
+     {
+      "description": "Filter by scope [operational]. Default is 'operational'.",
+      "in": "query",
+      "name": "scope",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": "operational",
+       "description": "Filter by scope [operational]. Default is 'operational'.",
+       "title": "Scope"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     },
+     {
+      "description": "If true, return aggregated impacts over the time range. If false (default), return time series grouped by status.",
+      "in": "query",
+      "name": "aggregate",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "If true, return aggregated impacts over the time range. If false (default), return time series grouped by status.",
+       "title": "Aggregate",
+       "type": "boolean"
+      }
+     },
+     {
+      "description": "If true (default), return the global impact including electricity exchanges via flow tracing. If false, use only the local impact based on local generation.",
+      "in": "query",
+      "name": "use_global",
+      "required": false,
+      "schema": {
+       "default": true,
+       "description": "If true (default), return the global impact including electricity exchanges via flow tracing. If false, use only the local impact based on local generation.",
+       "title": "Use Global",
+       "type": "boolean"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "anyOf": [
+          {
+           "items": {
+            "$ref": "#/components/schemas/ImpactAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/Impact"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/ImpactAggregate"
+           },
+           "type": "array"
+          },
+          {
+           "items": {
+            "$ref": "#/components/schemas/Impact"
+           },
+           "type": "array"
+          }
+         ],
+         "title": "Response 200 Get Impacts Impacts Get"
+        }
+       }
+      },
+      "description": "List of impacts matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve environmental impacts",
+    "tags": [
+     "Environmental Metrics"
+    ]
+   }
+  },
+  "/imports": {
+   "get": {
+    "description": "Retrieve a list of import data filtered by:\n- `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup the main zone code.\n- `source_zone`: Optional origin zone code to filter imports.\n- `source_lat` and `source_lon`: Coordinates to lookup origin zone\n  code (mutually exclusive with `source_zone`).\n- `start` and `end`: Filter by datetime range (both required if one is\n  provided). If not provided, only last available data is returned.",
+    "operationId": "get_imports_imports_get",
+    "parameters": [
+     {
+      "description": "Filter by main wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by main wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Origin zone code for imports (mutually exclusive with source_lat/source_lon)",
+      "in": "query",
+      "name": "source_zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Origin zone code for imports (mutually exclusive with source_lat/source_lon)",
+       "title": "Source Zone"
+      }
+     },
+     {
+      "description": "Latitude for origin zone",
+      "in": "query",
+      "name": "source_lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude for origin zone",
+       "title": "Source Lat"
+      }
+     },
+     {
+      "description": "Longitude for origin zone",
+      "in": "query",
+      "name": "source_lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude for origin zone",
+       "title": "Source Lon"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format).Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format).Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Import"
+         },
+         "title": "Response 200 Get Imports Imports Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of import data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve import data",
+    "tags": [
+     "Energy Metrics"
+    ]
+   }
+  },
+  "/load": {
+   "get": {
+    "description": "Retrieve total electricity demand data filtered by:\n\n- `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup zone code.\n- `start` and `end`: Filter by datetime range (both required if one is\n  provided). If not provided, only last available data is returned.\n\nIf `lat` and `lon` are provided, the corresponding zone will be\ndetermined automatically.",
+    "operationId": "get_load_load_get",
+    "parameters": [
+     {
+      "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Load"
+         },
+         "title": "Response 200 Get Load Load Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of load data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve load data",
+    "tags": [
+     "Energy Metrics"
+    ]
+   }
+  },
+  "/mix": {
+   "get": {
+    "description": "Retrieve a list of mix generation data filtered by:\n- `zone`: wattnet zone code (mutually exclusive with `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup zone code.\n- `production_type`: Type of production to filter\n  (e.g., solar, wind, hydro). If not provided, all types are returned.\n- `start` and `end`: Filter by datetime range\n  (both required if one is provided). If not provided,\n  only last available data is returned.",
+    "operationId": "get_mix_mix_get",
+    "parameters": [
+     {
+      "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD)",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD)",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD)",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Filter mix generation by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, hydro_pumped_storage, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore. If not provided, all types are returned.",
+      "in": "query",
+      "name": "production_type",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter mix generation by production type. Valid values: biomass, coal, gas, geothermal, hydro_reservoir, hydro_river, hydro_pumped_storage, marine, nuclear, oil, other, other_renewable, solar, waste, wind_offshore, wind_onshore. If not provided, all types are returned.",
+       "title": "Production Type"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format). Datetime must be UTC or timezone-aware. (YYYY-MM-DDTHH:MM:SSZ or YYYY-MM-DDTHH:MM:SS+00:00)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Mix"
+         },
+         "title": "Response 200 Get Mix Mix Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of mix data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve mix data",
+    "tags": [
+     "Energy Metrics"
+    ]
+   }
+  },
+  "/mix-share": {
+   "get": {
+    "description": "Retrieve the percentage of energy in the mix of a destination zone\nthat comes from each origin zone (including itself).\n\nFilters:\n- `zone`: Destination wattnet zone code (mutually exclusive with\n  `lat` and `lon`).\n- `lat` and `lon`: Coordinates to lookup destination zone code.\n- `origin_zone`: Optional origin zone code to filter contributions.\n- `origin_lat` and `origin_lon`: Coordinates to lookup origin zone\n  (mutually exclusive with `origin_zone`).\n- `start` and `end`: Filter by datetime range (both required if one is\n  provided). Only last available data is returned if omitted.",
+    "operationId": "get_mix_share_mix_share_get",
+    "parameters": [
+     {
+      "description": "Filter by destination wattnet zone code (mutually exclusive with lat/lon)",
+      "in": "query",
+      "name": "zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by destination wattnet zone code (mutually exclusive with lat/lon)",
+       "title": "Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD) for destination zone",
+      "in": "query",
+      "name": "lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD) for destination zone",
+       "title": "Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD) for destination zone",
+      "in": "query",
+      "name": "lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD) for destination zone",
+       "title": "Lon"
+      }
+     },
+     {
+      "description": "Filter by origin wattnet zone code (mutually exclusive with origin_lat/origin_lon)",
+      "in": "query",
+      "name": "origin_zone",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by origin wattnet zone code (mutually exclusive with origin_lat/origin_lon)",
+       "title": "Origin Zone"
+      }
+     },
+     {
+      "description": "Latitude in decimal degrees (DD) for origin zone",
+      "in": "query",
+      "name": "origin_lat",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 90,
+         "minimum": -90,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Latitude in decimal degrees (DD) for origin zone",
+       "title": "Origin Lat"
+      }
+     },
+     {
+      "description": "Longitude in decimal degrees (DD) for origin zone",
+      "in": "query",
+      "name": "origin_lon",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 180,
+         "minimum": -180,
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Longitude in decimal degrees (DD) for origin zone",
+       "title": "Origin Lon"
+      }
+     },
+     {
+      "description": "Start datetime for filtering (ISO 8601 format, UTC-aware)",
+      "in": "query",
+      "name": "start",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Start datetime for filtering (ISO 8601 format, UTC-aware)",
+       "title": "Start"
+      }
+     },
+     {
+      "description": "End datetime for filtering (ISO 8601 format, UTC-aware)",
+      "in": "query",
+      "name": "end",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "format": "date-time",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "End datetime for filtering (ISO 8601 format, UTC-aware)",
+       "title": "End"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MixShare"
+         },
+         "title": "Response 200 Get Mix Share Mix Share Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of mix share data matching the given filters"
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "Invalid input parameters"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "example": {
+         "detail": "Error message"
+        }
+       }
+      },
+      "description": "No zone found for the provided coordinates"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve mix share data",
+    "tags": [
+     "Shares Metrics"
+    ]
+   }
+  },
+  "/status": {
+   "get": {
+    "description": "Check the health of the storage system and external APIs.\n\n:return: Dictionary with the status of storage, ENTSOE API, and Elexon API\n:rtype: dict",
+    "operationId": "status_status_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Status Status Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Status",
+    "tags": [
+     "Status"
+    ]
+   }
+  },
+  "/status/elexon": {
+   "get": {
+    "description": "Check the health of the Elexon API.\n\n:return: Dictionary with the status of the Elexon API\n:rtype: dict",
+    "operationId": "status_elexon_status_elexon_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Status Elexon Status Elexon Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Status Elexon",
+    "tags": [
+     "Status"
+    ]
+   }
+  },
+  "/status/entso-e": {
+   "get": {
+    "description": "Check the health of the ENTSOE API.\n\n:return: Dictionary with the status of the ENTSOE API\n:rtype: dict",
+    "operationId": "status_entsoe_status_entso_e_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Status Entsoe Status Entso E Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Status Entsoe",
+    "tags": [
+     "Status"
+    ]
+   }
+  },
+  "/status/epias": {
+   "get": {
+    "description": "Check the health of the EPIAS API.\n\n:return: Dictionary with the status of the EPIAS API\n:rtype: dict",
+    "operationId": "status_epias_status_epias_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Status Epias Status Epias Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Status Epias",
+    "tags": [
+     "Status"
+    ]
+   }
+  },
+  "/status/storage": {
+   "get": {
+    "description": "Check the health of the storage system.\n\n:return: Dictionary with the status of the storage system\n:rtype: dict",
+    "operationId": "status_storage_status_storage_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "title": "Response Status Storage Status Storage Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Status Storage",
+    "tags": [
+     "Status"
+    ]
+   }
+  },
+  "/zones": {
+   "get": {
+    "description": "Retrieve all configured zones including their metadata and the list of electrically connected neighbouring zones.",
+    "operationId": "get_zones_zones_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Zone"
+         },
+         "title": "Response 200 Get Zones Zones Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "List of zones with metadata and neighbours"
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "summary": "Retrieve zones",
+    "tags": [
+     "Zones"
+    ]
+   }
+  }
+ },
+ "servers": [
+  {
+   "url": "/v1"
+  }
+ ]
+}
