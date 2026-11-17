@@ -317,3 +317,18 @@ def test_build_points_matches_build_time_series_and_adds_updated_at() -> None:
     fields = ops.series_fields(metrics)
     assert fields["values"] == ops.build_time_series(metrics)
     assert fields["points"] == points
+
+
+def test_latest_update_is_the_most_recent_known_one() -> None:
+    """The latest moment any metric was stored, or None when none says so.
+
+    :return: None
+    :rtype: None
+    """
+    t = datetime(2025, 6, 1, tzinfo=timezone.utc)
+    early = datetime(2025, 6, 2, tzinfo=timezone.utc)
+    late = datetime(2025, 6, 3, tzinfo=timezone.utc)
+    metrics = [FakeMetric(t, 1.0, {}, early), FakeMetric(t, 2.0, {}, late)]
+    assert ops.latest_update(metrics) == late
+    assert ops.latest_update([FakeMetric(t, 1.0, {}, None)]) is None
+    assert ops.latest_update([]) is None

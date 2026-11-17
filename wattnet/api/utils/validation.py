@@ -4,9 +4,10 @@ from datetime import datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
 
-from fastapi import HTTPException, Request, status
+from fastapi import Request, status
 from fastapi.dependencies.utils import get_flat_dependant
 
+from wattnet.api.errors import ApiError
 from wattnet.api.service import geo
 
 VALID_FOOTPRINT_TYPES = {"carbon", "water"}
@@ -57,20 +58,23 @@ def validate_location_filters(
         - If lat/lon are provided but no zone is found for those coordinates (404)
     """
     if zone and (lat is not None or lon is not None):
-        raise HTTPException(
+        raise ApiError(
             status_code=400,
+            code="zone_and_coordinates_conflict",
             detail="If zone is provided, latitude and longitude must NOT be provided.",
         )
     if (lat is not None) != (lon is not None):
-        raise HTTPException(
+        raise ApiError(
             status_code=400,
+            code="coordinates_incomplete",
             detail="Both latitude and longitude must be provided together.",
         )
     if lat is not None and lon is not None:
         zone_from_coords = geo.get_zone_code(lat, lon)
         if not zone_from_coords:
-            raise HTTPException(
+            raise ApiError(
                 status_code=404,
+                code="zone_not_found_for_coordinates",
                 detail="No zone found for the provided coordinates.",
             )
         return zone_from_coords
@@ -89,8 +93,9 @@ def validate_footprint_type(footprint_type: Optional[str]) -> None:
         footprint_type is not None
         and footprint_type.lower() not in VALID_FOOTPRINT_TYPES
     ):
-        raise HTTPException(
+        raise ApiError(
             status_code=400,
+            code="invalid_footprint_type",
             detail=f"Invalid footprint_type '{footprint_type}'. "
             + f"Valid values are {sorted(VALID_FOOTPRINT_TYPES)}",
         )
@@ -105,8 +110,9 @@ def validate_factor_type(factor_type: Optional[str]) -> None:
     :raises HTTPException: If factor_type is invalid (400)
     """
     if factor_type is not None and factor_type.lower() not in VALID_FACTOR_TYPES:
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_factor_type",
             detail=(
                 f"Invalid factor_type '{factor_type}'. "
                 f"Valid values are: {sorted(VALID_FACTOR_TYPES)}."
@@ -123,8 +129,9 @@ def validate_impact_type(impact_type: Optional[str]) -> None:
     :raises HTTPException: If impact_type is invalid (400)
     """
     if impact_type is not None and impact_type.lower() not in VALID_IMPACT_TYPES:
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_impact_type",
             detail=(
                 f"Invalid impact_type '{impact_type}'. "
                 f"Valid values are: {sorted(VALID_IMPACT_TYPES)}."
@@ -144,8 +151,9 @@ def validate_production_type(production_type: Optional[str]) -> None:
         production_type is not None
         and production_type.lower() not in VALID_PRODUCTION_TYPES
     ):
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_production_type",
             detail=(
                 f"Invalid production_type '{production_type}'. "
                 f"Valid values are: {sorted(VALID_PRODUCTION_TYPES)}."
@@ -162,8 +170,9 @@ def validate_scope(scope: Optional[str]) -> None:
     :raises HTTPException: If scope is invalid (400)
     """
     if scope is not None and scope.lower() not in VALID_SCOPES:
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_scope",
             detail=(
                 f"Invalid scope '{scope}'. Valid values are: {sorted(VALID_SCOPES)}."
             ),
@@ -179,8 +188,9 @@ def validate_operational_scope(scope: Optional[str]) -> None:
     :raises HTTPException: If scope is invalid (400)
     """
     if scope is not None and scope.lower() not in VALID_OPERATIONAL_SCOPE:
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="invalid_operational_scope",
             detail=(
                 f"Invalid scope '{scope}'. Valid values are: "
                 f"{sorted(VALID_OPERATIONAL_SCOPE)}."
@@ -214,13 +224,15 @@ def validate_time_range(start: Optional[datetime], end: Optional[datetime]) -> N
     :raises HTTPException: If validation fails (400)
     """
     if (start and not end) or (end and not start):
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="time_range_incomplete",
             detail="Both start and end datetimes must be provided.",
         )
     if start and end and start > end:
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="time_range_inverted",
             detail="start datetime must be before end datetime.",
         )
 
@@ -244,8 +256,9 @@ def validate_aggregation_params(
     :raises HTTPException: If validation fails (400)
     """
     if aggregate and (start is None or end is None):
-        raise HTTPException(
+        raise ApiError(
             status_code=status.HTTP_400_BAD_REQUEST,
+            code="aggregate_requires_time_range",
             detail="start and end datetimes are required when aggregate=True.",
         )
 
@@ -268,21 +281,24 @@ def validate_query_parameters(request: Request) -> None:
     seen: set[str] = set()
     for name, value in request.query_params.multi_items():
         if name not in known:
-            raise HTTPException(
+            raise ApiError(
                 status_code=400,
+                code="unknown_parameter",
                 detail=(
                     f"Unknown query parameter '{name}'. "
                     f"Accepted: {', '.join(sorted(known)) or 'none'}."
                 ),
             )
         if name in seen:
-            raise HTTPException(
+            raise ApiError(
                 status_code=400,
+                code="repeated_parameter",
                 detail=f"The query parameter '{name}' is repeated; send it once.",
             )
         if value == "":
-            raise HTTPException(
+            raise ApiError(
                 status_code=400,
+                code="empty_parameter",
                 detail=f"The query parameter '{name}' is empty; give it a value.",
             )
         seen.add(name)

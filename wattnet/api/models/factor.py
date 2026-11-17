@@ -98,3 +98,7 @@ class FactorAggregate(FactorBase):
     aggregation_method: AggregationMethod = Field(
         "time-weighted-average", description="Method used for aggregation"
     )
+    updated_at: Optional[datetime] = Field(
+        None,
+        description="Most recent moment any value of the period was stored (UTC)",
+    )

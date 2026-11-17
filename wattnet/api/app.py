@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_versioning import VersionedFastAPI
 
+from wattnet.api.errors import install_error_handlers
 from wattnet.api.routers.v1 import api_router_v1
 from wattnet.api.routers.v1.status import check_storage_system
 from wattnet.api.settings import settings
@@ -231,6 +232,13 @@ versioned_app = VersionedFastAPI(
     version=build_version(),
     terms_of_service="https://wattnet.eu/terms",
 )
+
+# The versioned apps that VersionedFastAPI mounts do not inherit the handlers of the
+# parent, so each one answers its errors with the stable ``code``.
+for _route in versioned_app.routes:
+    if isinstance(getattr(_route, "app", None), FastAPI):
+        install_error_handlers(_route.app)
+install_error_handlers(versioned_app)
 
 # Add favicon route
 versioned_app.mount(

@@ -13,6 +13,7 @@ from wattnet.api.service.operations import (
     compute_time_weighted_average,
     group_metrics_by_metadata,
     is_valid_agg,
+    latest_update,
     resolve_zone_status,
     series_fields,
 )
@@ -115,6 +116,7 @@ class ScoreService:
                     valid=valid_agg,
                     zone_status=zone_status,
                     aggregation_method="time-weighted-average",
+                    updated_at=latest_update(mlist),
                     coverage="global" if use_global else "local",
                 )
             )

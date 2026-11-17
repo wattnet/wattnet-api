@@ -166,6 +166,20 @@ Every series of the data endpoints (`generation`, `load`, `imports`, `exports`, 
 - `points`: a list of objects `{"timestamp", "value", "updated_at"}`. `updated_at` is the moment that version of the value was stored. Objects can grow with new fields without breaking the clients that read them by name.
 - `values`: the list of `[timestamp, value]` pairs that the API has always returned, with the same rounding and order. It is **deprecated** (marked as such in the OpenAPI document) and it is removed after 28 February 2027, the same day the legacy authentication ends. Read `points` instead.
 
+## Errors
+
+Every error answers with the sentence that says what is wrong, in `detail`, and a stable identifier for programs, in `code`: `{"detail": "...", "code": "zone_and_coordinates_conflict"}`. Read `code` and show `detail`: the sentence can be reworded, the code does not change. The errors that FastAPI raises by itself have a code too (`validation_error` for a 422, whose `detail` stays the list of problems, and `not_found`).
+
+| Status | Codes |
+| --- | --- |
+| 400 | `zone_and_coordinates_conflict`, `coordinates_incomplete`, `invalid_footprint_type`, `invalid_factor_type`, `invalid_impact_type`, `invalid_production_type`, `invalid_scope`, `invalid_operational_scope`, `time_range_incomplete`, `time_range_inverted`, `aggregate_requires_time_range`, `unknown_parameter`, `repeated_parameter`, `empty_parameter`, `query_too_big` |
+| 403 | `access_level_unknown`, `endpoint_group_not_allowed`, `zone_limit_exceeded`, `range_limit_exceeded`, `history_limit_exceeded`, `forecast_not_allowed` |
+| 404 | `zone_not_found_for_coordinates`, `not_found` |
+| 422 | `validation_error` |
+| 500 | `zones_unavailable` |
+
+The aggregates (`aggregate=true`) of `footprints`, `impacts`, `environmental-score` and `factors` carry `updated_at`, the most recent moment any value of the period was stored.
+
 ## Interactive API Documentation
 
 Once the server is running, explore endpoints, parameters, and responses interactively:
