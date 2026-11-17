@@ -6,11 +6,11 @@ from typing import List, Optional, cast
 from wattnet.api.models.impact import Impact, ImpactAggregate, ImpactSeries
 from wattnet.api.service.operations import (
     ZoneStatus,
-    build_time_series,
     compute_time_weighted_average,
     group_metrics_by_metadata,
     is_valid_agg,
     resolve_zone_status,
+    series_fields,
 )
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
@@ -179,7 +179,7 @@ class ImpactService:
                     ImpactSeries(
                         valid=valid,
                         zone_status=zone_status,
-                        values=build_time_series(smetrics),
+                        **series_fields(smetrics),
                     )
                 )
 

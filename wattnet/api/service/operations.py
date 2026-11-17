@@ -2,10 +2,11 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
 from typing_extensions import Literal
 
+from wattnet.api.models.point import Point
 from wattnet.storage.models import Metric
 
 ZoneStatus = Literal["complete", "preview", "missing"]
@@ -148,3 +149,36 @@ def build_time_series(
     values = [(m.timestamp, present(m.value)) for m in metrics if m.value is not None]
     values.sort(key=lambda x: x[0])
     return values
+
+
+def build_points(metrics: List[Metric]) -> List[Point]:
+    """Convert metrics to the points of a series, sorted by timestamp.
+
+    The same points as ``build_time_series`` (same filter, order and rounding), as
+    objects that also carry when each value was stored.
+
+    :param metrics: List of Metric objects to convert
+    :type metrics: List[Metric]
+
+    :return: List of points sorted by timestamp
+    :rtype: List[Point]
+    """
+    points = [
+        Point(timestamp=m.timestamp, value=present(m.value), updated_at=m.updated_at)
+        for m in metrics
+        if m.value is not None
+    ]
+    points.sort(key=lambda p: p.timestamp)
+    return points
+
+
+def series_fields(metrics: List[Metric]) -> Dict[str, Any]:
+    """Return the ``values`` (deprecated) and ``points`` of a series, to unpack.
+
+    :param metrics: List of Metric objects of the series
+    :type metrics: List[Metric]
+
+    :return: Keyword arguments ``values`` and ``points`` for a series model
+    :rtype: Dict[str, Any]
+    """
+    return {"values": build_time_series(metrics), "points": build_points(metrics)}

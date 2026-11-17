@@ -6,6 +6,8 @@ from typing import List, Tuple
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 
+from wattnet.api.models.point import Point
+
 ZoneStatus = Literal["complete", "preview", "missing"]
 ScoreScope = Literal["operational"]
 AggregationMethod = Literal["time-weighted-average"]
@@ -32,7 +34,13 @@ class EnvironmentalScoreSeries(BaseModel):
         ..., description="Status of the zone for this series"
     )
     values: List[Tuple[datetime, float]] = Field(
-        ..., description="List of (timestamp, value) tuples in range [0, 100]"
+        ...,
+        deprecated="Use points instead, values is removed after 28 February 2027",
+        description="List of (timestamp, value) tuples in range [0, 100]",
+    )
+    points: List[Point] = Field(
+        ...,
+        description="Objects {timestamp, value, updated_at}; replaces `values`",
     )
 
 

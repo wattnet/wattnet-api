@@ -6,11 +6,11 @@ from typing import List, Optional, cast
 from wattnet.api.models.footprint import Footprint, FootprintAggregate, FootprintSeries
 from wattnet.api.service.operations import (
     ZoneStatus,
-    build_time_series,
     compute_time_weighted_average,
     group_metrics_by_metadata,
     is_valid_agg,
     resolve_zone_status,
+    series_fields,
 )
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
@@ -193,12 +193,11 @@ class FootprintService:
             series_list = []
 
             for (valid, zone_status), smetrics in validity_subgroup.items():
-                values = build_time_series(smetrics)
                 series_list.append(
                     FootprintSeries(
                         valid=valid,
                         zone_status=zone_status,
-                        values=values,
+                        **series_fields(smetrics),
                     )
                 )
 

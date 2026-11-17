@@ -5,9 +5,9 @@ from typing import List, Optional, Union
 
 from wattnet.api.models.factor import Factor, FactorAggregate, FactorSeries
 from wattnet.api.service.operations import (
-    build_time_series,
     compute_time_weighted_average,
     group_metrics_by_metadata,
+    series_fields,
 )
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
@@ -200,8 +200,6 @@ class FactorService:
             year,
             source_link,
         ), mlist in grouped.items():
-            values = build_time_series(mlist)
-
             results.append(
                 Factor(
                     factor_type=factor_type,
@@ -211,7 +209,7 @@ class FactorService:
                     source=source,
                     year=year,
                     source_link=source_link,
-                    series=[FactorSeries(values=values)],
+                    series=[FactorSeries(**series_fields(mlist))],
                 )
             )
 

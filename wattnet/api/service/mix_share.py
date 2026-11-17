@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from wattnet.api.models.mix_share import MixShare, MixShareBlock, MixShareSeries
-from wattnet.api.service.operations import build_time_series, group_metrics_by_metadata
+from wattnet.api.service.operations import group_metrics_by_metadata, series_fields
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -100,7 +100,7 @@ class MixShareService:
                     block_list.append(
                         MixShareBlock(
                             origin=origin if origin is not None else "unknown",
-                            values=build_time_series(block_metrics),
+                            **series_fields(block_metrics),
                         )
                     )
 

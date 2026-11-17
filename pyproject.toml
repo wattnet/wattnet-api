@@ -88,6 +88,8 @@ twine = ">=4.0.2,<7.0.0"
 [tool.pytest.ini_options]
 testpaths = ["tests/unit", "tests/integration"]
 addopts = "--tb=short"
+# The tests of the services still read `values`, which stays until it is retired.
+filterwarnings = ["ignore:Use points instead:DeprecationWarning"]
 markers = [
     "integration: requires a running API instance",
 ]

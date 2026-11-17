@@ -10,35 +10,17 @@ These tests validate:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 import pytest
+from tests.unit.service.helpers import FakeMetric
 
 import wattnet.api.service.operations as ops
 
 # ============================================================
 # Test Model
 # ============================================================
-
-
-@dataclass
-class FakeMetric:
-    """
-    Minimal Metric test double.
-
-    :param timestamp: Timestamp of the metric
-    :type timestamp: datetime
-    :param value: Metric value
-    :type value: float | None
-    :param metadata: Metadata dictionary
-    :type metadata: Dict[str, object]
-    """
-
-    timestamp: datetime
-    value: Optional[float]
-    metadata: Dict[str, object]
 
 
 # ============================================================
@@ -308,4 +290,30 @@ def test_compute_time_weighted_average_rounds_unrounded_input() -> None:
     start: datetime = datetime(2025, 1, 1, 0, 0, 0)
     metrics: List[FakeMetric] = [FakeMetric(start, 10.123456789, {})]
 
-    assert ops.compute_time_weighted_average(metrics, start, start + timedelta(hours=1)) == 10.12
+    assert (
+        ops.compute_time_weighted_average(metrics, start, start + timedelta(hours=1))
+        == 10.12
+    )
+
+
+def test_build_points_matches_build_time_series_and_adds_updated_at() -> None:
+    """Points repeat the values (same filter, order and rounding) with the time stored.
+
+    :return: None
+    :rtype: None
+    """
+    t0 = datetime(2025, 6, 1, 0, 0, tzinfo=timezone.utc)
+    t1 = datetime(2025, 6, 1, 0, 15, tzinfo=timezone.utc)
+    stored = datetime(2025, 6, 2, tzinfo=timezone.utc)
+    metrics = [
+        FakeMetric(t1, 2.456, {}, stored),
+        FakeMetric(t0, None, {}),
+        FakeMetric(t0, 1.0, {}, stored),
+    ]
+    points = ops.build_points(metrics)
+    assert [(p.timestamp, p.value) for p in points] == ops.build_time_series(metrics)
+    assert [p.value for p in points] == [1.0, 2.46]
+    assert points[0].updated_at == stored
+    fields = ops.series_fields(metrics)
+    assert fields["values"] == ops.build_time_series(metrics)
+    assert fields["points"] == points
