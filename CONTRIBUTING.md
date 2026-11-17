@@ -56,6 +56,14 @@ tox -e integration
 tox
 ```
 
+## The API contract
+
+`tests/contract/openapi-v1.json` is the OpenAPI document of `/v1` that clients rely on, and `tests/integration/test_openapi_contract.py` fails when a pull request removes or changes anything in it: a path, a parameter, a response property, an enum value or a type. Adding is allowed, and so is marking something as deprecated. If a change must alter the contract on purpose, regenerate the file in the same pull request, so that the diff shows what changes for the clients:
+
+```bash
+UPDATE_OPENAPI_CONTRACT=1 poetry run pytest tests/integration/test_openapi_contract.py
+```
+
 ## Code Style
 
 We enforce a consistent style automatically. Before opening a PR, run:
