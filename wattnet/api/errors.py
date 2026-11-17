@@ -8,9 +8,8 @@ from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, StarletteHTTPException
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # For the errors that FastAPI itself raises (an unknown route, a method not allowed...).
 _DEFAULT_CODES = {
