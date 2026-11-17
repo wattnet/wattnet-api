@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_versioning import VersionedFastAPI
 
+from wattnet.api.cache import CacheControlMiddleware
 from wattnet.api.errors import install_error_handlers
 from wattnet.api.routers.v1 import api_router_v1
 from wattnet.api.routers.v1.status import check_storage_system
@@ -239,6 +240,10 @@ for _route in versioned_app.routes:
     if isinstance(getattr(_route, "app", None), FastAPI):
         install_error_handlers(_route.app)
 install_error_handlers(versioned_app)
+
+versioned_app.add_middleware(
+    CacheControlMiddleware, max_age=settings.cache_max_age_seconds
+)
 
 # Add favicon route
 versioned_app.mount(
