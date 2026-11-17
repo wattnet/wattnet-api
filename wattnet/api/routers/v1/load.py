@@ -46,6 +46,17 @@ _end_query = Query(
 )
 
 
+_resolution_query = Query(
+    None,
+    description=(
+        "Resolution of the series: `15m` (the data as it is, the default), `1h` or "
+        "`1d`, each value being the average of its hour or day in UTC. The first and "
+        "the last periods only average the points inside the range. Not with "
+        "`aggregate=true`."
+    ),
+)
+
+
 @router.get(
     "",
     response_model=List[Load],
@@ -83,6 +94,7 @@ def get_load(
     lon: Optional[float] = _lon_query,
     start: Optional[datetime] = _start_query,
     end: Optional[datetime] = _end_query,
+    resolution: Optional[str] = _resolution_query,
 ) -> List[Load]:
     """Endpoint to retrieve load (total electricity demand) data.
 
@@ -114,8 +126,11 @@ def get_load(
     zone = validation.validate_location_filters(zone, lat, lon)
     validation.validate_time_range(start, end)
 
+    resolution_minutes = validation.validate_resolution(resolution, False)
+
     return load_service.get_load(
         zone=zone.upper() if zone else None,
         start=start,
         end=end,
+        resolution_minutes=resolution_minutes,
     )

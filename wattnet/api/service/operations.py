@@ -194,3 +194,22 @@ def latest_update(metrics: List[Metric]) -> Optional[datetime]:
     :rtype: datetime, optional
     """
     return max((m.updated_at for m in metrics if m.updated_at), default=None)
+
+
+def resolution_kwargs(resolution_minutes: Optional[int]) -> Dict[str, int]:
+    """Return the arguments that ask the storage for a resampled series, if any.
+
+    The services drop the negative values after reading, so with a resolution the
+    storage drops them before the average: it is the average of the values that stay,
+    as if the series had been resampled after dropping them. Without a resolution
+    nothing is added, so the call is the one of always.
+
+    :param resolution_minutes: Minutes of each bucket of the series, or None
+    :type resolution_minutes: int, optional
+
+    :return: ``resolution_minutes`` and ``min_value``, or an empty dictionary
+    :rtype: Dict[str, int]
+    """
+    if resolution_minutes is None:
+        return {}
+    return {"resolution_minutes": resolution_minutes, "min_value": 0}

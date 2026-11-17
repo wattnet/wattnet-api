@@ -57,6 +57,17 @@ _use_global_query = Query(
 )
 
 
+_resolution_query = Query(
+    None,
+    description=(
+        "Resolution of the series: `15m` (the data as it is, the default), `1h` or "
+        "`1d`, each value being the average of its hour or day in UTC. The first and "
+        "the last periods only average the points inside the range. Not with "
+        "`aggregate=true`."
+    ),
+)
+
+
 @router.get(
     "",
     response_model=Union[List[EnvironmentalScoreAggregate], List[EnvironmentalScore]],
@@ -106,6 +117,7 @@ def get_scores(
     end: Optional[datetime] = _end_query,
     aggregate: bool = _aggregate_query,
     use_global: bool = _use_global_query,
+    resolution: Optional[str] = _resolution_query,
 ) -> Union[List[EnvironmentalScoreAggregate], List[EnvironmentalScore]]:
     """Endpoint to retrieve EnvironmentalScore metrics."""
     if start:
@@ -118,6 +130,8 @@ def get_scores(
     validation.validate_time_range(start, end)
     validation.validate_aggregation_params(aggregate, start, end)
 
+    resolution_minutes = validation.validate_resolution(resolution, aggregate)
+
     return score_service.get_scores(
         zone=zone.upper() if zone else None,
         scope=scope.lower() if scope else "operational",
@@ -125,4 +139,5 @@ def get_scores(
         end=end,
         aggregate=aggregate,
         use_global=use_global,
+        resolution_minutes=resolution_minutes,
     )

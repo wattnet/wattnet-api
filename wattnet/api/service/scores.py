@@ -14,6 +14,7 @@ from wattnet.api.service.operations import (
     group_metrics_by_metadata,
     is_valid_agg,
     latest_update,
+    resolution_kwargs,
     resolve_zone_status,
     series_fields,
 )
@@ -44,6 +45,7 @@ class ScoreService:
         end: Optional[datetime] = None,
         aggregate: bool = False,
         use_global: bool = True,
+        resolution_minutes: Optional[int] = None,
     ) -> List:
         """Retrieve EnvironmentalScore metrics filtered by zone, scope, and time range.
 
@@ -77,7 +79,11 @@ class ScoreService:
             labels["scope"] = scope
 
         metrics = self.repo.query_metrics(
-            metric_name=metric_name, start=start, end=end, labels=labels
+            metric_name=metric_name,
+            start=start,
+            end=end,
+            labels=labels,
+            **resolution_kwargs(resolution_minutes),
         )
         metrics = [m for m in metrics if m.value is not None and m.value >= 0]
 

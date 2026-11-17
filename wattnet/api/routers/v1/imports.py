@@ -44,6 +44,17 @@ _end_query = Query(
 )
 
 
+_resolution_query = Query(
+    None,
+    description=(
+        "Resolution of the series: `15m` (the data as it is, the default), `1h` or "
+        "`1d`, each value being the average of its hour or day in UTC. The first and "
+        "the last periods only average the points inside the range. Not with "
+        "`aggregate=true`."
+    ),
+)
+
+
 @router.get(
     "",
     response_model=List[Import],
@@ -83,6 +94,7 @@ def get_imports(
     source_lon: Optional[float] = _source_lon_query,
     start: Optional[datetime] = _start_query,
     end: Optional[datetime] = _end_query,
+    resolution: Optional[str] = _resolution_query,
 ) -> List[Import]:
     """Endpoint to retrieve import data filtered by location and time range.
 
@@ -133,11 +145,14 @@ def get_imports(
     validation.validate_time_range(start, end)
 
     # Fetch imports
+    resolution_minutes = validation.validate_resolution(resolution, False)
+
     imports = import_service.get_imports(
         zone=zone.upper() if zone else None,
         source=source_zone.upper() if source_zone else None,
         start=start,
         end=end,
+        resolution_minutes=resolution_minutes,
     )
 
     return imports

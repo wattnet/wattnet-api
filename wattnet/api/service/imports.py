@@ -4,7 +4,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from wattnet.api.models.imports import Import, ImportBlock, ImportSeries
-from wattnet.api.service.operations import group_metrics_by_metadata, series_fields
+from wattnet.api.service.operations import (
+    group_metrics_by_metadata,
+    resolution_kwargs,
+    series_fields,
+)
 from wattnet.api.utils import log
 from wattnet.storage.models import Metric
 from wattnet.storage.repository import MetricsRepository
@@ -31,6 +35,7 @@ class ImportService:
         source: Optional[str] = None,
         start: Optional[datetime] = None,
         end: Optional[datetime] = None,
+        resolution_minutes: Optional[int] = None,
     ) -> List[Import]:
         """Retrieve import metrics filtered by zone, source, and time range.
 
@@ -62,6 +67,7 @@ class ImportService:
             start=start,
             end=end,
             labels=labels,
+            **resolution_kwargs(resolution_minutes),
         )
 
         metrics = [m for m in metrics if m.value is not None and m.value >= 0]
