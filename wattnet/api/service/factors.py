@@ -7,6 +7,7 @@ from wattnet.api.models.factor import Factor, FactorAggregate, FactorSeries
 from wattnet.api.service.operations import (
     compute_time_weighted_average,
     group_metrics_by_metadata,
+    latest_update,
     series_fields,
 )
 from wattnet.api.utils import log
@@ -156,6 +157,7 @@ class FactorService:
                     end=end,
                     value=value_agg,
                     aggregation_method="time-weighted-average",
+                    updated_at=latest_update(mlist),
                 )
             )
 

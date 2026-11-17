@@ -16,9 +16,10 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Optional
 
 import yaml
-from fastapi import HTTPException, Request
+from fastapi import Request
 from pydantic import TypeAdapter, ValidationError
 
+from wattnet.api.errors import ApiError
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 from wattnet.api.utils.validation import make_utc_aware
@@ -141,8 +142,8 @@ def _zones_requested(params: Mapping[str, Any], zoned: bool = True) -> int:
     return len(zone_service.get_zones())
 
 
-def _forbid(detail: str) -> HTTPException:
-    return HTTPException(status_code=403, detail=detail)
+def _forbid(detail: str, code: str) -> ApiError:
+    return ApiError(status_code=403, detail=detail, code=code)
 
 
 def check_query(
@@ -153,7 +154,8 @@ def check_query(
     if limits.max_zones_per_query is not None and zones > limits.max_zones_per_query:
         raise _forbid(
             f"This access level allows {limits.max_zones_per_query} zone per query: "
-            "say it with zone, or with lat and lon."
+            "say it with zone, or with lat and lon.",
+            "zone_limit_exceeded",
         )
     start, end = _parse(params.get("start")), _parse(params.get("end"))
     if not (start and end):
@@ -163,17 +165,21 @@ def check_query(
     ):
         raise _forbid(
             f"This access level allows a range of {limits.max_query_range_days} days "
-            "per query."
+            "per query.",
+            "range_limit_exceeded",
         )
     if limits.history_days is not None and start < now - timedelta(
         days=limits.history_days
     ):
         raise _forbid(
-            f"This access level reaches {limits.history_days} days back from today."
+            f"This access level reaches {limits.history_days} days back from today.",
+            "history_limit_exceeded",
         )
     horizon = now + timedelta(minutes=settings.timeseries_step_minutes)
     if not limits.forecast and end > horizon:
-        raise _forbid("This access level does not include forecast data.")
+        raise _forbid(
+            "This access level does not include forecast data.", "forecast_not_allowed"
+        )
 
 
 def check_size(params: Mapping[str, Any], zoned: bool = True) -> None:
@@ -188,8 +194,9 @@ def check_size(params: Mapping[str, Any], zoned: bool = True) -> None:
         return
     cost = _zones_requested(params, zoned) * (end - start).total_seconds() / 86400
     if cost > settings.max_query_zone_days:
-        raise HTTPException(
+        raise ApiError(
             status_code=400,
+            code="query_too_big",
             detail=(
                 f"The query is too big: a zone for a day counts 1 and a query may have "
                 f"up to {settings.max_query_zone_days}. Ask a zone (zone, or lat and "
@@ -208,9 +215,14 @@ def guard(group: str) -> Callable[[Request], None]:
             tier = request.headers.get(TIER_HEADER)
             limits = policy.tiers().get(tier) if tier else None
             if limits is None:
-                raise _forbid("The request carries no known access level.")
+                raise _forbid(
+                    "The request carries no known access level.", "access_level_unknown"
+                )
             if group not in limits.groups:
-                raise _forbid("This access level does not include these endpoints.")
+                raise _forbid(
+                    "This access level does not include these endpoints.",
+                    "endpoint_group_not_allowed",
+                )
             check_query(limits, params, datetime.now(timezone.utc), zoned)
         check_size(params, zoned)
 

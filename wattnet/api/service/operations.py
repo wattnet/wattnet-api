@@ -182,3 +182,15 @@ def series_fields(metrics: List[Metric]) -> Dict[str, Any]:
     :rtype: Dict[str, Any]
     """
     return {"values": build_time_series(metrics), "points": build_points(metrics)}
+
+
+def latest_update(metrics: List[Metric]) -> Optional[datetime]:
+    """Return the most recent moment any of the metrics was stored, if known.
+
+    :param metrics: List of Metric objects
+    :type metrics: List[Metric]
+
+    :return: The latest ``updated_at``, or None when none of them has one
+    :rtype: datetime, optional
+    """
+    return max((m.updated_at for m in metrics if m.updated_at), default=None)

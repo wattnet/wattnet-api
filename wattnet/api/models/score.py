@@ -1,7 +1,7 @@
 """Data models for score endpoints in the wattnet API application."""
 
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
@@ -68,4 +68,8 @@ class EnvironmentalScoreAggregate(ScoreBase):
     )
     aggregation_method: AggregationMethod = Field(
         "time-weighted-average", description="Method used for aggregation"
+    )
+    updated_at: Optional[datetime] = Field(
+        None,
+        description="Most recent moment any value of the period was stored (UTC)",
     )
