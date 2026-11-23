@@ -99,7 +99,7 @@ def get(name: str) -> logging.Logger:
     """Return a logger for the given name.
 
     Calls :func:`setup_logging` on first use so that any module importing
-    this function before ``app.py`` runs still gets a configured logger.
+    this function before ``main.py`` runs still gets a configured logger.
 
     :param name: Name of the logger (e.g., module or component name)
     :type name: str

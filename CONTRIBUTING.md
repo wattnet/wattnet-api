@@ -64,6 +64,10 @@ tox
 UPDATE_OPENAPI_CONTRACT=1 poetry run pytest tests/integration/test_openapi_contract.py
 ```
 
+## The MCP tools
+
+Every data endpoint of `/v1` is also a tool of the MCP interface (`wattnet/api/mcp/tools/`, one line per endpoint: its name, its handler and its group of the access policy). A new endpoint without a tool fails `test_every_data_route_has_a_tool`.
+
 ## Code Style
 
 We enforce a consistent style automatically. Before opening a PR, run:

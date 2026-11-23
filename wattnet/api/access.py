@@ -205,25 +205,28 @@ def check_size(params: Mapping[str, Any], zoned: bool = True) -> None:
         )
 
 
+def enforce(group: str, tier: Optional[str], params: Mapping[str, Any]) -> None:
+    """Raise if the tier may not make this query of the group; REST and MCP share it."""
+    zoned = group in _ZONED_GROUPS
+    if policy is not None:
+        limits = policy.tiers().get(tier) if tier else None
+        if limits is None:
+            raise _forbid(
+                "The request carries no known access level.", "access_level_unknown"
+            )
+        if group not in limits.groups:
+            raise _forbid(
+                "This access level does not include these endpoints.",
+                "endpoint_group_not_allowed",
+            )
+        check_query(limits, params, datetime.now(timezone.utc), zoned)
+    check_size(params, zoned)
+
+
 def guard(group: str) -> Callable[[Request], None]:
     """Return the dependency of the endpoints of a group of the access policy."""
-    zoned = group in _ZONED_GROUPS
 
     def dependency(request: Request) -> None:
-        params = request.query_params
-        if policy is not None:
-            tier = request.headers.get(TIER_HEADER)
-            limits = policy.tiers().get(tier) if tier else None
-            if limits is None:
-                raise _forbid(
-                    "The request carries no known access level.", "access_level_unknown"
-                )
-            if group not in limits.groups:
-                raise _forbid(
-                    "This access level does not include these endpoints.",
-                    "endpoint_group_not_allowed",
-                )
-            check_query(limits, params, datetime.now(timezone.utc), zoned)
-        check_size(params, zoned)
+        enforce(group, request.headers.get(TIER_HEADER), request.query_params)
 
     return dependency

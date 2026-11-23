@@ -23,7 +23,7 @@ def test_main_calls_uvicorn_run() -> None:
     :return: None
     :rtype: None
     """
-    from wattnet.api.app import main
+    from wattnet.api.main import main
 
     with patch("uvicorn.run") as mock_run:
         main()
@@ -49,7 +49,7 @@ def test_readyz_is_200_when_the_storage_answers(client, monkeypatch) -> None:
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: True)
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: True)
     )
     assert client.get("/readyz").status_code == 200
 
@@ -61,7 +61,7 @@ def test_readyz_is_503_when_the_storage_does_not_answer(client, monkeypatch) -> 
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: False)
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: False)
     )
     assert client.get("/readyz").status_code == 503
 

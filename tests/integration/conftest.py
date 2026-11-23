@@ -29,7 +29,7 @@ def client() -> TestClient:
     :return: TestClient bound to versioned_app
     :rtype: TestClient
     """
-    from wattnet.api.app import versioned_app
+    from wattnet.api.main import versioned_app
 
     return TestClient(versioned_app)
 

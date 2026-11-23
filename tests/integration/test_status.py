@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from wattnet.api.routers.v1.status import (
+from wattnet.api.rest.v1.status import (
     check_elexon_api,
     check_entsoe_api,
     check_epias_api,
@@ -31,9 +31,9 @@ def mock_requests_up(monkeypatch):
     """
     mock = MagicMock()
     mock.return_value.status_code = 200
-    monkeypatch.setattr("wattnet.api.routers.v1.status.requests.get", mock)
+    monkeypatch.setattr("wattnet.api.rest.v1.status.requests.get", mock)
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: True)
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: True)
     )
 
 
@@ -46,11 +46,11 @@ def mock_requests_down(monkeypatch):
     import requests as _requests
 
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.requests.get",
+        "wattnet.api.rest.v1.status.requests.get",
         MagicMock(side_effect=_requests.RequestException("unreachable")),
     )
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: False)
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: False)
     )
 
 
@@ -138,7 +138,7 @@ def test_check_storage_system_ping_false_returns_false(monkeypatch) -> None:
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: False)
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: False)
     )
     assert check_storage_system() is False
 
@@ -151,7 +151,7 @@ def test_check_storage_system_ping_error_returns_false(monkeypatch) -> None:
     """
     repo = MagicMock()
     repo.ping.side_effect = RuntimeError("no client")
-    monkeypatch.setattr("wattnet.api.routers.v1.status.metrics_repo", repo)
+    monkeypatch.setattr("wattnet.api.rest.v1.status.metrics_repo", repo)
     assert check_storage_system() is False
 
 
@@ -162,7 +162,7 @@ def test_check_entsoe_api_missing_url_returns_false(monkeypatch) -> None:
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.settings",
+        "wattnet.api.rest.v1.status.settings",
         MagicMock(entsoe_url=""),
     )
     assert check_entsoe_api() is False
@@ -175,7 +175,7 @@ def test_check_elexon_api_missing_url_returns_false(monkeypatch) -> None:
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.settings",
+        "wattnet.api.rest.v1.status.settings",
         MagicMock(elexon_url=""),
     )
     assert check_elexon_api() is False
@@ -188,7 +188,7 @@ def test_check_epias_api_missing_url_returns_false(monkeypatch) -> None:
     :rtype: None
     """
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.settings",
+        "wattnet.api.rest.v1.status.settings",
         MagicMock(epias_url=""),
     )
     assert check_epias_api() is False
@@ -201,9 +201,9 @@ def test_provider_answer_is_kept_for_a_few_seconds(monkeypatch) -> None:
     :rtype: None
     """
     clock = [100.0]
-    monkeypatch.setattr("wattnet.api.routers.v1.status.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr("wattnet.api.rest.v1.status.time.monotonic", lambda: clock[0])
     mock = MagicMock()
-    monkeypatch.setattr("wattnet.api.routers.v1.status.requests.get", mock)
+    monkeypatch.setattr("wattnet.api.rest.v1.status.requests.get", mock)
 
     assert check_entsoe_api() is True
     assert check_entsoe_api() is True
