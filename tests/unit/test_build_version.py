@@ -3,7 +3,7 @@
 import pytest
 
 from wattnet.api import __version__
-from wattnet.api.app import build_version
+from wattnet.api.main import build_version
 
 
 def test_release_shows_the_package_version(monkeypatch: pytest.MonkeyPatch) -> None:

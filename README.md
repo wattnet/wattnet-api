@@ -46,7 +46,7 @@ The API is organized into five groups of endpoints:
 
 For the full software architecture see the [wattnet-software-architecture](https://github.com/wattnet/wattnet-software-architecture) repository.
 
-`wattnet-api` is a [FastAPI](https://fastapi.tiangolo.com/) application served by [Uvicorn](https://www.uvicorn.org/). It reads energy metrics from `wattnet-storage` and zone/GeoJSON data from `wattnet-data`. The API is versioned; all current endpoints live under `/v1`.
+`wattnet-api` is a [FastAPI](https://fastapi.tiangolo.com/) application served by [Uvicorn](https://www.uvicorn.org/). It reads energy metrics from `wattnet-storage` and zone/GeoJSON data from `wattnet-data`. The API is versioned; all current endpoints live under `/v1`. The same application also serves [MCP](#mcp-model-context-protocol), a second interface to the same data, at `/mcp`.
 
 ## Requirements
 
@@ -146,7 +146,7 @@ wattnet-api
 Or directly with Uvicorn:
 
 ```bash
-uvicorn wattnet.api.app:versioned_app --host 0.0.0.0 --port 8000 --reload
+uvicorn wattnet.api.main:versioned_app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### With Docker
@@ -189,6 +189,47 @@ The series of `load`, `generation`, `imports`, `exports`, `mix`, `footprints`, `
 - The version of each point that counts is chosen as always; a period is `valid` only if all its points are, and its `zone_status` is the worst of them.
 - It cannot be used with `aggregate=true` (answered `400`: the aggregate is already one value), and the shares and the factors do not take it (`400`: the average of percentages is not the share of the sums, and a factor is one value per year).
 - The limit of `WATTNET_API_MAX_QUERY_ZONE_DAYS` counts the range asked, not the rows returned.
+
+## MCP (Model Context Protocol)
+
+MCP is another interface of Wattnet, not another service: the same process, the same access policy and the same reads as the REST API. Each tool runs the handler of its REST endpoint, so the validation, the tiers, the services and `wattnet-storage` are shared and a change in the reading reaches both interfaces. The production hostnames are two names for one deployment:
+
+| Interface | Host              | Path                           |
+| --------- | ----------------- | ------------------------------ |
+| REST      | `api.wattnet.eu`  | `/v1/...`                      |
+| MCP       | `mcp.wattnet.eu`  | `/mcp` (streamable HTTP)       |
+
+The application does not look at the host. The gateway sends `mcp.wattnet.eu/*` to `/mcp` of the same upstream as `api.wattnet.eu`, with the same authentication and access policy plugins: it validates the Bearer token and sends the tier in `X-Wattnet-Tier`, and the tools apply the same limits as the endpoints (groups, zones per query, range, history, forecast, size). The server is stateless, so it works with any number of workers behind a load balancer.
+
+| Tool                      | REST endpoint         | Group of the policy     |
+| ------------------------- | --------------------- | ----------------------- |
+| `list_zones`              | `/zones`              | `zones`                 |
+| `get_generation`          | `/generation`         | `energy_metrics`        |
+| `get_load`                | `/load`               | `energy_metrics`        |
+| `get_imports`             | `/imports`            | `energy_metrics`        |
+| `get_exports`             | `/exports`            | `energy_metrics`        |
+| `get_mix`                 | `/mix`                | `energy_metrics`        |
+| `get_footprints`          | `/footprints`         | `environmental_metrics` |
+| `get_impacts`             | `/impacts`            | `environmental_metrics` |
+| `get_environmental_score` | `/environmental-score`| `environmental_metrics` |
+| `get_flow_share`          | `/flow-share`         | `shares_metrics`        |
+| `get_mix_share`           | `/mix-share`          | `shares_metrics`        |
+| `get_footprint_share`     | `/footprint-share`    | `shares_metrics`        |
+| `get_impact_share`        | `/impact-share`       | `shares_metrics`        |
+| `get_factors`             | `/factors`            | `factors`               |
+| `get_status`              | `/status`             | none                    |
+
+The parameters, their limits and the result of a tool are those of its endpoint, and `tools/list` gives them as JSON Schema. A failure is a tool result with `isError` and a JSON text with the `status` and the stable `code` of the REST error (`zone_not_found_for_coordinates`, `invalid_resolution`, `zone_limit_exceeded`, `access_level_unknown`, `query_too_big`, ...). An unexpected failure is `internal_error`, with no details.
+
+To try it locally, start the API as usual (`wattnet-api`) and point a client at `http://localhost:8000/mcp`, for instance the MCP inspector (`npx @modelcontextprotocol/inspector`, transport streamable HTTP). Or by hand:
+
+```bash
+curl -s http://localhost:8000/mcp \
+  -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+Without `WATTNET_API_ACCESS_POLICY_PATH` the tiers are not checked, as in REST. With it, send `-H 'X-Wattnet-Tier: <tier>'`. To deploy `mcp.wattnet.eu`, add a route for that host to the gateway, with the same upstream and the same plugins as `api.wattnet.eu`, rewriting the path to `/mcp`; it needs no new container and no new setting.
 
 ## Interactive API Documentation
 

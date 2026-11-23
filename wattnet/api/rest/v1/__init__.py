@@ -1,4 +1,4 @@
-"""API routers for version 1 of the wattnet API."""
+"""REST interface (v1 routers) of the Wattnet API."""
 
 from enum import Enum
 from typing import List, Union
@@ -7,21 +7,21 @@ from fastapi import APIRouter, Depends
 from fastapi_versioning import versioned_api_route
 
 from wattnet.api import access
-from wattnet.api.routers.v1.exports import router as exports_router
-from wattnet.api.routers.v1.factors import router as factors_router
-from wattnet.api.routers.v1.flow_share import router as flow_share_router
-from wattnet.api.routers.v1.footprint_share import router as footprint_share_router
-from wattnet.api.routers.v1.footprints import router as footprints_router
-from wattnet.api.routers.v1.generation import router as generation_router
-from wattnet.api.routers.v1.impact_share import router as impact_share_router
-from wattnet.api.routers.v1.impacts import router as impacts_router
-from wattnet.api.routers.v1.imports import router as imports_router
-from wattnet.api.routers.v1.load import router as load_router
-from wattnet.api.routers.v1.mix import router as mix_router
-from wattnet.api.routers.v1.mix_share import router as mix_share_router
-from wattnet.api.routers.v1.scores import router as scores_router
-from wattnet.api.routers.v1.status import router as status_router
-from wattnet.api.routers.v1.zones import router as zones_router
+from wattnet.api.rest.v1.exports import router as exports_router
+from wattnet.api.rest.v1.factors import router as factors_router
+from wattnet.api.rest.v1.flow_share import router as flow_share_router
+from wattnet.api.rest.v1.footprint_share import router as footprint_share_router
+from wattnet.api.rest.v1.footprints import router as footprints_router
+from wattnet.api.rest.v1.generation import router as generation_router
+from wattnet.api.rest.v1.impact_share import router as impact_share_router
+from wattnet.api.rest.v1.impacts import router as impacts_router
+from wattnet.api.rest.v1.imports import router as imports_router
+from wattnet.api.rest.v1.load import router as load_router
+from wattnet.api.rest.v1.mix import router as mix_router
+from wattnet.api.rest.v1.mix_share import router as mix_share_router
+from wattnet.api.rest.v1.scores import router as scores_router
+from wattnet.api.rest.v1.status import router as status_router
+from wattnet.api.rest.v1.zones import router as zones_router
 from wattnet.api.security import bearer_auth
 from wattnet.api.utils import validation
 

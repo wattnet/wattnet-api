@@ -43,7 +43,7 @@ def test_the_app_itself_never_rejects_a_missing_token(client) -> None:
 
 def test_the_description_explains_how_to_get_a_token() -> None:
     """With a developer portal, the description says where to get a token."""
-    from wattnet.api.app import authentication_documentation
+    from wattnet.api.main import authentication_documentation
 
     text = authentication_documentation("https://portal.example.org")
     assert text.startswith("### Authentication")
@@ -53,7 +53,7 @@ def test_the_description_explains_how_to_get_a_token() -> None:
 
 def test_the_description_has_no_token_section_without_a_portal(schema) -> None:
     """Without a developer portal, the description has no such section."""
-    from wattnet.api.app import authentication_documentation
+    from wattnet.api.main import authentication_documentation
 
     assert authentication_documentation(None) == ""
     assert "### Authentication" not in schema["info"]["description"]

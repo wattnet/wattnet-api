@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
+from tests.unit.test_access import POLICY
 from wattnet.api import access
 from wattnet.api.access import PolicyFile
-from tests.unit.test_access import POLICY
 
 
 def _range(days: float, ago: float = 1) -> str:
@@ -89,7 +89,7 @@ def test_status_and_the_probes_need_no_tier(client, with_policy, monkeypatch) ->
     from unittest.mock import MagicMock
 
     monkeypatch.setattr(
-        "wattnet.api.routers.v1.status.metrics_repo", MagicMock(ping=lambda: True)
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: True)
     )
     assert client.get("/v1/status/storage").status_code == 200
     assert client.get("/healthz").status_code == 200

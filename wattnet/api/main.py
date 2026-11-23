@@ -1,6 +1,6 @@
 """API for wattnet."""
 
-# Start server with: uvicorn app:app --reload
+# Start server with: uvicorn wattnet.api:app --reload
 # Open browser to: http://localhost:8000/
 
 # Documentation and tester with Swagger UI: http://localhost:8000/docs
@@ -8,8 +8,10 @@
 
 import os
 import re
+from contextlib import asynccontextmanager
 from importlib.metadata import version as package_version
 from pathlib import Path
+from typing import AsyncIterator
 from urllib.parse import urlparse
 
 import uvicorn
@@ -17,11 +19,13 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_versioning import VersionedFastAPI
+from mcp.server.transport_security import TransportSecuritySettings
 
 from wattnet.api.cache import CacheControlMiddleware
 from wattnet.api.errors import install_error_handlers
-from wattnet.api.routers.v1 import api_router_v1
-from wattnet.api.routers.v1.status import check_storage_system
+from wattnet.api.mcp.server import mcp_server
+from wattnet.api.rest.v1 import api_router_v1
+from wattnet.api.rest.v1.status import check_storage_system
 from wattnet.api.settings import settings
 from wattnet.api.utils import log
 
@@ -249,6 +253,28 @@ versioned_app.add_middleware(
 versioned_app.mount(
     "/static", StaticFiles(directory=str(_API_DIR / "static")), name="static"
 )
+
+
+# The MCP interface: the same app, served at /mcp (the gateway maps mcp.wattnet.eu to
+# it). It is outside /v1, so it is not in the OpenAPI and the cache does not touch it.
+# The DNS rebinding check is off: the gate is the boundary, as it is for REST.
+_mcp_app = mcp_server.streamable_http_app(
+    streamable_http_path="/mcp",
+    json_response=True,
+    stateless_http=True,
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+)
+versioned_app.router.routes.extend(_mcp_app.routes)
+
+
+@asynccontextmanager
+async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """Run the session manager of MCP: the mounted apps do not run a lifespan."""
+    async with _mcp_app.router.lifespan_context(_mcp_app):
+        yield
+
+
+versioned_app.router.lifespan_context = _lifespan
 
 
 @versioned_app.get("/favicon.ico", include_in_schema=False)
