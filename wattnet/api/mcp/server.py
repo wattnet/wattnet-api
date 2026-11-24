@@ -17,6 +17,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field
 
 from wattnet.api import access
+from wattnet.api.buildinfo import build_version
 from wattnet.api.mcp.spec import ToolSpec
 from wattnet.api.mcp.tools import ALL_TOOLS
 from wattnet.api.rest.v1 import api_router_v1
@@ -85,7 +86,15 @@ def _tool(spec: ToolSpec) -> Callable[..., Any]:
 
 def build_server() -> MCPServer:
     """Return the server with a tool for every spec."""
-    server = MCPServer("Wattnet", instructions=_INSTRUCTIONS)
+    # subscriptions=False: the server has nothing to notify, and a client that listens
+    # would keep a request open (and one of the concurrent requests of the account) for
+    # as long as it stays connected.
+    server = MCPServer(
+        "Wattnet",
+        instructions=_INSTRUCTIONS,
+        version=build_version(),
+        subscriptions=False,
+    )
     routes = {r.endpoint: r for r in api_router_v1.routes if hasattr(r, "endpoint")}
     for spec in ALL_TOOLS:
         route = routes[spec.handler]
