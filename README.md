@@ -221,6 +221,8 @@ The application does not look at the host. The gateway sends `mcp.wattnet.eu` to
 
 The parameters, their limits and the result of a tool are those of its endpoint, and `tools/list` gives them as JSON Schema. A failure is a tool result with `isError` and a JSON text with the `status` and the stable `code` of the REST error (`zone_not_found_for_coordinates`, `invalid_resolution`, `zone_limit_exceeded`, `access_level_unknown`, `query_too_big`, ...). An unexpected failure is `internal_error`, with no details.
 
+The server tells its version as the documentation of the API does: the commit of a snapshot image (the hexadecimal id in `BUILD_COMMIT`) and the version of the package in a release. It does not serve `subscriptions/listen` (the server has nothing to notify): a client that listened would keep a request open, and one of the concurrent requests of the account, for as long as it stayed connected.
+
 To try it locally, start the API as usual (`wattnet-api`) and point a client at `http://localhost:8000/mcp`, for instance the MCP inspector (`npx @modelcontextprotocol/inspector`, transport streamable HTTP). Or by hand:
 
 ```bash

@@ -5,11 +5,14 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
+from mcp.server.transport_security import TransportSecuritySettings
 
 from tests.unit.service.helpers import FakeMetric
 from tests.unit.test_access import POLICY
 from wattnet.api import access
 from wattnet.api.access import PolicyFile
+from wattnet.api.buildinfo import build_version
+from wattnet.api.mcp.server import build_server
 from wattnet.api.mcp.tools import ALL_TOOLS
 from wattnet.api.rest.v1 import api_router_v1
 
@@ -19,6 +22,30 @@ HEADERS = {"accept": "application/json, text/event-stream"}
 def rpc(client, method, params=None, tier=None, id=1):
     headers = {**HEADERS, **({"X-Wattnet-Tier": tier} if tier else {})}
     body = {"jsonrpc": "2.0", "id": id, "method": method, "params": params or {}}
+    return client.post("/mcp", json=body, headers=headers)
+
+
+META = {
+    "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {},
+    }
+}
+
+
+def modern(client, method, params=None, id=1):
+    """A request of the protocol 2026-07-28: the method also goes in a header."""
+    headers = {
+        **HEADERS,
+        "mcp-protocol-version": "2026-07-28",
+        "mcp-method": method,
+    }
+    body = {
+        "jsonrpc": "2.0",
+        "id": id,
+        "method": method,
+        "params": {**META, **(params or {})},
+    }
     return client.post("/mcp", json=body, headers=headers)
 
 
@@ -48,6 +75,36 @@ def test_initialize(mcp_client):
     )
     assert r.status_code == 200, r.text
     assert r.json()["result"]["serverInfo"]["name"] == "Wattnet"
+    assert r.json()["result"]["serverInfo"]["version"] == build_version()
+
+
+def test_discover_says_the_version_of_the_service(mcp_client):
+    r = modern(mcp_client, "server/discover")
+    info = r.json()["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]
+    assert info == {"name": "Wattnet", "version": build_version()}
+
+
+def test_a_snapshot_says_its_commit(monkeypatch):
+    monkeypatch.setenv("BUILD_COMMIT", "6bc3875")
+    app = build_server().streamable_http_app(
+        streamable_http_path="/mcp",
+        json_response=True,
+        stateless_http=True,
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=False
+        ),
+    )
+    with TestClient(app) as c:
+        r = modern(c, "server/discover")
+    info = r.json()["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]
+    assert info["version"] == "6bc3875"
+
+
+def test_listening_is_not_served(mcp_client):
+    """A client that listens would hold a request open for as long as it is connected."""
+    r = modern(mcp_client, "subscriptions/listen", {"notifications": {}})
+    assert r.status_code == 404
+    assert r.json()["error"]["code"] == -32601
 
 
 def test_every_data_route_has_a_tool(mcp_client):
