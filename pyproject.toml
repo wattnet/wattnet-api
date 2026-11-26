@@ -54,8 +54,8 @@ shapely = "2.1.2"
 trio = "0.32.0"
 pydantic-settings = "^2.12.0"
 typing-extensions = "4.15.0"
-# From git until wattnet-storage 1.2.0 is released (it has zone_mix, the replicated ClickHouse and updated_at); then back to a version range.
-wattnet-storage = { git = "https://github.com/wattnet/wattnet-storage.git", rev = "892c351f0acbd72b9ef2b2d1892346960e6f5565" }
+# From git until wattnet-storage 1.2.0 is released (it has zone_mix, the replicated ClickHouse, updated_at and latest_timestamp); then back to a version range.
+wattnet-storage = { git = "https://github.com/wattnet/wattnet-storage.git", rev = "65633d9aff16e0716d161d4b83023b7f51db1a40" }
 pyyaml = "^6.0"
 mcp = "^2.3.0"
 

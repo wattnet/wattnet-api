@@ -167,6 +167,10 @@ Every series of the data endpoints (`generation`, `load`, `imports`, `exports`, 
 - `points`: a list of objects `{"timestamp", "value", "updated_at"}`. `updated_at` is the moment that version of the value was stored. Objects can grow with new fields without breaking the clients that read them by name.
 - `values`: the list of `[timestamp, value]` pairs that the API has always returned, with the same rounding and order. It is **deprecated** (marked as such in the OpenAPI document) and it is removed after 28 February 2027, the same day the legacy authentication ends. Read `points` instead.
 
+## The latest data
+
+A query without `start` and `end` answers with the latest data before now: the API finds the latest point of the series it asks (one query, within the last 7 days) and reads that 15-minute interval. It does not depend on whether the current interval is published yet, so it is never empty while there is recent data. It is the latest moment of all the series of the query, so with several zones (or types) one whose data is late can be missing from the answer.
+
 ## Errors
 
 Every error answers with the sentence that says what is wrong, in `detail`, and a stable identifier for programs, in `code`: `{"detail": "...", "code": "zone_and_coordinates_conflict"}`. Read `code` and show `detail`: the sentence can be reworded, the code does not change. The errors that FastAPI raises by itself have a code too (`validation_error` for a 422, whose `detail` stays the list of problems, and `not_found`).

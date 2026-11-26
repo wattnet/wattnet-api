@@ -1,5 +1,6 @@
 """Dependency management for the wattnet API application."""
 
+from wattnet.api.repository import LatestPointRepository
 from wattnet.api.service.exports import ExportService
 from wattnet.api.service.factors import FactorService
 from wattnet.api.service.flow_share import FlowShareService
@@ -15,7 +16,7 @@ from wattnet.api.service.mix_share import MixShareService
 from wattnet.api.service.scores import ScoreService
 from wattnet.api.service.zones import ZoneService
 from wattnet.api.settings import plugin_settings, settings
-from wattnet.storage import MetricsRepository, StorageConfig
+from wattnet.storage import StorageConfig
 
 storage_config = StorageConfig(
     timeseries_step_minutes=settings.timeseries_step_minutes,
@@ -23,8 +24,9 @@ storage_config = StorageConfig(
     plugin_configs={name: s.model_dump() for name, s in plugin_settings.items()},
 )
 
-# Create a MetricsRepository instance with injected config
-metrics_repo = MetricsRepository(storage_config)
+# Create the repository with injected config. A query with no range gets the latest
+# point before now (see LatestPointRepository).
+metrics_repo = LatestPointRepository(storage_config)
 
 # Create Service instances
 generation_service = GenerationService(metrics_repo)
