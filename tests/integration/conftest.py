@@ -2,12 +2,15 @@
 Shared fixtures for integration tests of the wattnet API.
 
 Integration tests use the real versioned FastAPI application with a single
-mock boundary: MetricsRepository.query_metrics. This lets tests exercise the
+mock boundary: MetricsRepository.query_metrics (and latest_timestamp, which a
+query with no range asks first). This lets tests exercise the
 full router → validation → service → model-serialisation pipeline without
 requiring a live ClickHouse instance.
 """
 
 from __future__ import annotations
+
+from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -56,6 +59,12 @@ def mock_db(monkeypatch):
         monkeypatch.setattr(
             "wattnet.storage.repository.MetricsRepository.query_metrics",
             lambda self, *args, **kwargs: metrics,
+        )
+        # A query with no range first asks where the latest point is (see
+        # LatestPointRepository): any moment will do, the read above is mocked.
+        monkeypatch.setattr(
+            "wattnet.storage.repository.MetricsRepository.latest_timestamp",
+            lambda self, *args, **kwargs: datetime(2026, 1, 1, tzinfo=timezone.utc),
         )
 
     return _configure
