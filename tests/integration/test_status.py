@@ -212,3 +212,29 @@ def test_provider_answer_is_kept_for_a_few_seconds(monkeypatch) -> None:
     clock[0] += 31
     assert check_entsoe_api() is True
     assert mock.call_count == 2
+
+
+def test_status_asks_the_providers_at_the_same_time(client, monkeypatch) -> None:
+    """The three providers are asked at the same time, not one after the other.
+
+    Each call waits for the other two at a barrier: asked one by one, the first
+    call would wait alone until the barrier gives up.
+
+    :return: None
+    :rtype: None
+    """
+    import threading
+
+    barrier = threading.Barrier(3, timeout=5)
+
+    def get(*_args, **_kwargs) -> MagicMock:
+        barrier.wait()
+        return MagicMock(status_code=200)
+
+    monkeypatch.setattr("wattnet.api.rest.v1.status.requests.get", get)
+    monkeypatch.setattr(
+        "wattnet.api.rest.v1.status.metrics_repo", MagicMock(ping=lambda: True)
+    )
+    r = client.get(_URL)
+    assert r.status_code == 200
+    assert r.json() == {"storage": "up", "entso-e": "up", "elexon": "up", "epias": "up"}

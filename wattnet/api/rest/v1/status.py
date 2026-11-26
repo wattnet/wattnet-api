@@ -2,6 +2,7 @@
 
 import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from fastapi import APIRouter
@@ -178,12 +179,17 @@ def status() -> dict:
     :return: Dictionary with the status of storage, ENTSOE API, and Elexon API
     :rtype: dict
     """
-    return {
-        "storage": check_storage(),
-        "entso-e": check_entsoe(),
-        "elexon": check_elexon(),
-        "epias": check_epias(),
+    # The four checks run at the same time, so the answer takes as long as the
+    # slowest one (at most EXTERNAL_TIMEOUT_SECONDS) and not their sum.
+    checks = {
+        "storage": check_storage,
+        "entso-e": check_entsoe,
+        "elexon": check_elexon,
+        "epias": check_epias,
     }
+    with ThreadPoolExecutor(max_workers=len(checks)) as pool:
+        running = {name: pool.submit(check) for name, check in checks.items()}
+        return {name: future.result() for name, future in running.items()}
 
 
 @router.get("/storage")

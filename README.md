@@ -113,7 +113,7 @@ cp config/.env.example .env
 | `WATTNET_API_ENTSOE_URL`              | `https://web-api.tp.entsoe.eu/api`                      | ENTSO-E Transparency Platform API endpoint              |
 | `WATTNET_API_ELEXON_URL`              | `https://data.elexon.co.uk/bmrs/api/v1`                 | ELEXON Balancing Mechanism Reporting Service endpoint   |
 | `WATTNET_API_EPIAS_URL`               | `https://seffaflik.epias.com.tr/electricity-service/v1` | EPIAS Electricity Market Transparency Platform endpoint |
-| `WATTNET_API_EXTERNAL_TIMEOUT_SECONDS` | `30`                                                    | Seconds the status checks wait for ENTSO-E, ELEXON and EPIAS before reporting them down |
+| `WATTNET_API_EXTERNAL_TIMEOUT_SECONDS` | `30`                                                    | Seconds the status checks wait for ENTSO-E, ELEXON and EPIAS before reporting them down. The three are asked at the same time, so `/v1/status` takes at most this long |
 | `WATTNET_API_DEVELOPER_PORTAL_URL`    | _(none)_                                                | Portal where API tokens are obtained; when set, the documentation explains how to get one |
 | `WATTNET_API_ACCESS_POLICY_PATH`      | _(none)_                                                | YAML file of the access policy. When set, the gate in front of the API must send the tier in `X-Wattnet-Tier` and each tier gets its groups of endpoints, zones per query, query range, history and forecast. Read again when the file changes |
 | `WATTNET_API_MAX_QUERY_ZONE_DAYS`     | `400`                                                   | The most a query may ask, in zones times days of range (a year of one zone is 365; without `zone` a query asks every zone). It applies to every tier |
